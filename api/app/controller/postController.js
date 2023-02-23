@@ -34,6 +34,14 @@ exports.view_post = function(req, res) {
   });
 }
 
+exports.delete_post = function(req, res) {
+  Post.deletePost(req.params.postId, function(err, post) {
+    if (err)
+      res.send(err);  
+    res.json(post);
+  });
+}
+
 exports.update_post = function(req, res) {
   var post = new Post(req.body);
 

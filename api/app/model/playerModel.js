@@ -147,7 +147,7 @@ Player.getPlayerById = function (playerId, result) {
 };
 
 Player.listPlayers = function (result) {
-        sql.query("select id, name, info, post from player", 
+        sql.query("select id, nickname, info, post from player", 
 	    function (err, res) {             
                 if(err) {
                     console.log("error: ", err);

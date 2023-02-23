@@ -32,7 +32,9 @@ module.exports = function(app) {
     .get(postsList.list_posts_by_episode_id);  
   app.route('/api/posts/:postId')
     .get(postsList.view_post)
-    .post(postsList.update_post);     
+    .post(postsList.update_post);   
+  app.route('/api/posts/:postId/delete')
+    .post(postsList.delete_post);
     
   //player routes
   app.route('/api/players/:playerId/characters')
