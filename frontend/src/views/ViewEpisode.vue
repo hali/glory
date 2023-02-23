@@ -66,14 +66,20 @@
             class="col-md-6"
             align="left"
           >
-            <span class="col-md-3" align="left" @click="$router.push({ name: 'editepisode', params: { id: this.episode.id } })"><base-button type="secondary">
+            <span class="col-md-3" 
+            v-if="this.current_player_id == episode.author_id"
+            align="left" @click="$router.push({ name: 'editepisode', params: { id: this.episode.id } })"><base-button type="secondary">
               РЕДАКТИРОВАТЬ
             </base-button></span>
             
-            <span class="col-md-3" @click="closeEpisode" v-if="episode.status == 'В процессе'"><base-button type="secondary">
+            <span class="col-md-3" 
+            @click="closeEpisode" 
+            v-if="(episode.status == 'В процессе') && (this.current_player_id == episode.author_id)"><base-button type="secondary">
               Закрыть эпизод
             </base-button></span>
-            <span class="col-md-3" @click="reopenEpisode" v-if="['Завершен', 'Черновик'].includes(episode.status)"><base-button type="secondary">
+            <span class="col-md-3" 
+            @click="reopenEpisode" 
+            v-if="['Завершен', 'Черновик'].includes(episode.status) && (this.current_player_id == episode.author_id)"><base-button type="secondary">
               Открыть эпизод
             </base-button></span>
           </div>
@@ -90,7 +96,7 @@
         <div>
           <p />
           <div
-            v-for="item in posts"
+            v-for="(item, index) in posts"
             :key="item.id"
           >
             <card
@@ -100,6 +106,7 @@
               type="lighter"
             >
               <div class="row">
+              
                 <div class="col-md-2 card-profile-image">
                   <img
                     :src="`${item.img}`"
@@ -110,8 +117,20 @@
                   <p>{{ item.name }}</p><p>Лет сейчас: {{ item.age }}</p><p>{{ item.status }}</p>
                 </div>
                 <div class="col-md-2" align="right">
-                  <base-button size="sm" type="primary" icon="fa fa-pencil"  @click="$router.push({ name: 'editpost', params: { id: item.id } })">
-                  </base-button>
+                  <span
+                  v-if="(episode.status == 'В процессе') && (this.current_player_id == item.player_id)"
+                  @click="$router.push({ name: 'editpost', params: { id: item.id } })"
+                  >
+                      <base-button 
+                      size="sm" type="primary" icon="fa fa-pencil"  >
+                      </base-button>
+                  </span>
+                  <span v-if="(index == this.posts.length - 1) && (episode.status == 'В процессе') && (this.current_player_id == item.player_id)"
+                   @click="askForConformation(item.id)"
+                  >
+                    <base-button 
+                    size="sm" type="primary" icon="fa fa-trash" >
+                  </base-button></span>
                   </div>
               </div>
               <div
@@ -119,6 +138,7 @@
               >
                 {{ item.body }}
               </div>
+              
             </card>
             <p />   
           </div>                                         
@@ -193,9 +213,9 @@
 </template>
 <script>
 import "flatpickr/dist/flatpickr.css";
-import {viewEpisode, getEpisodePosts, closeEpisode, reopenEpisode} from '../services/EpisodeService';
-import {addPost} from '../services/PostService';
-import {getCharacters} from '../services/CharacterService';
+import { viewEpisode, getEpisodePosts, closeEpisode, reopenEpisode } from '../services/EpisodeService';
+import { addPost, deletePost } from '../services/PostService';
+import { getCharacters } from '../services/CharacterService';
 import { getPlayer } from '../services/PlayerService';
 import BaseButton from '@/components/BaseButton';
 import BaseDropdown from '@/components/BaseDropdown';
@@ -203,7 +223,7 @@ const UniqueSet = require('@sepiariver/unique-set');
 
 export default {
     name: "ViewEpisode",
-    components: {BaseButton, BaseDropdown},
+    components: { BaseButton, BaseDropdown },
     data() {
         return {
           episode: {
@@ -220,32 +240,38 @@ export default {
           current_character: {id: 0, name: "ВЫБЕРИ ПЕРСОНАЖА"},
           characters: [],
           episode_characters:[],
-          error: false
+          error: false,
+          current_player_id: 0,
+          email: ''
         };
       },
       mounted () {
-        viewEpisode(this.episode.id).then(response => {
-            this.episode.name = response[0].name;
-            this.episode.description = response[0].description;
-            this.episode.timeOfAction = (new Date(response[0].timeOfAction)).toLocaleString('en-GB', {dateStyle: 'short'});
-            this.episode.collection = response[0].branch;
-            //this.episode.branch_id = response[0].branch_id;
-            this.episode.world = response[0].world;
-            this.episode.status = response[0].status;
-        });
-        getEpisodePosts(this.episode.id).then(response => {
-            this.posts = response;
-            this.episode_characters = [...new UniqueSet(response.map(a => ({name: a.name, id: a.char_id})))];
-        });      
+              
       },
       async created() {
             const idToken = await this.$auth.tokenManager.get('idToken');
-            this.claims = await Object.entries(idToken.claims).map(entry => ({ claim: entry[0], value: entry[1] }));
-            const email = this.claims[2].value;
-            getPlayer(email).then(response => {
-                this.id = response[0].id;
-                getCharacters(this.id).then(characters => {
+            this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
+            this.claims.forEach((value) => {
+              if (value.key == 'email') this.email = value.value;
+            });
+            getPlayer(this.email).then(response => {
+                this.current_player_id = response[0].id;
+                getCharacters(this.current_player_id).then(characters => {
                     this.characters = characters;
+                });
+                viewEpisode(this.episode.id).then(response => {
+                    this.episode.name = response[0].name;
+                    this.episode.description = response[0].description;
+                    this.episode.timeOfAction = (new Date(response[0].timeOfAction)).toLocaleString('en-GB', {dateStyle: 'short'});
+                    this.episode.collection = response[0].branch;
+                    //this.episode.branch_id = response[0].branch_id;
+                    this.episode.world = response[0].world;
+                    this.episode.status = response[0].status;
+                    this.episode.author_id = response[0].author_id;
+                });
+                getEpisodePosts(this.episode.id).then(response => {
+                    this.posts = response;
+                    this.episode_characters = [...new UniqueSet(response.map(a => ({name: a.name, id: a.char_id})))];
                 });
             });
         },
@@ -278,6 +304,15 @@ export default {
         },
         reopenEpisode() {
           reopenEpisode(this.episode.id).then(() => {this.$router.go()});
+        },
+        askForConformation(postId) {
+          if (confirm("Правда удалить пост?")) {
+            deletePost(postId).then(() => {
+            getEpisodePosts(this.episode.id).then(response => {
+                    this.posts = response;
+                });
+          });
+          } 
         }  
     }
 };

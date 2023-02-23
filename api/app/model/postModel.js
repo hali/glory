@@ -27,10 +27,11 @@ Post.createPost = function (post, result) {
 };
 
 Post.listPostsByEpisodeId = function(episode_id, result) {
-	sql.query("select p.id, p.body, c.id as char_id, c.name, c.status, TIMESTAMPDIFF(YEAR, c.dob, e.timeOfAction) as age, c.img \
-				from posts p, `character` c, episode e  \
+	sql.query("select p.id, p.body, c.id as char_id, pl.id as player_id, c.name, c.status, TIMESTAMPDIFF(YEAR, c.dob, e.timeOfAction) as age, c.img \
+				from posts p, `character` c, episode e, player pl  \
 				where p.author_id = c.id  \
 				and p.episode_id = e.id \
+				and pl.id = c.player_id \
 				and e.id = ? \
 				order by p.id asc", 
 	episode_id,
@@ -64,6 +65,19 @@ Post.updatePost = function (post_id, post, result) {
 
 Post.getPost = function(post_id, result) {
 	sql.query("select * from posts where id=?",
+	[post_id],
+	function (err, res) {
+		if (err) {
+			console.log("error: ", err);
+        	result(null, err);
+    	} else {
+			result(null, res);
+		}	
+	});
+};
+
+Post.deletePost = function(post_id, result) {
+	sql.query("delete from posts where id=?",
 	[post_id],
 	function (err, res) {
 		if (err) {
