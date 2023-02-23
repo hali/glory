@@ -1,0 +1,63 @@
+select e.id, e.name, e.url, es.description, b.description
+	from episode e, participants p, episode_status es, branch b where 
+	p.episode_id = e.id 
+	AND e.status_id = es.id 
+	AND b.id = e.branch_id 
+	AND p.character_id = 1;
+	
+	
+select * from `character` where name = "Samantha Jones";
+select e2.name, posts_number from participants p2, episode e2 where 
+	character_id = 201 AND p2.episode_id = e2.id;
+select * from episode e order by id desc;
+select * from player p ;
+select * from participants p where character_id =24;
+
+
+select e.id, c.name as "character_name", episode_id, e.name as episode_name, e.url as episode_url, b.description as branch
+	from episode e, participants p, branch b, player p2, `character` c where 
+	p.episode_id = e.id 
+	AND b.id = e.branch_id AND e.status_id  = 3 
+	AND p2.id = 2
+	AND c.player_id = p2.id
+	AND p.character_id = c.id 
+	AND e.last_responder != p.character_id;
+	
+select name from `character` where player_id =2;
+
+select c.name as "character_name", sum(p.posts_number) as posts, count(p.episode_id) as episodes
+	from episode e, participants p, branch b, `character` c where 
+	p.episode_id = e.id 
+	AND b.id = e.branch_id
+	AND p.character_id = c.id 
+	group by c.name order by posts desc;	
+	
+select * from `character` where name = 'Waaseyaa Ozawanimke';
+select * from `character` order by id desc;
+
+update `character` set mask = TRUE where id in (
+select m.mask_id from masks m where m.character_id != m.mask_id);
+
+select c2.name from `character` c2, masks m where
+m.character_id = 24
+and m.mask_id = c2.id ;
+
+select c.id, c.name, e.name, p.posts_number from episode e, `character` c, participants p, masks m2 
+where p.character_id = m2.mask_id 
+AND p.episode_id = e.id
+AND c.id = p.character_id
+AND m2.character_id != m2.mask_id ;
+
+select * from masks;
+select * from participants;
+
+update episode e 
+inner join participants p on e.id = p.episode_id 
+inner join masks m on p.character_id = m.mask_id and m.character_id = e.last_responder 
+set last_responder = m.mask_id 
+where m.mask_id != m.character_id;
+
+select c1.name, ct.description, c2.name from `character` c1, `character` c2, connection_type ct , `connection` c 
+where c1.id = c.character1_id 
+and c2.id = c.character2_id 
+and c.`type` = ct.id ;
