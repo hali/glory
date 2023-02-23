@@ -1,0 +1,15 @@
+runtime: nodejs16
+service: default
+handlers:
+    # Serve all static files with urls ending with a file extension
+    - url: /(.*\..+)$
+      static_files: dist/\1
+      upload: dist/(.*\..+)$
+      # catch all handler to index.html
+      http_headers: 
+        cache-control: no-store, no-cache, must-revalidate, proxy-revalidate
+    - url: /.*
+      static_files: dist/index.html
+      upload: dist/index.html
+automatic_scaling:
+  min_instances: 1      
