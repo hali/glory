@@ -122,14 +122,20 @@
                   @click="$router.push({ name: 'editpost', params: { id: item.id } })"
                   >
                       <base-button 
-                      size="sm" type="primary" icon="fa fa-pencil"  >
+                      size="sm" type="primary" icon="fa fa-pencil" title="Отредактировать" >
                       </base-button>
                   </span>
                   <span v-if="(index == this.posts.length - 1) && (episode.status == 'В процессе') && (this.current_player_id == item.player_id)"
-                   @click="askForConformation(item.id)"
+                   @click="askForConfirmation(item.id)"
                   >
                     <base-button 
-                    size="sm" type="primary" icon="fa fa-trash" >
+                    size="sm" type="primary" icon="fa fa-trash" title="Удалить пост">
+                  </base-button></span>
+                  <span v-if="this.current_player_id != item.player_id"
+                   @click="addComment(item.id)"
+                  >
+                    <base-button 
+                    size="sm" type="primary" icon="fa fa-comment-o" title="Оставить комментарий" >
                   </base-button></span>
                   </div>
               </div>
@@ -214,7 +220,7 @@
 <script>
 import "flatpickr/dist/flatpickr.css";
 import { viewEpisode, getEpisodePosts, closeEpisode, reopenEpisode } from '../services/EpisodeService';
-import { addPost, deletePost } from '../services/PostService';
+import { addPost, deletePost, addComment } from '../services/PostService';
 import { getCharacters } from '../services/CharacterService';
 import { getPlayer } from '../services/PlayerService';
 import BaseButton from '@/components/BaseButton';
@@ -305,7 +311,7 @@ export default {
         reopenEpisode() {
           reopenEpisode(this.episode.id).then(() => {this.$router.go()});
         },
-        askForConformation(postId) {
+        askForConfirmation(postId) {
           if (confirm("Правда удалить пост?")) {
             deletePost(postId).then(() => {
             getEpisodePosts(this.episode.id).then(response => {
@@ -313,6 +319,17 @@ export default {
                 });
           });
           } 
+        },
+        addComment(postId) {
+          let comment = prompt("Введите текст комментария");
+          if (comment != null || comment != "") {
+            const payload = {
+              post_id: postId,
+              body: comment,
+              author_id: this.current_player_id
+            }
+            addComment(postId, payload);
+          }
         }  
     }
 };

@@ -160,4 +160,48 @@ Player.listPlayers = function (result) {
             });   
 };
 
+Player.getMyCommentsById = function (playerId, result) {
+        sql.query("select c.id, c.body, c.post_id, DATE_FORMAT(c.added_time, '%d %M %Y %h:%m') as added_time, e.name as ep_name, \
+        c2.name as char_name, e.id as ep_id \
+        from comments c, posts p, episode e, `character` c2  \
+        where c.author_id = ?\
+        and c.post_id = p.id \
+        and p.episode_id = e.id \
+        and c2.id = p.author_id \
+        order by c.added_time desc;",
+	    [playerId], function (err, res) {             
+                if(err) {
+                    console.log("error: ", err);
+                    result(err, null);
+                }
+                else{
+                    result(null, res);
+              
+                }
+            });   
+};
+
+Player.getMyFeedbackById = function (playerId, result) {
+        sql.query("select c.id, p.episode_id, e.name, c.author_id, pl.nickname, c.body, \
+            DATE_FORMAT(c.added_time, '%d %M %Y %h:%m') as added_time \
+			from comments c, player pl, posts p, `character` c2, player p2, episode e  \
+			where c.author_id = pl.id\
+			and c.post_id = p.id\
+			and p.author_id = c2.id \
+			and c2.player_id = p2.id \
+			and e.id = p.episode_id\
+			and p2.id = ?\
+			order by added_time desc",
+	[playerId], function (err, res) {             
+                if(err) {
+                    console.log("error: ", err);
+                    result(err, null);
+                }
+                else{
+                    result(null, res);
+              
+                }
+            });   
+};
+
 module.exports= Player;

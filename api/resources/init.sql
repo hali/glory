@@ -130,6 +130,19 @@ CREATE TABLE `posts`
  CONSTRAINT `FK_post_author` FOREIGN KEY `fkIdx_305` (`author_id`) REFERENCES `character` (`id`)
 );
 
+CREATE TABLE `comments`
+(
+ `id` int NOT NULL AUTO_INCREMENT,
+ `author_id`	int NOT NULL,
+ `post_id`	int NOT NULL,
+ `body` 		text,
+ `added_time`	datetime,
+ 
+ PRIMARY KEY (id),
+ CONSTRAINT `FK_135` FOREIGN KEY `fkIdx_135` (`post_id`) REFERENCES `posts` (`id`),
+ CONSTRAINT `FK_comment_author` FOREIGN KEY `fkIdx_375` (`author_id`) REFERENCES `player` (`id`)
+);
+
 INSERT into branch (name, description) VALUES
 ('Main', 'Основная ветка'),
 ('Generic AU-verse', 'Какая-то АУ'),

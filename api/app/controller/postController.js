@@ -1,6 +1,7 @@
 'use strict';
 
 var Post = require('../model/postModel.js');
+var Comment = require('../model/commentModel.js');
 
 exports.add_post = function(req, res) {
   var new_post = new Post(req.body);
@@ -56,4 +57,28 @@ else {
     	res.json(post_response);
   	});
   };
+};
+
+exports.add_comment = function(req, res) {
+  var comment = new Post(req.body);
+
+  //handles null error 
+   if ( !comment.body || !comment.author_id) {
+            res.status(400).send({ error:true, message: 'Please provide body and author' });
+        }
+   else { 
+  		Comment.createComment(parseInt(req.params.postId), comment, function(err, comment) {    
+    	if (err)
+      		res.send(err);	
+    	res.json(comment);
+  	});
+  };
+};
+
+exports.list_comments_by_post_id = function(req, res) {
+  Comment.listCommentsByPostId(req.params.postId, function(err, feedback) {
+    if (err)
+      res.send(err);
+    res.json(feedback);
+  });
 };

@@ -195,6 +195,7 @@ import "flatpickr/dist/flatpickr.css";
 import BaseButton from '@/components/BaseButton';
 import BaseInput from '@/components/BaseInput';
 
+
 export default {
   name: 'PlayerHub',
   components: { flatPicker, BaseButton, BaseInput },
