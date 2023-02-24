@@ -21,3 +21,13 @@ export async function getEpisodesByPlayerId(playerId) {
     const response = await fetch('/api/players/' + playerId + '/episodes');
     return await response.json();
 }
+
+export async function getCommentsByPlayer(playerId) {
+    const response = await fetch('/api/players/' + playerId + '/comments');
+    return await response.json();
+}
+
+export async function getFeedbackByPlayer(playerId) {
+    const response = await fetch('/api/players/' + playerId + '/feedback');
+    return await response.json();
+}

@@ -62,3 +62,19 @@ exports.get_characters = function(req, res) {
     res.json(characters);
   });
 };
+
+exports.get_comments = function(req, res) {
+  Player.getMyCommentsById(req.params.playerId, function(err, comments) {
+    if (err)
+      res.send(err);  
+    res.json(comments);
+  });
+};
+
+exports.get_feedback = function(req, res) {
+  Player.getMyFeedbackById(req.params.playerId, function(err, comments) {
+    if (err)
+      res.send(err);  
+    res.json(comments);
+  });
+};

@@ -35,6 +35,9 @@ module.exports = function(app) {
     .post(postsList.update_post);   
   app.route('/api/posts/:postId/delete')
     .post(postsList.delete_post);
+  app.route('/api/posts/:postId/comments')
+    .post(postsList.add_comment)
+    .get(postsList.list_comments_by_post_id);  
     
   //player routes
   app.route('/api/players/:playerId/characters')
@@ -43,7 +46,11 @@ module.exports = function(app) {
     .get(playersList.get_player)
     .post(playersList.add_player);		
   app.route('/api/players/:playerId/episodes')
-  	.get(playersList.get_episodes); 	
+  	.get(playersList.get_episodes);
+  app.route('/api/players/:playerId/comments')
+  	.get(playersList.get_comments);	 
+  app.route('/api/players/:playerId/feedback')
+  	.get(playersList.get_feedback);		
   
 };  
     

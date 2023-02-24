@@ -43,6 +43,9 @@
             Сбросить фильтр по моим эпизодам
         </badge>
       <card>
+        <div v-if="episodes.length == 0">
+         У вас пока нет эпизодов. :-( Почитайте чужие и присоединяйтесь к движухе!
+        </div>
         <table class="table table-bordered">
           <tbody>
             <tr

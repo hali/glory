@@ -28,3 +28,17 @@ export async function deletePost(id) {
       })
     return await response.json();
 }
+
+export async function addComment(id, payload) {
+    const response = await fetch(`/api/posts/` + id + `/comments`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(Object.assign({}, payload))
+      })
+    return await response.json();
+}
+
+export async function getComments(id) {
+    const response = await fetch(`/api/posts/` + id + `/comments`);
+    return await response.json();
+}
