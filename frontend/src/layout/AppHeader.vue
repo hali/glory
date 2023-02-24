@@ -50,6 +50,14 @@
           </router-link>
         </li>  
         <li class="nav-item">
+          <router-link
+            to="/myfeedback"
+            class="nav-link"
+          >
+            Фидбек
+          </router-link>
+        </li>
+        <li class="nav-item">
           <div
             class="nav-link"
             @click="logout"

@@ -161,7 +161,7 @@ Player.listPlayers = function (result) {
 };
 
 Player.getMyCommentsById = function (playerId, result) {
-        sql.query("select c.id, c.body, c.post_id, DATE_FORMAT(c.added_time, '%d %M %Y %h:%m') as added_time, e.name as ep_name, \
+        sql.query("select c.id, c.body, c.post_id, DATE_FORMAT(c.added_time, '%d %M %Y %h:%i') as added_time, e.name as ep_name, \
         c2.name as char_name, e.id as ep_id \
         from comments c, posts p, episode e, `character` c2  \
         where c.author_id = ?\
@@ -183,7 +183,7 @@ Player.getMyCommentsById = function (playerId, result) {
 
 Player.getMyFeedbackById = function (playerId, result) {
         sql.query("select c.id, p.episode_id, e.name, c.author_id, pl.nickname, c.body, \
-            DATE_FORMAT(c.added_time, '%d %M %Y %h:%m') as added_time \
+            DATE_FORMAT(c.added_time, '%d %M %Y %H:%i') as added_time \
 			from comments c, player pl, posts p, `character` c2, player p2, episode e  \
 			where c.author_id = pl.id\
 			and c.post_id = p.id\
