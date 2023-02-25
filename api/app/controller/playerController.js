@@ -11,18 +11,10 @@ exports.add_player = function(req, res) {
 };
 
 exports.get_debts = function(req, res) {
-  Player.getDebtsById(req.params.playerId, function(err, debts) {
+  Player.getDebts(function(err, debts) {
     if (err)
       res.send(err);  
     res.json(debts);
-  });
-};
-
-exports.get_debtors = function(req, res) {
-  Player.getDebtorsById(req.params.playerId, function(err, debtors) {
-    if (err)
-      res.send(err);  
-    res.json(debtors);
   });
 };
 

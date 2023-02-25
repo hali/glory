@@ -26,41 +26,15 @@ Player.addPlayer = function (player, result) {
     });           
 };
 
-Player.getDebtsById = function (playerId, result) {
-        sql.query("select p.episode_id, c.name as character_name, e.name as episode_name, \
-        REPLACE(e.url, 'http:', 'https:') as episode_url, b.description as branch\
-	from episode e, participants p, branch b, player p2, `character` c where \
-	p.episode_id = e.id \
-	AND b.id = e.branch_id AND e.status_id  = 3 \
-	AND IFNULL(e.branch_id, 1) < 100 \
-	AND p2.id = ?\
-	AND c.player_id = p2.id\
-	AND p.character_id = c.id AND e.last_responder != p.character_id ", 
-	playerId, function (err, res) {             
-                if(err) {
-                    console.log("error: ", err);
-                    result(err, null);
-                }
-                else{
-                    result(null, res);
-              
-                }
-            });   
-};
-
-Player.getDebtorsById = function (playerId, result) {
-        sql.query("select c.name as debtor_name, c2.name as character_name, e.id as episode_id, e.name as episode_name, REPLACE(e.url, 'http:', 'https:') as episode_url, b.description as branch\
-	from episode e, participants p, branch b, `character` c, `character` c2, player p2 where \
-	p2.id = ?\
-	AND c2.player_id = p2.id \
-	AND p.character_id = c.id \
-	AND p.episode_id = e.id \
-	AND b.id = e.branch_id \
-	AND IFNULL(e.branch_id, 1) < 100 \
-	AND e.status_id  = 3 \
-	AND e.last_responder != p.character_id \
-	AND c2.id = e.last_responder", 
-	playerId, function (err, res) {             
+Player.getDebts = function (result) {
+        sql.query("select max(p2.id) as post_id, e.name, e.id as ep_id, p.id as player_id  \
+        from episode e, player p, posts p2, `character` c  \
+        where p2.episode_id = e.id \
+        and p2.author_id = c.id \
+        and c.player_id = p.id \
+        and e.status_id = 3\
+        group by e.name, p.id, e.id order by e.name;", 
+	function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
                     result(err, null);

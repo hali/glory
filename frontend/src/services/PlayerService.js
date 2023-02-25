@@ -31,3 +31,8 @@ export async function getFeedbackByPlayer(playerId) {
     const response = await fetch('/api/players/' + playerId + '/feedback');
     return await response.json();
 }
+
+export async function getDebts() {
+    const response = await fetch('/api/debts');
+    return await response.json();
+}

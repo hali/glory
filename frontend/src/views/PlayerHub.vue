@@ -17,6 +17,37 @@
           {{ name }}
         </h1>
       </div>
+      <div class="container">
+      <div class="row">
+       <div class="col-md-6">
+        <card>
+          <h6 class="text-primary text-uppercase">Жду ответа:</h6>
+          <div v-for="item in waitingFor" :key="item.id"> <router-link
+                  :to="{
+                    name: 'viewepisode', 
+                    params: { id:item.id }                              
+                  }"
+                >
+                  {{ item.name }}
+                </router-link> </div>
+        </card>
+       </div> 
+       <div class="col-md-6">
+        <card>
+          <h6 class="text-primary text-uppercase">Мои долги:</h6>
+          <div v-for="item in myDebts" :key="item.id"> <router-link
+                  :to="{
+                    name: 'viewepisode', 
+                    params: { id:item.id }                              
+                  }"
+                >
+                  {{ item.name }}
+                </router-link> </div>
+        </card>
+       </div> 
+      </div>
+    </div>
+    <p> </p>
       <h6 class="text-primary text-uppercase">
         Профиль
       </h6>
@@ -188,7 +219,7 @@
 </template>
 
 <script>
-import { getPlayer, savePlayer } from '../services/PlayerService';
+import { getPlayer, savePlayer, getDebts } from '../services/PlayerService';
 import {getCharacters, addCharacter} from '../services/CharacterService';
 import flatPicker from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
@@ -214,7 +245,9 @@ export default {
         info: "",
         img: "",
         status: ""
-      }
+      },
+      myDebts: [],
+      waitingFor: []
     }
   },
   async created () {
@@ -237,6 +270,29 @@ export default {
             this.characters = characters;
         });
         }
+        let map = new Map();
+        getDebts().then(response => {
+            response.forEach((value) => {
+            map.has(value.name) 
+            ? map.get(value.name).push({player_id: value.player_id, post_id: value.post_id, episode_name: value.name, episode_id: value.ep_id})
+            : map.set(value.name, [{player_id: value.player_id, post_id: value.post_id, episode_name: value.name, episode_id: value.ep_id}])
+            });
+            map.forEach((episode) => {
+              if (episode.length == 1 && episode[0].player_id == this.id) 
+                  this.waitingFor.push({ id: episode[0].episode_id, name: episode[0].episode_name})
+              else {
+                  if (episode[0].player_id == this.id) {
+                    if (episode[0].post_id > episode[1].post_id)
+                      this.waitingFor.push({ id: episode[0].episode_id, name: episode[0].episode_name});
+                    else this.myDebts.push({ id: episode[0].episode_id, name: episode[0].episode_name});
+                  } else if (episode[1].player_id == this.id) {
+                    if (episode[1].post_id > episode[0].post_id)
+                      this.waitingFor.push({ id: episode[0].episode_id, name: episode[0].episode_name});
+                    else this.myDebts.push({ id: episode[0].episode_id, name: episode[0].episode_name});
+                  }
+              }
+            });
+        });
     });
   },
   methods: {

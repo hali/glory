@@ -51,6 +51,7 @@ module.exports = function(app) {
   	.get(playersList.get_comments);	 
   app.route('/api/players/:playerId/feedback')
   	.get(playersList.get_feedback);		
-  
+  app.route('/api/debts')
+    .get(playersList.get_debts);
 };  
     
