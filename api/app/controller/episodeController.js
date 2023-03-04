@@ -30,6 +30,14 @@ exports.list_episodes = function(req, res) {
   });
 };
 
+exports.list_latest = function(req, res) {
+  Episode.listLatest(function(err, response) {
+    if (err)
+      res.send(err);  
+    res.json(response);
+  });
+};
+
 exports.read_episode = function(req, res) {
   Episode.getEpisode(req.params.episodeId, function(err, posts) {
     if (err)

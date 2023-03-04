@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="position-relative">
+    <div v-if='!(authState && authState.isAuthenticated)' class="position-relative">
       <!-- shape Hero -->
       <section class="section-shaped my-0 ">
         <div class="shape shape-style-1 shape-dark shape-skew">
@@ -58,7 +58,7 @@
       </section>
       <!-- 1st Hero Variation -->
     </div>
-    <section class="section section-lg pt-lg-0 mt--200">
+    <section v-if='!(authState && authState.isAuthenticated)' class="section section-lg pt-lg-0 mt--200">
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-lg-12">
@@ -131,12 +131,76 @@
         </div>
       </div>
     </section>
+    <div v-if='authState && authState.isAuthenticated'>
+      <section class="section-shaped my-0 ">
+            <div class="shape shape-style-1 shape-dark shape-skew">
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+            <div class="container">
+              <div class="row">
+                <div class="col-md-12">
+                 <card>
+                  <h6 class="text-primary text-uppercase">Свежие посты</h6>
+                  <table class="table table-bordered">
+                      <thead>
+                        <th>Эпизод</th>
+                        <th>Автор поста</th>
+                        <th>Время поста</th>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="item in episodes"
+                          :key="item.id"
+                        > 
+                          <td>
+                            <router-link
+                              :to="{
+                                name: 'viewepisode', 
+                                params: { id:item.id }                              
+                              }"
+                            >
+                              {{ item.name }}
+                            </router-link>
+                          </td>
+                          <td>{{ item.char_name }}</td>
+                          <td>{{ item.added_time }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </card>  
+                </div>
+              </div>
+            </div>
+          </section>
+      </div>
   </div>
 </template>
 
 <script>
+import { getLatestEpisodes } from '../services/EpisodeService';
+
 export default ({
   name: 'Home',
+  props: ['auth'],
+  data() {
+            return {
+                episodes: [],
+            }
+        },
+        async created () {
+            const idToken = await this.$auth.tokenManager.get('idToken');
+            this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
+            this.claims.forEach((value) => {
+              if (value.key == 'email') this.email = value.value;
+            });
+            getLatestEpisodes().then(response => this.episodes = response);             
+          },
   methods: {
     async login () {
       await this.$auth.signInWithRedirect({ originalUri: '/' })

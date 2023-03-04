@@ -107,9 +107,27 @@ Episode.listEpisodes = function(status_id, branch_id, result) {
 }); 
 };
 
+Episode.listLatest = function(result) {
+    var sqlQuery = "select e.id, e.name, DATE_FORMAT(p.added_time, '%d %M %Y %H:%i') as added_time, c.name as char_name  \
+    from episode e, posts p, `character` c  \
+    where e.id = p.episode_id\
+    and p.author_id = c.id \
+    order by p.added_time desc limit 10";
+	sql.query(sqlQuery, 
+	function (err, res) {
+
+    if(err) {
+        console.log("error: ", err);
+        result(null, err);
+    } else {
+		result(null, res);
+    }
+}); 
+};
+
 Episode.getEpisode = function(episode_id, result) {
 	sql.query("select e.name, e.description, e.world, e.timeOfAction, b.description as 'branch', es.description as 'status', \
-	e.author_id \
+	e.author_id, e.branch_id \
 	from episode e, branch b, episode_status es, player pl \
 	where e.id = ? \
 	and e.status_id = es.id \

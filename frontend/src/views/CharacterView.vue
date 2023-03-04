@@ -134,12 +134,77 @@
             </div>
       </div>
     </div>
+    <p />
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <card>
+            <h6 class="text-primary text-uppercase">
+              Эпизоды
+            </h6>
+            <div v-if="episodes.length == 0">
+              Нет эпизодов с этим персонажем :-(
+            </div>
+            <div class="row"
+              v-for="item in episodes"
+              :key="item.id"
+            >
+              <div class="col-md-8">
+                <router-link
+                  :to="{
+                    name: 'viewepisode', 
+                    params: { id:item.id }                              
+                  }"
+                >
+                  {{ item.name }}
+                </router-link>
+              </div>
+              <div class="col-md-4" align="right">
+                  <badge type="primary">
+                    {{ item.branch }}
+                  </badge>
+                  <badge
+                    v-if="item.status == 'Заброшен'"
+                    type="danger"
+                    @click="filterByStatus(1, 'Заброшен')"
+                  >
+                    {{ item.status }}
+                  </badge>
+                  <badge
+                    v-if="item.status == 'Завершен'"
+                    type="success"
+                    @click="filterByStatus(2, 'Завершен')"
+                  >
+                    {{ item.status }}
+                  </badge>
+                  <badge
+                    v-if="item.status == 'В процессе'"
+                    type="default"
+                    @click="filterByStatus(3, 'В процессе')"
+                  >
+                    {{ item.status }}
+                  </badge>
+                  <badge
+                    v-if="item.status == 'Черновик'"
+                    type="info"
+                    @click="filterByStatus(4, 'Черновик')"
+                  >
+                    {{ item.status }}
+                  </badge>
+                </div>
+            </div>
+          </card>
+        </div>
+        <p />
+        
+      </div>
+    </div>
   </section>
 </template>
 
 <script>
 import { getPlayer, getPlayerById } from '../services/PlayerService';
-import { getCharacter, saveCharacter } from '../services/CharacterService';
+import { getCharacter, saveCharacter, getEpisodesByCharacterId } from '../services/CharacterService';
 import flatPicker from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
 import BaseButton from '@/components/BaseButton';
@@ -159,7 +224,8 @@ export default {
       img: "",
       dob: "1987-07-20",
       character_player_id: 1,
-      character_player_name: ""
+      character_player_name: "",
+      episodes: []
     }
   },
   async created () {
@@ -183,6 +249,7 @@ export default {
         });
         }
     );
+    getEpisodesByCharacterId(this.id).then(response => this.episodes = response);
   },
   methods: {
     save() {

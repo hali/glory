@@ -11,19 +11,23 @@ module.exports = function(app) {
     .get(characterList.get_characters);
   app.route('/api/characters/:id')
     .post(characterList.update_character)
-    .get(characterList.get_character);  
+    .get(characterList.get_character); 
+  app.route('/api/characters/:id/episodes')
+    .get(characterList.get_character_episodes);    
  
   // episodes routes
   app.route('/api/episodes')
     .post(episodesList.create_an_episode)
     .get(episodesList.list_episodes);
+  app.route('/api/latest')
+    .get(episodesList.list_latest);  
   app.route('/api/episodes/:episodeId')
     .get(episodesList.read_episode)
     .post(episodesList.update_episode);
   app.route('/api/episodes/:episodeId/close')
     .post(episodesList.close_episode);  
   app.route('/api/episodes/:episodeId/reopen')
-    .post(episodesList.reopen_episode);  
+    .post(episodesList.reopen_episode);    
     
   // posts routes
   app.route('/api/posts')

@@ -30,3 +30,8 @@ export async function saveCharacter(id, payload) {
       })
     return await response.json();
 }
+
+export async function getEpisodesByCharacterId(characterId) {
+    const response = await fetch('/api/characters/' + characterId + '/episodes');
+    return await response.json();
+}

@@ -26,6 +26,14 @@ exports.get_character = function(req, res) {
   });
 };
 
+exports.get_character_episodes = function(req, res) {
+  Character.getCharacterEpisodes(req.params.id, function(err, episodes) {
+    if (err)
+      res.send(err);
+    res.send(episodes);
+  });
+};
+
 exports.add_character = function(req, res) {
   var new_character = new Character(req.body);
 

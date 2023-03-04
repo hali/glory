@@ -27,7 +27,7 @@
           </p>
           <p class="col-md-6">
             <strong>Предупреждения: </strong> <badge type="secondary">
-              Скорбь
+              
             </badge>
           </p>
         </div>
@@ -239,7 +239,7 @@ export default {
             timeOfAction: "",
             world: "",
             collection: "",
-            branch_id: 6
+            branch_id: 0
           },
           posts: [],
           new_post: "",
@@ -270,7 +270,7 @@ export default {
                     this.episode.description = response[0].description;
                     this.episode.timeOfAction = (new Date(response[0].timeOfAction)).toLocaleString('en-GB', {dateStyle: 'short'});
                     this.episode.collection = response[0].branch;
-                    //this.episode.branch_id = response[0].branch_id;
+                    this.episode.branch_id = response[0].branch_id;
                     this.episode.world = response[0].world;
                     this.episode.status = response[0].status;
                     this.episode.author_id = response[0].author_id;
@@ -286,7 +286,7 @@ export default {
             let processed_text = this.new_post.replace('- ', '— ').replace('  ', ' ');
             const payload = {
                   body: processed_text,
-                  added_time: (new Date().toLocaleString('en-CA', {dateStyle: 'short'})),
+                  added_time: (new Date().toISOString().slice(0, 19).replace('T', ' ')),
                   episode_id: this.episode.id,
                   author_id: character,
               };

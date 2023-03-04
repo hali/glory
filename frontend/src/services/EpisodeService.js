@@ -47,3 +47,8 @@ export async function getEpisodes(status, branch) {
     const response = await fetch('/api/episodes?status=' + status + '&branch=' + branch);
     return await response.json();
 }
+
+export async function getLatestEpisodes() {
+    const response = await fetch('/api/latest');
+    return await response.json();
+}

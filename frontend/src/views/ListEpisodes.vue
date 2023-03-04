@@ -125,26 +125,37 @@ import BaseButton from '@/components/BaseButton';
             }
         },
         async created () {
-            const idToken = await this.$auth.tokenManager.get('idToken');
-            this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
-            this.claims.forEach((value) => {
-              if (value.key == 'email') this.email = value.value;
-            });
-            if (this.email != '')
-                getPlayer(this.email).then(response => {
-                    this.player_id = response[0].id;   
-                    getEpisodesByPlayerId(this.player_id).then(response => {
-                        this.episodes = response;
-                        this.filteredByPlayer = true;
-                    });                 
-                });    
             let uri = window.location.search.substring(1); 
             let params = new URLSearchParams(uri);
             if (params.get("branch_id")) this.branch_id = params.get("branch_id");
-            if (this.player_id == 0) getEpisodes(this.status, this.branch_id).then(response => {
-                this.episodes = response;
-                this.branch_name = this.episodes[0].branch;
-            });              
+            if (this.branch != 0) {
+                getEpisodes(this.status, this.branch_id).then(response => {
+                    this.episodes = response;
+                    this.branch_name = this.episodes[0].branch;
+                });
+            }
+            if (this.authState && this.authState.isAuthenticated && this.episodes.length == 0) {
+                const idToken = await this.$auth.tokenManager.get('idToken');
+                this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
+                this.claims.forEach((value) => {
+                  if (value.key == 'email') this.email = value.value;
+                });
+                if (this.email != '') {
+                    getPlayer(this.email).then(response => {
+                        this.player_id = response[0].id;   
+                        getEpisodesByPlayerId(this.player_id).then(response => {
+                            this.episodes = response;
+                            this.filteredByPlayer = true;
+                          }); 
+                    });
+                }               
+            }
+            if (this.episodes.length == 0) {
+                getEpisodes(this.status, this.branch_id).then(response => {
+                    this.episodes = response;
+                    this.branch_name = this.episodes[0].branch;
+                });
+            }                     
           },
         methods: {
         filterByStatus(status, status_name) {
