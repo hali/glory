@@ -62,26 +62,6 @@ Episode.setEpisodeStatus = function (ep_id, ep_status, result) {
     });           
 };
 
-Episode.listEpisodesByCharacterId = function(character_id, result) {
-	sql.query("select e.id, e.name, REPLACE(e.url, 'http:', 'https:') as \"url\", es.description as status \
-	from episode e, participants p, episode_status es where \
-	p.episode_id = e.id \
-	AND e.status_id = es.id \
-	AND p.character_id = ? \
-	AND b.id < 100 \
-	order by CONVERT(SUBSTRING_INDEX(url, '?id=', -1), UNSIGNED INTEGER)", 
-	character_id,
-	function (err, res) {
-
-    if(err) {
-        console.log("error: ", err);
-        result(null, err);
-    } else {
-		result(null, res);
-    }
-}); 
-};
-
 Episode.listEpisodes = function(status_id, branch_id, result) {
     var sqlQuery = "select e.id, e.name, e.world, es.description as status, \
     DATE_FORMAT(e.timeOfAction, '%d %M %Y') as timeOfAction\

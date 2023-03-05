@@ -107,9 +107,6 @@
                 </router-link>
               </div>
               <div class="col-md-4" align="right">
-                  <badge type="primary">
-                    {{ item.branch }}
-                  </badge>
                   <badge
                     v-if="item.status == 'Заброшен'"
                     type="danger"

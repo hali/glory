@@ -61,25 +61,23 @@ Player.getCharactersById = function (playerId, result) {
 };
 
 Player.getEpisodesById = function (playerId, result) {
-        sql.query("select e.id, e.name, e.branch_id, b.description as branch, e.status_id, es.description as status, \
+        sql.query("select e.id, e.name, e.status_id, es.description as status, \
            DATE_FORMAT(e.timeOfAction, '%d %M %Y') as timeOfAction, e.timeOfAction as time\
            from episode e, `character` c, player pl, posts p,\
-			branch b, episode_status es WHERE \
+			episode_status es WHERE \
 			pl.id = c.player_id \
 			and e.id = p.episode_id \
 			and es.id = e.status_id \
-			and b.id = e.branch_id \
 			and p.author_id = c.id \
 			and pl.id = ? \
 			UNION \
-			select e2.id, e2.name, e2.branch_id, b.description as branch, e2.status_id, es.description as status,  \
+			select e2.id, e2.name, e2.status_id, es.description as status,  \
 			DATE_FORMAT(e2.timeOfAction, '%d %M %Y') as timeOfAction, e2.timeOfAction as time\
-			from episode e2, player p2, branch b, episode_status es WHERE \
+			from episode e2, player p2, episode_status es WHERE \
 			e2.author_id = p2.id \
 			and es.id = e2.status_id \
-			and b.id = e2.branch_id \
 			and p2.id = ?\
-			order by branch, time asc",
+			order by time asc",
 	[playerId, playerId], function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
