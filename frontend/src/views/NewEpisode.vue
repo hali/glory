@@ -34,7 +34,8 @@
               v-model="branch"
               class="form-control col-md-12" 
               name="branch"
-              placeholder="Русреал-17"
+              placeholder="Пока отключено, пишите админу"
+              disabled
             >
           </div> 
           <div class="col-md-6">
