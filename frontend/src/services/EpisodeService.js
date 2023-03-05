@@ -43,6 +43,11 @@ export async function getEpisodePosts(id) {
     return await response.json();
 }
 
+export async function getEpisodeBranches(id) {
+    const response = await fetch('/api/episodes/' + id + '/branches');
+    return await response.json();
+}
+
 export async function getEpisodes(status, branch) {
     const response = await fetch('/api/episodes?status=' + status + '&branch=' + branch);
     return await response.json();

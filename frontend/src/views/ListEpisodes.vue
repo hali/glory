@@ -62,8 +62,8 @@
                   {{ item.name }} ({{ item.timeOfAction }})
                 </router-link>
                 <div>
-                  <badge type="primary" @click="filterByBranch(item.branch_id, item.branch)">
-                    {{ item.branch }}
+                  <badge v-for="branch in item.branches" :key="branch.id" type="primary" @click="filterByBranch(branch.id, branch.description)">
+                    {{ branch.description }}
                   </badge>
                   <badge
                     v-if="item.status == 'Заброшен'"
@@ -103,7 +103,7 @@
   </section>
 </template>
 <script>
-import { getEpisodes } from '../services/EpisodeService';
+import { getEpisodes, getEpisodeBranches } from '../services/EpisodeService';
 import { getEpisodesByPlayerId, getPlayer } from '../services/PlayerService';
 import BaseDropdown from '@/components/BaseDropdown';
 import BaseButton from '@/components/BaseButton';
@@ -128,13 +128,20 @@ import BaseButton from '@/components/BaseButton';
             let uri = window.location.search.substring(1); 
             let params = new URLSearchParams(uri);
             if (params.get("branch_id")) this.branch_id = params.get("branch_id");
-            if (this.branch != 0) {
+            if (this.branch_id != 0) {
                 getEpisodes(this.status, this.branch_id).then(response => {
                     this.episodes = response;
-                    this.branch_name = this.episodes[0].branch;
+                    this.episodes.forEach((ep, i) => {
+                      getEpisodeBranches(ep.id).then(branches => {
+                        this.episodes[i].branches = branches;
+                        this.episodes[0].branches.forEach(branch => {
+                          if (branch.id == this.branch_id) this.branch_name = branch.description;
+                        });
+                      });
+                    });
                 });
             }
-            if (this.authState && this.authState.isAuthenticated && this.episodes.length == 0) {
+            if (this.authState && this.authState.isAuthenticated && this.branch_id == 0) {
                 const idToken = await this.$auth.tokenManager.get('idToken');
                 this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
                 this.claims.forEach((value) => {
@@ -146,14 +153,23 @@ import BaseButton from '@/components/BaseButton';
                         getEpisodesByPlayerId(this.player_id).then(response => {
                             this.episodes = response;
                             this.filteredByPlayer = true;
+                            this.episodes.forEach((ep, i) => {
+                              getEpisodeBranches(ep.id).then(branches => {
+                                this.episodes[i].branches = branches;
+                              });
+                            });
                           }); 
                     });
                 }               
             }
-            if (this.episodes.length == 0) {
+            if (!(this.authState && this.authState.isAuthenticated) && this.branch_id == 0) {
                 getEpisodes(this.status, this.branch_id).then(response => {
                     this.episodes = response;
-                    this.branch_name = this.episodes[0].branch;
+                    this.episodes.forEach((ep, i) => {
+                              getEpisodeBranches(ep.id).then(branches => {
+                                this.episodes[i].branches = branches;
+                              });
+                            });
                 });
             }                     
           },
@@ -163,6 +179,11 @@ import BaseButton from '@/components/BaseButton';
             this.status_name = status_name;
             getEpisodes(this.status, this.branch_id).then(response => {
                 this.episodes = response;
+                this.episodes.forEach((ep, i) => {
+                              getEpisodeBranches(ep.id).then(branches => {
+                                this.episodes[i].branches = branches;
+                              });
+                            });
             }); 
         },
         filterByBranch(branch_id, branch_name) {
@@ -170,18 +191,33 @@ import BaseButton from '@/components/BaseButton';
             this.branch_name = branch_name;
             getEpisodes(this.status, this.branch_id).then(response => {
                 this.episodes = response;
+                this.episodes.forEach((ep, i) => {
+                              getEpisodeBranches(ep.id).then(branches => {
+                                this.episodes[i].branches = branches;
+                              });
+                            });
             }); 
         },
         filterByPlayer() {
             getEpisodesByPlayerId(this.player_id).then(response => {
                 this.episodes = response;
                 this.filteredByPlayer = true;
+                this.episodes.forEach((ep, i) => {
+                              getEpisodeBranches(ep.id).then(branches => {
+                                this.episodes[i].branches = branches;
+                              });
+                            });
             });
         },
         clearPlayerFilter() {
           this.filteredByPlayer = false;
           getEpisodes(this.status, this.branch_id).then(response => {
                 this.episodes = response;
+                this.episodes.forEach((ep, i) => {
+                              getEpisodeBranches(ep.id).then(branches => {
+                                this.episodes[i].branches = branches;
+                              });
+                            });
             });
         }
         },

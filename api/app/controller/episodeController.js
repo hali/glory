@@ -46,6 +46,14 @@ exports.read_episode = function(req, res) {
   });
 }
 
+exports.get_branches = function(req, res) {
+  Episode.getBranches(req.params.episodeId, function(err, posts) {
+    if (err)
+      res.send(err);  
+    res.json(posts);
+  });
+}
+
 exports.close_episode = function(req, res) {
   Episode.setEpisodeStatus(req.params.episodeId, 2, function(err, response) {
     if (err)

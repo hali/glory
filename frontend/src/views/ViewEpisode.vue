@@ -19,11 +19,12 @@
         </div>
         <div class="row text-white">
           <p class="col-md-6">
-            <strong>Коллекции: </strong> <badge type="secondary">
-            <router-link :to="{name: 'episodes', query: {branch_id: this.episode.branch_id}}">
-              {{ episode.collection }}
-              </router-link>
-            </badge>
+            <strong>Коллекции: </strong>
+              <badge  v-for="item in branches" :key="item.id" type="secondary">
+              <router-link :to="{name: 'episodes', query: {branch_id: item.id}}">
+                {{ item.description }}
+                </router-link>
+              </badge>
           </p>
           <p class="col-md-6">
             <strong>Предупреждения: </strong> <badge type="secondary">
@@ -219,7 +220,7 @@
 </template>
 <script>
 import "flatpickr/dist/flatpickr.css";
-import { viewEpisode, getEpisodePosts, closeEpisode, reopenEpisode } from '../services/EpisodeService';
+import { viewEpisode, getEpisodePosts, closeEpisode, reopenEpisode, getEpisodeBranches } from '../services/EpisodeService';
 import { addPost, deletePost, addComment } from '../services/PostService';
 import { getCharacters } from '../services/CharacterService';
 import { getPlayer } from '../services/PlayerService';
@@ -237,11 +238,10 @@ export default {
             name: "",
             description: "",
             timeOfAction: "",
-            world: "",
-            collection: "",
-            branch_id: 0
+            world: ""
           },
           posts: [],
+          branches: [],
           new_post: "",
           current_character: {id: 0, name: "ВЫБЕРИ ПЕРСОНАЖА"},
           characters: [],
@@ -278,6 +278,9 @@ export default {
                 getEpisodePosts(this.episode.id).then(response => {
                     this.posts = response;
                     this.episode_characters = [...new UniqueSet(response.map(a => ({name: a.name, id: a.char_id})))];
+                });
+                getEpisodeBranches(this.episode.id).then(response => {
+                    this.branches = response;
                 });
             });
         },

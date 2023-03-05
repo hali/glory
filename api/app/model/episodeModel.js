@@ -14,11 +14,11 @@ var Episode = function(episode){
 };
 
 Episode.createEpisode = function (ep, result) {    	
-	var sqlstring = "REPLACE INTO episode (name, description, branch_id, status_id, world, timeOfAction, author_id) \
-    VALUES (?, ?, ?, ?, ?, ?, ?);";
+	var sqlstring = "REPLACE INTO episode (name, description, status_id, world, timeOfAction, author_id) \
+    VALUES (?, ?, ?, ?, ?, ?);";
     
     sql.query(sqlstring, 
-	[ep.name, ep.description, ep.branch_id, ep.status_id, ep.world, ep.time_of_action, ep.author_id],
+	[ep.name, ep.description, ep.status_id, ep.world, ep.time_of_action, ep.author_id],
 	function (err, res) {            
         if(err) {
             console.log("error: ", err);
@@ -63,11 +63,10 @@ Episode.setEpisodeStatus = function (ep_id, ep_status, result) {
 };
 
 Episode.listEpisodesByCharacterId = function(character_id, result) {
-	sql.query("select e.id, e.name, REPLACE(e.url, 'http:', 'https:') as \"url\", es.description as status, b.description as branch \
-	from episode e, participants p, episode_status es, branch b where \
+	sql.query("select e.id, e.name, REPLACE(e.url, 'http:', 'https:') as \"url\", es.description as status \
+	from episode e, participants p, episode_status es where \
 	p.episode_id = e.id \
 	AND e.status_id = es.id \
-	AND b.id = e.branch_id \
 	AND p.character_id = ? \
 	AND b.id < 100 \
 	order by CONVERT(SUBSTRING_INDEX(url, '?id=', -1), UNSIGNED INTEGER)", 
@@ -84,16 +83,16 @@ Episode.listEpisodesByCharacterId = function(character_id, result) {
 };
 
 Episode.listEpisodes = function(status_id, branch_id, result) {
-    var sqlQuery = "select e.id, e.name, e.world, es.description as status, b.description as branch, e.branch_id, \
+    var sqlQuery = "select e.id, e.name, e.world, es.description as status, \
     DATE_FORMAT(e.timeOfAction, '%d %M %Y') as timeOfAction\
-	from episode e, episode_status es, branch b\
-	WHERE e.status_id = es.id \
-	AND b.id = e.branch_id";
+	from episode e, episode_status es";
+	if (branch_id != 0) sqlQuery += ", episode_branch eb"
+	sqlQuery += " WHERE e.status_id = es.id";
 	if (status_id != 0) sqlQuery += " AND e.status_id = ?"
 	 else sqlQuery += " AND 0 = ?";
-	if (branch_id != 0) sqlQuery += " AND e.branch_id = ?";
+	if (branch_id != 0) sqlQuery += " AND eb.episode_id = e.id AND eb.branch_id = ?";
 	 else sqlQuery += " AND 0 = ?";
-	sqlQuery += " order by branch, e.timeOfAction asc";
+	sqlQuery += " order by e.timeOfAction asc";
 	sql.query(sqlQuery, 
 	[status_id, branch_id],
 	function (err, res) {
@@ -126,12 +125,11 @@ Episode.listLatest = function(result) {
 };
 
 Episode.getEpisode = function(episode_id, result) {
-	sql.query("select e.name, e.description, e.world, e.timeOfAction, b.description as 'branch', es.description as 'status', \
-	e.author_id, e.branch_id \
-	from episode e, branch b, episode_status es, player pl \
+	sql.query("select e.name, e.description, e.world, e.timeOfAction, es.description as 'status', \
+	e.author_id \
+	from episode e, episode_status es, player pl \
 	where e.id = ? \
 	and e.status_id = es.id \
-	and e.branch_id = b.id \
 	and e.author_id = pl.id",
 	episode_id,
 	function (err, res) {
@@ -143,4 +141,19 @@ Episode.getEpisode = function(episode_id, result) {
 		}	
 	});
 };
+
+Episode.getBranches = function(episode_id, result) {
+	sql.query("select b.id, b.description from episode_branch eb, branch b\
+	where b.id = eb.branch_id and eb.episode_id = ?",
+	episode_id,
+	function (err, res) {
+		if (err) {
+			console.log("error: ", err);
+        	result(null, err);
+    	} else {
+			result(null, res);
+		}	
+	});
+};
+
 module.exports= Episode;

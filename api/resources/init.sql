@@ -100,6 +100,14 @@ KEY `fkIdx_398` (`author_id`),
 CONSTRAINT `FK_398` FOREIGN KEY `fkIdx_398` (`author_id`) REFERENCES `player` (`id`)
 );
 
+CREATE TABLE `episode_branch`
+(
+ `episode_id`          int NOT NULL,
+ `branch_id` 		   int NOT NULL ,
+
+PRIMARY KEY (episode_id, branch_id)
+);
+
 
 CREATE TABLE `participants`
 (
