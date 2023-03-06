@@ -13,7 +13,7 @@
     <div class="container">
       <div class="row text-white">
         <h1 class="display-3  text-white">
-          Эпизоды
+          Эпизоды ({{ episodes.length }})
         </h1>
       </div>
       <base-dropdown title="Статус">

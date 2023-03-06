@@ -169,7 +169,7 @@
               id="new_post"
               v-model="new_post"
               class="form-control form-control-alternative"
-              rows="3" 
+              rows="10" 
               placeholder="Пост писать сюда"
             />
           </div>

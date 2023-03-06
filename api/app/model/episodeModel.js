@@ -91,7 +91,7 @@ Episode.listLatest = function(result) {
     from episode e, posts p, `character` c  \
     where e.id = p.episode_id\
     and p.author_id = c.id \
-    order by p.added_time desc limit 10";
+    order by p.added_time desc limit 20";
 	sql.query(sqlQuery, 
 	function (err, res) {
 

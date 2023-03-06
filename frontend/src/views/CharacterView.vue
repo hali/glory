@@ -82,7 +82,7 @@
             <flat-picker
               v-model="dob"
               slot-scope="{focus, blur}"
-              :config="{allowInput: true}"
+              :config="{allowInput: true, dateFormat: 'Y-m-d'}"
               class="form-control datepicker"
               :disabled="player_id !== character_player_id"
               @on-open="focus"
@@ -140,7 +140,7 @@
         <div class="col-md-12">
           <card>
             <h6 class="text-primary text-uppercase">
-              Эпизоды
+              Эпизоды ({{ episodes.length }})
             </h6>
             <div v-if="episodes.length == 0">
               Нет эпизодов с этим персонажем :-(

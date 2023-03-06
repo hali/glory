@@ -15,7 +15,16 @@
         <i class="ni ni-trophy" /> Glory
       </router-link>
 
-      <ul class="navbar-nav navbar-nav-hover align-items-lg-left">       
+      <ul class="navbar-nav navbar-nav-hover align-items-lg-left">   
+        <li class="nav-item" >
+          <router-link
+            to="/faq"
+            class="nav-link"
+            @click="closeMenu"
+          >
+            F.A.Q./Правила
+          </router-link>
+        </li>      
         <li class="nav-item" >
           <router-link
             to="/newepisode"
@@ -82,7 +91,16 @@
         <i class="ni ni-trophy" /> Glory
       </router-link>
 
-      <ul class="navbar-nav navbar-nav-hover align-items-lg-left">       
+      <ul class="navbar-nav navbar-nav-hover align-items-lg-left">
+        <li class="nav-item" >
+          <router-link
+            to="/faq"
+            class="nav-link"
+            @click="closeMenu"
+          >
+            F.A.Q./Правила
+          </router-link>
+        </li>       
         <li class="nav-item">
           <router-link
             to="/episodes"

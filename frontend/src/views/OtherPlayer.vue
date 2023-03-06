@@ -55,7 +55,7 @@
         <div class="col-md-12">
           <card>
             <h6 class="text-primary text-uppercase">
-              Персонажи
+              Персонажи ({{ characters.length }})
             </h6>
             <div v-if="characters.length == 0">
               Добавьте персонажей!
@@ -87,7 +87,7 @@
         <div class="col-md-12">
           <card>
             <h6 class="text-primary text-uppercase">
-              Эпизоды
+              Эпизоды ({{ episodes.length }})
             </h6>
             <div v-if="episodes.length == 0">
               Нет эпизодов у этого игрока :-(

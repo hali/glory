@@ -14,6 +14,7 @@ import Profile from './views/Profile';
 import CharacterView from './views/CharacterView';
 import ListCharacters from './views/ListCharacters';
 import MyFeedback from './views/MyFeedback';
+import FAQPage from './views/FAQ';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -23,6 +24,15 @@ const router = createRouter({
       name: "home",
       components: {
         default: Home,
+        footer: AppFooter,
+        header: AppHeader
+      }
+    },
+    {
+      path: "/faq",
+      name: "faq",
+      components: {
+        default: FAQPage,
         footer: AppFooter,
         header: AppHeader
       }

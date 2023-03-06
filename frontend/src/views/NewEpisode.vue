@@ -59,7 +59,7 @@
               <flat-picker
                 v-model="dates.simple"
                 slot-scope="{focus, blur}"
-                :config="{allowInput: true}"
+                :config="{allowInput: true, dateFormat: 'Y-m-d'}"
                 class="form-control datepicker"
                 @on-open="focus"
                 @on-close="blur"

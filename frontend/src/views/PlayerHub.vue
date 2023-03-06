@@ -169,7 +169,7 @@
                     <flat-picker
                       v-model="newCharacter.dob"
                       slot-scope="{focus, blur}"
-                      :config="{allowInput: true}"
+                      :config="{allowInput: true, dateFormat: 'Y-m-d'}"
                       class="form-control datepicker"
                       @on-open="focus"
                       @on-close="blur"
