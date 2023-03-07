@@ -157,7 +157,7 @@ export default {
         const payload = {
               name: this.name,
               description: processed_description,
-              time_of_action: this.dates.simple,
+              time_of_action: (new Date(this.dates.simple)).toISOString().split('T')[0],
               status_id: status,
               author_id: this.author_id,
               branch_id: this.branch_id,

@@ -27,13 +27,16 @@ Player.addPlayer = function (player, result) {
 };
 
 Player.getDebts = function (result) {
-        sql.query("select max(p2.id) as post_id, e.name, e.id as ep_id, p.id as player_id  \
-        from episode e, player p, posts p2, `character` c  \
-        where p2.episode_id = e.id \
-        and p2.author_id = c.id \
-        and c.player_id = p.id \
+        sql.query("select subquery.post_id, subquery.name, subquery.ep_id, pl.id as player_id from\
+        (select max(p2.id) as post_id, e.name, e.id as ep_id \
+        from episode e, posts p2 \
+        where p2.episode_id = e.id\
         and e.status_id = 3\
-        group by e.name, p.id, e.id order by e.name;", 
+        group by e.name, e.id order by e.name) as subquery, \
+        player pl, `character` ch, posts p2 \
+        where ch.player_id = pl.id \
+       and p2.id = subquery.post_id \
+       and p2.author_id = ch.id", 
 	function (err, res) {             
                 if(err) {
                     console.log("error: ", err);

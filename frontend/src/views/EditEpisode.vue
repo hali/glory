@@ -159,7 +159,7 @@ export default {
             viewEpisode(this.episode.id).then(response => {
                 this.episode.name = response[0].name;
                 this.episode.description = response[0].description;
-                this.episode.timeOfAction = (new Date(response[0].timeOfAction)).toLocaleString('en-CA', {dateStyle: 'short'});
+                this.episode.timeOfAction = (new Date(response[0].timeOfAction)).toISOString().split('T')[0];
                 this.episode.collection = response[0].branch;
                 this.episode.world = response[0].world;
                 this.episode.status = response[0].status;
@@ -172,7 +172,7 @@ export default {
         const payload = {
               name: this.episode.name,
               description: processed_description,
-              time_of_action: this.episode.timeOfAction,
+              time_of_action: (new Date(this.episode.timeOfAction)).toISOString().split('T')[0],
               author_id: this.episode.author_id,
               //branch_id: this.episode.collection,
               world: this.episode.world

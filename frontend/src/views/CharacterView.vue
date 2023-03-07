@@ -236,7 +236,7 @@ export default {
     });
     getCharacter(this.id).then(response => {
         this.name = response[0].name;
-        this.dob = response[0].dob;
+        this.dob = (new Date(response[0].dob)).toISOString().split('T')[0];
         this.info = response[0].info;
         this.status = response[0].status;
         this.img = response[0].img;
@@ -252,7 +252,7 @@ export default {
     save() {
       const payload = {
           name: this.name,
-          dob: this.dob,
+          dob: (new Date(this.dob)).toISOString().split('T')[0],
           info: this.info,
           img: this.img,
           status: this.status

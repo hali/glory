@@ -268,7 +268,7 @@ export default {
                 viewEpisode(this.episode.id).then(response => {
                     this.episode.name = response[0].name;
                     this.episode.description = response[0].description;
-                    this.episode.timeOfAction = (new Date(response[0].timeOfAction)).toLocaleString('en-GB', {dateStyle: 'short'});
+                    this.episode.timeOfAction = (new Date(response[0].timeOfAction)).toISOString().split('T')[0];
                     this.episode.collection = response[0].branch;
                     this.episode.branch_id = response[0].branch_id;
                     this.episode.world = response[0].world;
