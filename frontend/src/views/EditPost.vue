@@ -96,7 +96,7 @@ export default {
                 getCharacter(response[0].author_id).then(response => {
                   this.post.author_id = response[0].player_id;
                 });
-                
+                document.title = "Glory - Редактировать пост";
             });
         },
     methods: {

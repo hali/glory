@@ -129,6 +129,7 @@ export default {
   },
   async created () {
     const idToken = await this.$auth.tokenManager.get('idToken');
+    document.title = "Glory - Фидбек";
     this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
     this.claims.forEach((value) => {
       if (value.key == 'email') this.email = value.value;

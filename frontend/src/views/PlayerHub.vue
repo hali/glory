@@ -266,6 +266,7 @@ export default {
     }
   },
   async created () {
+    document.title = "Glory - Мой портал";
     const idToken = await this.$auth.tokenManager.get('idToken');
     this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }))
     this.claims.forEach((value) => {

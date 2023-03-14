@@ -169,6 +169,7 @@ export default {
                 this.episode.world = response[0].world;
                 this.episode.status = response[0].status;
                 this.episode.author_id = response[0].author_id;
+                document.title = "Glory - Редактировать - " + response[0].name;
             });
         },
     methods: {

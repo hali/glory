@@ -52,7 +52,8 @@ export default {
   mounted() {
     getAllCharacters().then(characters => {
         this.characters = characters;
-    });    
+    });
+    document.title = "Glory - Список персонажей";    
   }
 }
 </script>

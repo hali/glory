@@ -80,7 +80,10 @@
 <script>
 
 export default {
-    name: "FAQPage" 
+    name: "FAQPage",
+    mounted() {
+        document.title = "Glory - F.A.Q.";
+    }
 };
 </script>
 <style>

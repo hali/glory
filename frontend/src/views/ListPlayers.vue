@@ -52,7 +52,8 @@ export default {
   mounted() {
     getAllPlayers().then(players => {
         this.players = players;
-    });    
+    });
+    document.title = "Glory - Игроки";    
   }
 }
 </script>

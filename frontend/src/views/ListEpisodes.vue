@@ -168,6 +168,7 @@ import BaseButton from '@/components/BaseButton';
         async created () {
             let uri = window.location.search.substring(1); 
             let params = new URLSearchParams(uri);
+            document.title = "Glory - Эпизоды";
             if (params.get("branch_id")) this.branch_id = params.get("branch_id");
             if (this.branch_id != 0) {
                 getEpisodes(this.status, this.branch_id).then(response => {

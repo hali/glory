@@ -176,6 +176,7 @@ export default {
         this.info = response[0].info;
         this.post = response[0].post;
         this.name = response[0].nickname;
+        document.title = "Glory - " + response[0].nickname;
         getCharacters(this.id).then(characters => {
             this.characters = characters;
         });

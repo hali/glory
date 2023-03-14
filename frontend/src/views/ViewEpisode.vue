@@ -105,11 +105,11 @@
           <div
             class="col-md-6"
             align="right"
-            @click="scrollToBottom()"
           >
             <base-button
               v-if="posts.length > 2"
               type="primary"
+              @click.prevent="scrollToBottom()"
             >
               ВНИЗ
             </base-button>
@@ -200,9 +200,8 @@
             v-if="posts.length > 2"
             class="col-md-12"
             align="right"
-            @click="scrollToTop()"
           >
-            <base-button type="primary">
+            <base-button type="primary" @click.prevent="scrollToTop()">
               ВВЕРХ
             </base-button>
             <p />
@@ -322,6 +321,7 @@ export default {
                     this.episode.world = response[0].world;
                     this.episode.status = response[0].status;
                     this.episode.author_id = response[0].author_id;
+                    document.title = response[0].name;
                 });
                 getEpisodePosts(this.episode.id).then(response => {
                     this.posts = response;

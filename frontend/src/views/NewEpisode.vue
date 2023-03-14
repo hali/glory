@@ -150,6 +150,7 @@ export default {
 			getPlayer(email).then(response => {
 				this.author_id = response[0].id;
 			});
+			document.title = "Glory - Открыть эпизод";
 		},
     methods: {
       addEpisode(status) {

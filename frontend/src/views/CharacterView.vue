@@ -266,6 +266,7 @@ export default {
         getPlayerById(this.character_player_id).then(response => {
           this.character_player_name = response[0].email;
         });
+        document.title = "Glory - " + response[0].name;
         }
     );
     getEpisodesByCharacterId(this.id).then(response => this.episodes = response);

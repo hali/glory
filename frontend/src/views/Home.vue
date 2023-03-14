@@ -208,7 +208,8 @@ export default ({
             this.claims.forEach((value) => {
               if (value.key == 'email') this.email = value.value;
             });
-            getLatestEpisodes().then(response => this.episodes = response);             
+            getLatestEpisodes().then(response => this.episodes = response);  
+            document.title = "Glory";           
           },
   methods: {
     async login () {
