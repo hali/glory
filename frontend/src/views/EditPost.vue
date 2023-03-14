@@ -10,7 +10,7 @@
       <span />
       <span />
     </div>
-    <div v-if="this.post.author_id == this.current_user_id">
+    <div v-if="post.author_id == current_user_id">
       <div class="container">
         <div class="row text-white">
           <p class="col-md-12">
@@ -36,10 +36,10 @@
             class="col-md-6"
             align="left"
           >  
-            <span  @click="$router.push({ name: 'viewepisode', params: { id: this.post.episode_id } })">
-            <base-button type="secondary">
-              Отмена
-            </base-button></span>
+            <span @click="$router.push({ name: 'viewepisode', params: { id: post.episode_id } })">
+              <base-button type="secondary">
+                Отмена
+              </base-button></span>
           </div>
           <div
             class="col-md-6"
@@ -52,7 +52,12 @@
         </div>
       </div>
     </div>
-    <div class="container" v-if="this.post.author_id != this.current_user_id"><card>Нельзя редактировать чужие посты!</card></div>
+    <div
+      v-if="post.author_id != current_user_id"
+      class="container"
+    >
+      <card>Нельзя редактировать чужие посты!</card>
+    </div>
   </section>
 </template>
 <script>

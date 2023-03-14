@@ -10,7 +10,7 @@
       <span />
       <span />
     </div>
-    <div v-if="this.episode.author_id == this.current_user_id">
+    <div v-if="episode.author_id == current_user_id">
       <div class="container">
         <div class="row text-white">
           <p class="col-md-12">
@@ -59,7 +59,7 @@
               <flat-picker
                 v-model="episode.timeOfAction"
                 slot-scope="{focus, blur}"
-                :config="{allowInput: true, dateFormat: 'Y-m-d'}"
+                :config="{allowInput: true, dateFormat: 'Y-m-d', disableMobile: true}"
                 class="form-control datepicker"
                 @on-open="focus"
                 @on-close="blur"
@@ -101,10 +101,10 @@
             class="col-md-6"
             align="left"
           >  
-            <span  @click="$router.push({ name: 'viewepisode', params: { id: this.episode.id } })">
-            <base-button type="secondary">
-              Отмена
-            </base-button></span>
+            <span @click="$router.push({ name: 'viewepisode', params: { id: episode.id } })">
+              <base-button type="secondary">
+                Отмена
+              </base-button></span>
           </div>
           <div
             class="col-md-6"
@@ -117,7 +117,12 @@
         </div>
       </div>
     </div>
-    <div class="container" v-if="this.episode.author_id != this.current_user_id"><card>Нельзя редактировать чужие эпизоды!</card></div>
+    <div
+      v-if="episode.author_id != current_user_id"
+      class="container"
+    >
+      <card>Нельзя редактировать чужие эпизоды!</card>
+    </div>
   </section>
 </template>
 <script>

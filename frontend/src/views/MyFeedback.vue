@@ -10,8 +10,11 @@
       <span />
       <span />
     </div>
-    <div class="container text-white" align="center">
-      <div class="row text-white" >
+    <div
+      class="container text-white"
+      align="center"
+    >
+      <div class="row text-white">
         <h1 class="display-3  text-white">
           {{ player_name }}
         </h1>
@@ -20,9 +23,11 @@
     
     <div class="container">
       <card>
-      <h6 class="text-primary text-uppercase">Фидбек, который оставили мне</h6>
+        <h6 class="text-primary text-uppercase">
+          Фидбек, который оставили мне
+        </h6>
         <div v-if="feedback.length == 0">
-         У вас пока нет фидбека. :-(
+          У вас пока нет фидбека. :-(
         </div>
         <table class="table table-bordered">
           <thead>
@@ -41,23 +46,33 @@
               </td>
               <td> {{ item.nickname }} </td>
               <td> {{ item.added_time }} </td>
-              <td> <router-link :to="{
+              <td>
+                <router-link
+                  :to="{
                     name: 'viewepisode', 
-                    params: { id:item.episode_id }                              
-                  }">
+                    params: { id:item.episode_id },
+                    hash: '#' + item.post_id                             
+                  }"
+                >
                   {{ item.name }}
-                </router-link>  </td>
+                </router-link>
+              </td>
             </tr>
           </tbody>
         </table>    
       </card>
-      <p> </p>
+      <p />
       <card>
-      <h6 class="text-primary text-uppercase">Мои комментарии</h6>
+        <h6 class="text-primary text-uppercase">
+          Мои комментарии
+        </h6>
         <div v-if="comments.length == 0">
-         Додайте людям фидбека, и он здесь появится!
+          Додайте людям фидбека, и он здесь появится!
         </div>
-        <table v-if="comments.length > 0" class="table table-bordered">
+        <table
+          v-if="comments.length > 0"
+          class="table table-bordered"
+        >
           <thead>
             <th>Текст</th>
             <th>Кому</th>
@@ -67,7 +82,8 @@
           <tbody>
             <tr
               v-for="item in comments"
-              :key="item.id"> 
+              :key="item.id"
+            > 
               <td>
                 {{ item.body }}
               </td>
@@ -78,10 +94,13 @@
                 {{ item.added_time }}
               </td>
               <td>
-                <router-link :to="{
+                <router-link
+                  :to="{
                     name: 'viewepisode', 
-                    params: { id:item.ep_id }                              
-                  }">
+                    params: { id:item.ep_id },
+                    hash: '#' + item.post_id                              
+                  }"
+                >
                   {{ item.ep_name }}
                 </router-link>  
               </td>

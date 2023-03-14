@@ -17,34 +17,70 @@
         </h1>
       </div>
       <base-dropdown title="Статус">
-          <base-button slot="title" type="primary" class="dropdown-toggle" >
-            {{ status_name }}
-          </base-button>
-            <div><a class="dropdown-item" @click="filterByStatus(0, 'Все подряд')">
-              Все подряд
-            </a></div>
-            <div><a class="dropdown-item" @click="filterByStatus(3, 'В процессе')">
-              В процессе
-            </a></div>
-            <div><a class="dropdown-item" @click="filterByStatus(2, 'Завершен')">
-              Завершен
-            </a></div>
-            <div><a class="dropdown-item" @click="filterByStatus(4, 'Черновик')">
-              Черновик
-            </a></div>
-        </base-dropdown>
-        <badge v-if="this.branch_id != 0" type="primary" @click="filterByBranch(0)">
-            Сбросить фильтр по коллекции "{{ this.branch_name }}"
-        </badge>
-        <badge v-if="this.player_id != 0 && this.filteredByPlayer == false" type="primary" @click="filterByPlayer">
-            Показать мои эпизоды
-        </badge>
-        <badge v-if="this.filteredByPlayer" type="primary" @click="clearPlayerFilter">
-            Сбросить фильтр по моим эпизодам
-        </badge>
+        <base-button
+          slot="title"
+          type="primary"
+          class="dropdown-toggle"
+        >
+          {{ status_name }}
+        </base-button>
+        <div>
+          <a
+            class="dropdown-item"
+            @click="filterByStatus(0, 'Все подряд')"
+          >
+            Все подряд
+          </a>
+        </div>
+        <div>
+          <a
+            class="dropdown-item"
+            @click="filterByStatus(3, 'В процессе')"
+          >
+            В процессе
+          </a>
+        </div>
+        <div>
+          <a
+            class="dropdown-item"
+            @click="filterByStatus(2, 'Завершен')"
+          >
+            Завершен
+          </a>
+        </div>
+        <div>
+          <a
+            class="dropdown-item"
+            @click="filterByStatus(4, 'Черновик')"
+          >
+            Черновик
+          </a>
+        </div>
+      </base-dropdown>
+      <badge
+        v-if="branch_id != 0"
+        type="primary"
+        @click="filterByBranch(0)"
+      >
+        Сбросить фильтр по коллекции "{{ branch_name }}"
+      </badge>
+      <badge
+        v-if="player_id != 0 && filteredByPlayer == false"
+        type="primary"
+        @click="filterByPlayer"
+      >
+        Показать мои эпизоды
+      </badge>
+      <badge
+        v-if="filteredByPlayer"
+        type="primary"
+        @click="clearPlayerFilter"
+      >
+        Сбросить фильтр по моим эпизодам
+      </badge>
       <card>
         <div v-if="episodes.length == 0">
-         У вас пока нет эпизодов. :-( Почитайте чужие и присоединяйтесь к движухе!
+          У вас пока нет эпизодов. :-( Почитайте чужие и присоединяйтесь к движухе!
         </div>
         <table class="table table-bordered">
           <tbody>
@@ -62,7 +98,12 @@
                   {{ item.name }} ({{ item.timeOfAction }})
                 </router-link>
                 <div>
-                  <badge v-for="branch in item.branches" :key="branch.id" type="primary" @click="filterByBranch(branch.id, branch.description)">
+                  <badge
+                    v-for="branch in item.branches"
+                    :key="branch.id"
+                    type="primary"
+                    @click="filterByBranch(branch.id, branch.description)"
+                  >
                     {{ branch.description }}
                   </badge>
                   <badge

@@ -10,19 +10,22 @@
       <span />
       <span />
     </div>
-    <div class="container text-white" align="center">
-                       <div class="row text-white" >
+    <div
+      class="container text-white"
+      align="center"
+    >
+      <div class="row text-white">
         <h1 class="display-3  text-white">
           {{ name }}
         </h1>
       </div>
-                </div>
+    </div>
     <div class="container card-profile-image">
-                  <img
-                    :src="`${img}`"
-                    class="rounded img-fluid"
-                  >
-                </div>
+      <img
+        :src="`${img}`"
+        class="rounded img-fluid"
+      >
+    </div>
     <div class="container">
       <div
         v-if="player_id == character_player_id"
@@ -82,7 +85,7 @@
             <flat-picker
               v-model="dob"
               slot-scope="{focus, blur}"
-              :config="{allowInput: true, dateFormat: 'Y-m-d'}"
+              :config="{allowInput: true, dateFormat: 'Y-m-d', disableMobile: true}"
               class="form-control datepicker"
               :disabled="player_id !== character_player_id"
               @on-open="focus"
@@ -96,7 +99,10 @@
           Анкета/Информация о персонаже:
         </p>
       </div>
-      <div v-if="player_id == character_player_id" class="row">  
+      <div
+        v-if="player_id == character_player_id"
+        class="row"
+      >  
         <div class="col-md-12">
           <textarea
             id="exampleFormControlTextarea1"
@@ -107,12 +113,18 @@
           />
         </div>
       </div>
-      <card v-if="player_id != character_player_id" >
-      <div style="white-space:pre-wrap; text-justify: auto;">{{ info }}</div></card>
+      <card v-if="player_id != character_player_id">
+        <div style="white-space:pre-wrap; text-justify: auto;">
+          {{ info }}
+        </div>
+      </card>
       <div class="row">
         <p />
       </div>
-      <div class="row" v-if="player_id == character_player_id">
+      <div
+        v-if="player_id == character_player_id"
+        class="row"
+      >
         <div
           class="col-md-12"
           align="right"
@@ -122,16 +134,23 @@
           </base-button></span>
         </div>
       </div>
-      <div class="row" v-if="player_id != character_player_id">
-          <div
-              class="col-md-12"
-              align="right"
-            >  
-              <router-link :to="{
-                    name: 'viewotherplayer', 
-                    params: { id: character_player_id }                              
-                  }">Игрок</router-link>
-            </div>
+      <div
+        v-if="player_id != character_player_id"
+        class="row"
+      >
+        <div
+          class="col-md-12"
+          align="right"
+        >  
+          <router-link
+            :to="{
+              name: 'viewotherplayer', 
+              params: { id: character_player_id }                              
+            }"
+          >
+            Игрок
+          </router-link>
+        </div>
       </div>
     </div>
     <p />
@@ -145,9 +164,10 @@
             <div v-if="episodes.length == 0">
               Нет эпизодов с этим персонажем :-(
             </div>
-            <div class="row"
+            <div
               v-for="item in episodes"
               :key="item.id"
+              class="row"
             >
               <div class="col-md-8">
                 <router-link
@@ -159,41 +179,43 @@
                   {{ item.name }}
                 </router-link>
               </div>
-              <div class="col-md-4" align="right">
-                  <badge
-                    v-if="item.status == 'Заброшен'"
-                    type="danger"
-                    @click="filterByStatus(1, 'Заброшен')"
-                  >
-                    {{ item.status }}
-                  </badge>
-                  <badge
-                    v-if="item.status == 'Завершен'"
-                    type="success"
-                    @click="filterByStatus(2, 'Завершен')"
-                  >
-                    {{ item.status }}
-                  </badge>
-                  <badge
-                    v-if="item.status == 'В процессе'"
-                    type="default"
-                    @click="filterByStatus(3, 'В процессе')"
-                  >
-                    {{ item.status }}
-                  </badge>
-                  <badge
-                    v-if="item.status == 'Черновик'"
-                    type="info"
-                    @click="filterByStatus(4, 'Черновик')"
-                  >
-                    {{ item.status }}
-                  </badge>
-                </div>
+              <div
+                class="col-md-4"
+                align="right"
+              >
+                <badge
+                  v-if="item.status == 'Заброшен'"
+                  type="danger"
+                  @click="filterByStatus(1, 'Заброшен')"
+                >
+                  {{ item.status }}
+                </badge>
+                <badge
+                  v-if="item.status == 'Завершен'"
+                  type="success"
+                  @click="filterByStatus(2, 'Завершен')"
+                >
+                  {{ item.status }}
+                </badge>
+                <badge
+                  v-if="item.status == 'В процессе'"
+                  type="default"
+                  @click="filterByStatus(3, 'В процессе')"
+                >
+                  {{ item.status }}
+                </badge>
+                <badge
+                  v-if="item.status == 'Черновик'"
+                  type="info"
+                  @click="filterByStatus(4, 'Черновик')"
+                >
+                  {{ item.status }}
+                </badge>
+              </div>
             </div>
           </card>
         </div>
         <p />
-        
       </div>
     </div>
   </section>

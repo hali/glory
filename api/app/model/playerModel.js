@@ -158,7 +158,7 @@ Player.getMyCommentsById = function (playerId, result) {
 
 Player.getMyFeedbackById = function (playerId, result) {
         sql.query("select c.id, p.episode_id, e.name, c.author_id, pl.nickname, c.body, \
-            DATE_FORMAT(c.added_time, '%d %M %Y %H:%i') as added_time \
+            DATE_FORMAT(c.added_time, '%d %M %Y %H:%i') as added_time, p.id as post_id \
 			from comments c, player pl, posts p, `character` c2, player p2, episode e  \
 			where c.author_id = pl.id\
 			and c.post_id = p.id\
@@ -166,7 +166,7 @@ Player.getMyFeedbackById = function (playerId, result) {
 			and c2.player_id = p2.id \
 			and e.id = p.episode_id\
 			and p2.id = ?\
-			order by added_time desc",
+			order by c.added_time desc",
 	[playerId], function (err, res) {             
                 if(err) {
                     console.log("error: ", err);

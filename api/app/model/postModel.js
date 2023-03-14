@@ -27,7 +27,9 @@ Post.createPost = function (post, result) {
 };
 
 Post.listPostsByEpisodeId = function(episode_id, result) {
-	sql.query("select p.id, p.body, c.id as char_id, pl.id as player_id, c.name, c.status, TIMESTAMPDIFF(YEAR, c.dob, e.timeOfAction) as age, c.img \
+	sql.query("select p.id, p.body, c.id as char_id, pl.id as player_id, c.name, c.status, \
+	            TIMESTAMPDIFF(YEAR, c.dob, e.timeOfAction) as age, c.img, \
+	            DATE_FORMAT(p.added_time, '%d %M %Y %H:%i') as added_time\
 				from posts p, `character` c, episode e, player pl  \
 				where p.author_id = c.id  \
 				and p.episode_id = e.id \

@@ -18,36 +18,50 @@
         </h1>
       </div>
       <div class="container">
-      <div class="row">
-       <div class="col-md-6">
-        <card>
-          <h6 class="text-primary text-uppercase">Жду ответа:</h6>
-          <div v-for="item in waitingFor" :key="item.id"> <router-link
+        <div class="row">
+          <div class="col-md-6">
+            <card>
+              <h6 class="text-primary text-uppercase">
+                Жду ответа:
+              </h6>
+              <div
+                v-for="item in waitingFor"
+                :key="item.id"
+              >
+                <router-link
                   :to="{
                     name: 'viewepisode', 
                     params: { id:item.id }                              
                   }"
                 >
                   {{ item.name }}
-                </router-link> </div>
-        </card>
-       </div> 
-       <div class="col-md-6">
-        <card>
-          <h6 class="text-primary text-uppercase">Мои долги:</h6>
-          <div v-for="item in myDebts" :key="item.id"> <router-link
+                </router-link>
+              </div>
+            </card>
+          </div> 
+          <div class="col-md-6">
+            <card>
+              <h6 class="text-primary text-uppercase">
+                Мои долги:
+              </h6>
+              <div
+                v-for="item in myDebts"
+                :key="item.id"
+              >
+                <router-link
                   :to="{
                     name: 'viewepisode', 
                     params: { id:item.id }                              
                   }"
                 >
                   {{ item.name }}
-                </router-link> </div>
-        </card>
-       </div> 
+                </router-link>
+              </div>
+            </card>
+          </div> 
+        </div>
       </div>
-    </div>
-    <p> </p>
+      <p />
       <h6 class="text-primary text-uppercase">
         Профиль
       </h6>
@@ -62,7 +76,7 @@
             v-model="name"
             name="name"
             class="form-control"
-          />
+          >
         </div>
       </div>
       <div class="row text-white">
@@ -169,7 +183,7 @@
                     <flat-picker
                       v-model="newCharacter.dob"
                       slot-scope="{focus, blur}"
-                      :config="{allowInput: true, dateFormat: 'Y-m-d'}"
+                      :config="{allowInput: true, dateFormat: 'Y-m-d', disableMobile: true}"
                       class="form-control datepicker"
                       @on-open="focus"
                       @on-close="blur"

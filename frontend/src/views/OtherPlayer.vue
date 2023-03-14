@@ -27,11 +27,14 @@
       </div>
       <div class="row">  
         <div class="col-md-12">
-        <card>
-          <div
-            name="info"
-            placeholder="Расскажите о себе как об игроке. Вольный формат. :-)"
-          > {{ info }}</div></card>
+          <card>
+            <div
+              name="info"
+              placeholder="Расскажите о себе как об игроке. Вольный формат. :-)"
+            >
+              {{ info }}
+            </div>
+          </card>
         </div>
       </div>
       <div class="row text-white">
@@ -42,13 +45,16 @@
       <div class="row">  
         <div class="col-md-12">
           <card>
-          <div
-            name="post"
-            style="white-space:pre-wrap; text-justify: auto;"
-          >{{ post }}</div></card>
+            <div
+              name="post"
+              style="white-space:pre-wrap; text-justify: auto;"
+            >
+              {{ post }}
+            </div>
+          </card>
         </div>
       </div>
-      </div>
+    </div>
     <p />
     <div class="container">
       <div class="row">
@@ -78,7 +84,6 @@
           </card>
         </div>
         <p />
-        
       </div>
     </div>
     <p />
@@ -92,9 +97,10 @@
             <div v-if="episodes.length == 0">
               Нет эпизодов у этого игрока :-(
             </div>
-            <div class="row"
+            <div
               v-for="item in episodes"
               :key="item.id"
+              class="row"
             >
               <div class="col-md-8">
                 <router-link
@@ -106,41 +112,43 @@
                   {{ item.name }}
                 </router-link>
               </div>
-              <div class="col-md-4" align="right">
-                  <badge
-                    v-if="item.status == 'Заброшен'"
-                    type="danger"
-                    @click="filterByStatus(1, 'Заброшен')"
-                  >
-                    {{ item.status }}
-                  </badge>
-                  <badge
-                    v-if="item.status == 'Завершен'"
-                    type="success"
-                    @click="filterByStatus(2, 'Завершен')"
-                  >
-                    {{ item.status }}
-                  </badge>
-                  <badge
-                    v-if="item.status == 'В процессе'"
-                    type="default"
-                    @click="filterByStatus(3, 'В процессе')"
-                  >
-                    {{ item.status }}
-                  </badge>
-                  <badge
-                    v-if="item.status == 'Черновик'"
-                    type="info"
-                    @click="filterByStatus(4, 'Черновик')"
-                  >
-                    {{ item.status }}
-                  </badge>
-                </div>
+              <div
+                class="col-md-4"
+                align="right"
+              >
+                <badge
+                  v-if="item.status == 'Заброшен'"
+                  type="danger"
+                  @click="filterByStatus(1, 'Заброшен')"
+                >
+                  {{ item.status }}
+                </badge>
+                <badge
+                  v-if="item.status == 'Завершен'"
+                  type="success"
+                  @click="filterByStatus(2, 'Завершен')"
+                >
+                  {{ item.status }}
+                </badge>
+                <badge
+                  v-if="item.status == 'В процессе'"
+                  type="default"
+                  @click="filterByStatus(3, 'В процессе')"
+                >
+                  {{ item.status }}
+                </badge>
+                <badge
+                  v-if="item.status == 'Черновик'"
+                  type="info"
+                  @click="filterByStatus(4, 'Черновик')"
+                >
+                  {{ item.status }}
+                </badge>
+              </div>
             </div>
           </card>
         </div>
         <p />
-        
       </div>
     </div>
   </section>

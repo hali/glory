@@ -16,7 +16,7 @@
       </router-link>
 
       <ul class="navbar-nav navbar-nav-hover align-items-lg-left">   
-        <li class="nav-item" >
+        <li class="nav-item">
           <router-link
             to="/faq"
             class="nav-link"
@@ -25,7 +25,7 @@
             F.A.Q./Правила
           </router-link>
         </li>      
-        <li class="nav-item" >
+        <li class="nav-item">
           <router-link
             to="/newepisode"
             class="nav-link"
@@ -92,7 +92,7 @@
       </router-link>
 
       <ul class="navbar-nav navbar-nav-hover align-items-lg-left">
-        <li class="nav-item" >
+        <li class="nav-item">
           <router-link
             to="/faq"
             class="nav-link"

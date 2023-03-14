@@ -20,16 +20,18 @@
         <div class="row text-white">
           <p class="col-md-6">
             <strong>Коллекции: </strong>
-              <badge  v-for="item in branches" :key="item.id" type="secondary">
+            <badge
+              v-for="item in branches"
+              :key="item.id"
+              type="secondary"
+            >
               <router-link :to="{name: 'episodes', query: {branch_id: item.id}}">
                 {{ item.description }}
-                </router-link>
-              </badge>
+              </router-link>
+            </badge>
           </p>
           <p class="col-md-6">
-            <strong>Предупреждения: </strong> <badge type="secondary">
-              
-            </badge>
+            <strong>Предупреждения: </strong> <badge type="secondary" />
           </p>
         </div>
         <div class="row text-white">
@@ -43,44 +45,60 @@
         <div class="row text-white">
           <p class="col-md-12">
             <strong>Участники: </strong> 
-             <badge type="secondary" v-for="char in episode_characters" :key="char.id">
-             <router-link
-              :to="{
-                name: 'viewcharacter', 
-                params: { id:char.id }                              
-              }"
+            <badge
+              v-for="char in episode_characters"
+              :key="char.id"
+              type="secondary"
             >
-              {{ char.name }}
-            </router-link>
-             </badge>
+              <router-link
+                :to="{
+                  name: 'viewcharacter', 
+                  params: { id:char.id }                              
+                }"
+              >
+                {{ char.name }}
+              </router-link>
+            </badge>
           </p>
         </div>
-        <div class=
-        "row text-white">
+        <div
+          class="row text-white"
+        >
           <p class="col-md-12">
             <strong>Описание эпизода:</strong>
           </p> 
-          <div class="col-md-11" style="white-space:pre-wrap; text-justify: auto;" type="light">
+          <div
+            class="col-md-11"
+            style="white-space:pre-wrap; text-justify: auto;"
+            type="light"
+          >
             {{ episode.description }}
           </div>
           <div
             class="col-md-6"
             align="left"
           >
-            <span class="col-md-3" 
-            v-if="this.current_player_id == episode.author_id"
-            align="left" @click="$router.push({ name: 'editepisode', params: { id: this.episode.id } })"><base-button type="secondary">
+            <span
+              v-if="current_player_id == episode.author_id" 
+              class="col-md-3"
+              align="left"
+              @click="$router.push({ name: 'editepisode', params: { id: episode.id } })"
+            ><base-button type="secondary">
               РЕДАКТИРОВАТЬ
             </base-button></span>
             
-            <span class="col-md-3" 
-            @click="closeEpisode" 
-            v-if="(episode.status == 'В процессе') && (this.current_player_id == episode.author_id)"><base-button type="secondary">
+            <span
+              v-if="(episode.status == 'В процессе') && (current_player_id == episode.author_id)" 
+              class="col-md-3" 
+              @click="closeEpisode"
+            ><base-button type="secondary">
               Закрыть эпизод
             </base-button></span>
-            <span class="col-md-3" 
-            @click="reopenEpisode" 
-            v-if="['Завершен', 'Черновик'].includes(episode.status) && (this.current_player_id == episode.author_id)"><base-button type="secondary">
+            <span
+              v-if="['Завершен', 'Черновик'].includes(episode.status) && (current_player_id == episode.author_id)" 
+              class="col-md-3" 
+              @click="reopenEpisode"
+            ><base-button type="secondary">
               Открыть эпизод
             </base-button></span>
           </div>
@@ -89,7 +107,10 @@
             align="right"
             @click="scrollToBottom()"
           >
-            <base-button type="primary" v-if="posts.length > 2">
+            <base-button
+              v-if="posts.length > 2"
+              type="primary"
+            >
               ВНИЗ
             </base-button>
           </div>
@@ -107,58 +128,85 @@
               type="lighter"
             >
               <div class="row">
-              
+                <div class="col-md-12" align="right">
+                  <span>Пост добавлен: {{ item.added_time }}</span>
+                </div>
+              </div>
+              <div
+                :id="'#' + item.id"
+                class="row"
+              >
                 <div class="col-md-2 card-profile-image">
                   <img
                     :src="`${item.img}`"
                     class="rounded-circle img-fluid"
                   >
                 </div> 
-                <div class="col-md-8" align="left">
+                <div
+                  class="col-md-8"
+                  align="left"
+                >
                   <p>{{ item.name }}</p><p>Лет сейчас: {{ item.age }}</p><p>{{ item.status }}</p>
                 </div>
-                <div class="col-md-2" align="right">
+                <div
+                  class="col-md-2"
+                  align="right"
+                >
                   <span
-                  v-if="(episode.status == 'В процессе') && (this.current_player_id == item.player_id)"
-                  @click="$router.push({ name: 'editpost', params: { id: item.id } })"
+                    v-if="(episode.status == 'В процессе') && (current_player_id == item.player_id)"
+                    @click="$router.push({ name: 'editpost', params: { id: item.id } })"
                   >
-                      <base-button 
-                      size="sm" type="primary" icon="fa fa-pencil" title="Отредактировать" >
-                      </base-button>
+                    <base-button 
+                      size="sm"
+                      type="primary"
+                      icon="fa fa-pencil"
+                      title="Отредактировать"
+                    />
                   </span>
-                  <span v-if="(index == this.posts.length - 1) && (episode.status == 'В процессе') && (this.current_player_id == item.player_id)"
-                   @click="askForConfirmation(item.id)"
+                  <span
+                    v-if="(index == posts.length - 1) && (episode.status == 'В процессе') && (current_player_id == item.player_id)"
+                    @click="askForConfirmation(item.id)"
                   >
                     <base-button 
-                    size="sm" type="primary" icon="fa fa-trash" title="Удалить пост">
-                  </base-button></span>
-                  <span v-if="this.current_player_id != item.player_id"
-                   @click="addComment(item.id)"
+                      size="sm"
+                      type="primary"
+                      icon="fa fa-trash"
+                      title="Удалить пост"
+                    /></span>
+                  <span
+                    v-if="current_player_id != item.player_id"
+                    @click="addComment(item.id)"
                   >
                     <base-button 
-                    size="sm" type="primary" icon="fa fa-comment-o" title="Оставить комментарий" >
-                  </base-button></span>
-                  </div>
+                      size="sm"
+                      type="primary"
+                      icon="fa fa-comment-o"
+                      title="Оставить комментарий"
+                    /></span>
+                </div>
               </div>
               <div
                 style="white-space:pre-wrap; text-justify: auto;" 
               >
                 {{ item.body }}
               </div>
-              
             </card>
             <p />   
           </div>                                         
         </div>
         <div class="row">
           <p />
-          <div class="col-md-12" align="right" @click="scrollToTop()" v-if="posts.length > 2">
-              <base-button type="primary">
-                ВВЕРХ
-              </base-button>
-              <p />
-            </div>
-            
+          <div
+            v-if="posts.length > 2"
+            class="col-md-12"
+            align="right"
+            @click="scrollToTop()"
+          >
+            <base-button type="primary">
+              ВВЕРХ
+            </base-button>
+            <p />
+          </div>
         </div>
         <div
           v-if="episode.status == 'В процессе'"
@@ -206,7 +254,10 @@
               </div>
             </base-dropdown>
           </div>  
-          <div class="col-md-6" align="right" >
+          <div
+            class="col-md-6"
+            align="right"
+          >
             <span @click="addPost(current_character.id)">
               <base-button type="success">
                 Добавить
@@ -251,9 +302,6 @@ export default {
           email: ''
         };
       },
-      mounted () {
-              
-      },
       async created() {
             const idToken = await this.$auth.tokenManager.get('idToken');
             this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
@@ -278,13 +326,19 @@ export default {
                 getEpisodePosts(this.episode.id).then(response => {
                     this.posts = response;
                     this.episode_characters = [...new UniqueSet(response.map(a => ({name: a.name, id: a.char_id})))];
+                    if (location.hash) this.$nextTick(() => this.scrollToElement());
                 });
                 getEpisodeBranches(this.episode.id).then(response => {
                     this.branches = response;
                 });
             });
         },
+        mounted() {
+        },
       methods: {
+        scrollToElement() {
+            document.getElementById(location.hash).scrollIntoView();
+        },
         addPost(character) {
             let processed_text = this.new_post.replace('- ', '— ').replace('  ', ' ');
             const payload = {
