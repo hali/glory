@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-model-argument -->
 <template>
   <section class="section section-shaped section-lg my-0">
     <div class="shape shape-style-1 bg-gradient-default">
@@ -19,12 +20,11 @@
         </div>
         <div class="row">  
           <div class="col-md-12">
-            <textarea
-              id="exampleFormControlTextarea1"
-              v-model="post.body"
-              name="post_body"
-              class="form-control form-control-alternative"
-              rows="10"
+            <quill-editor v-model:content="post.body" 
+            contentType="html" 
+            :options=options
+            class="form-control"
+            style="height: 250px"
             />
           </div>
         </div>
@@ -65,10 +65,12 @@ import { updatePost, viewPost} from '../services/PostService';
 import BaseButton from '@/components/BaseButton';
 import { getPlayer } from '../services/PlayerService';
 import { getCharacter } from '../services/CharacterService';
+import { QuillEditor } from '@vueup/vue-quill';
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
 export default {
     name: "EditPost",
-    components: { BaseButton },
+    components: { BaseButton, QuillEditor },
     data() {
         return {
           post: {
@@ -78,7 +80,15 @@ export default {
             body: ''
           },
           current_user_id: 1,
-          email: ''
+          email: '',
+          options: {
+            debug: 'warn',
+            modules: {
+              toolbar: [['bold', 'italic', 'underline', 'strike'],[{ 'color': [] }, { 'background': [] }]]
+            },
+            readOnly: false,
+            theme: 'snow'
+          }
         };
       },
       async mounted() {

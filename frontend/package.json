@@ -11,6 +11,7 @@
     "@okta/okta-auth-js": "^7.2.0",
     "@okta/okta-vue": "^5.5.0",
     "@sepiariver/unique-set": "^1.1.1",
+    "@vueup/vue-quill": "^1.1.1",
     "bootstrap-vue": "^2.0.4",
     "dropd-component": "^1.0.1",
     "flatpickr": "^4.5.1",

@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-model-argument -->
 <template>
   <section class="section section-shaped section-lg my-0">
     <div class="shape shape-style-1 bg-gradient-default">
@@ -104,18 +105,16 @@
         class="row"
       >  
         <div class="col-md-12">
-          <textarea
-            id="exampleFormControlTextarea1"
-            v-model="info"
-            name="info"
-            class="form-control form-control-alternative"
-            rows="10"
-          />
+          <quill-editor v-model:content="info" 
+            contentType="html" 
+            :options=options
+            class="form-control"
+            style="height: 250px"
+            />
         </div>
       </div>
       <card v-if="player_id != character_player_id">
-        <div style="white-space:pre-wrap; text-justify: auto;">
-          {{ info }}
+        <div style="white-space:pre-wrap; text-justify: auto;" v-html="info">
         </div>
       </card>
       <div class="row">
@@ -228,10 +227,12 @@ import flatPicker from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
 import BaseButton from '@/components/BaseButton';
 import BaseInput from '@/components/BaseInput';
+import { QuillEditor } from '@vueup/vue-quill';
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
 export default {
   name: 'CharacterView',
-  components: { flatPicker, BaseButton, BaseInput },
+  components: { flatPicker, BaseButton, BaseInput, QuillEditor },
   data () {
     return {
       claims: [],
@@ -244,7 +245,15 @@ export default {
       dob: "1987-07-20",
       character_player_id: 1,
       character_player_name: "",
-      episodes: []
+      episodes: [],
+      options: {
+        debug: 'warn',
+        modules: {
+          toolbar: [['bold', 'italic', 'underline', 'strike'],[{ 'color': [] }, { 'background': [] }]]
+        },
+        readOnly: false,
+        theme: 'snow'
+      }
     }
   },
   async created () {

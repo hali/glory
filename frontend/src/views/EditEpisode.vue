@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-model-argument -->
 <template>
   <section class="section section-shaped section-lg my-0">
     <div class="shape shape-style-1 bg-gradient-default">
@@ -83,13 +84,11 @@
         </div>
         <div class="row">  
           <div class="col-md-12">
-            <textarea
-              id="exampleFormControlTextarea1"
-              v-model="episode.description"
-              name="description"
-              class="form-control form-control-alternative"
-              rows="3"
-              placeholder="Вольное текстовое описание затравки или эпизода в целом - пока без HTML и картинок..."
+            <quill-editor v-model:content="episode.description" 
+            contentType="html" 
+            :options=options
+            class="form-control"
+            style="height: 250px"
             />
           </div>
         </div>
@@ -132,10 +131,12 @@ import { updateEpisode, viewEpisode} from '../services/EpisodeService';
 import BaseButton from '@/components/BaseButton';
 import BaseInput from '@/components/BaseInput';
 import { getPlayer } from '../services/PlayerService';
+import { QuillEditor } from '@vueup/vue-quill';
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
 export default {
     name: "EditEpisode",
-    components: { flatPicker, BaseButton, BaseInput },
+    components: { flatPicker, BaseButton, BaseInput, QuillEditor },
     data() {
         return {
           episode: {
@@ -149,7 +150,15 @@ export default {
             warning: ""
           },
           current_user_id: 1,
-          email: ''
+          email: '',
+          options: {
+            debug: 'warn',
+            modules: {
+              toolbar: [['bold', 'italic', 'underline', 'strike'],[{ 'color': [] }, { 'background': [] }]]
+            },
+            readOnly: false,
+            theme: 'snow'
+          }
         };
       },
       async mounted() {

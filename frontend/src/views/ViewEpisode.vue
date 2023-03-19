@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-model-argument -->
 <template>
   <section class="section section-shaped section-lg my-0">
     <div class="shape shape-style-1 bg-gradient-default">
@@ -71,8 +72,8 @@
             class="col-md-11"
             style="white-space:pre-wrap; text-justify: auto;"
             type="light"
+            v-html="episode.description"
           >
-            {{ episode.description }}
           </div>
           <div
             class="col-md-6"
@@ -88,14 +89,14 @@
             </base-button></span>
             
             <span
-              v-if="(episode.status == 'В процессе') && (current_player_id == episode.author_id)" 
+              v-if="(episode.status == 'В процессе') && (this.episode_players.includes(current_player_id))" 
               class="col-md-3" 
               @click="closeEpisode"
             ><base-button type="secondary">
               Закрыть эпизод
             </base-button></span>
             <span
-              v-if="['Завершен', 'Черновик'].includes(episode.status) && (current_player_id == episode.author_id)" 
+              v-if="['Завершен', 'Черновик'].includes(episode.status) && (this.episode_players.includes(current_player_id))" 
               class="col-md-3" 
               @click="reopenEpisode"
             ><base-button type="secondary">
@@ -128,7 +129,8 @@
               type="lighter"
             >
               <div class="row">
-                <div class="col-md-12" align="right">
+                <div class="col-md-2" align="left"><span>#{{ index + 1 }}</span></div>
+                <div class="col-md-10" align="right">
                   <span>Пост добавлен: {{ item.added_time }}</span>
                 </div>
               </div>
@@ -187,9 +189,9 @@
               </div>
               <div
                 style="white-space:pre-wrap; text-justify: auto;" 
-              >
-                {{ item.body }}
-              </div>
+              
+                v-html="item.body"
+              />
             </card>
             <p />   
           </div>                                         
@@ -212,15 +214,15 @@
           class="row"
         >  
           <div class="col-md-12">
-            <textarea
-              id="new_post"
-              v-model="new_post"
-              class="form-control form-control-alternative"
-              rows="10" 
-              placeholder="Пост писать сюда"
+            <quill-editor v-model:content="new_post" 
+            contentType="html" 
+            :options=options
+            class="form-control"
+            style="height: 250px"
             />
           </div>
         </div>
+        <p />
         <div class="row">
           <p />
         </div>
@@ -276,11 +278,13 @@ import { getCharacters } from '../services/CharacterService';
 import { getPlayer } from '../services/PlayerService';
 import BaseButton from '@/components/BaseButton';
 import BaseDropdown from '@/components/BaseDropdown';
+import { QuillEditor } from '@vueup/vue-quill';
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 const UniqueSet = require('@sepiariver/unique-set');
 
 export default {
     name: "ViewEpisode",
-    components: { BaseButton, BaseDropdown },
+    components: { BaseButton, BaseDropdown, QuillEditor },
     data() {
         return {
           episode: {
@@ -295,10 +299,19 @@ export default {
           new_post: "",
           current_character: {id: 0, name: "ВЫБЕРИ ПЕРСОНАЖА"},
           characters: [],
-          episode_characters:[],
+          episode_characters: [],
+          episode_players: [],
           error: false,
           current_player_id: 0,
-          email: ''
+          email: '',
+          options: {
+            debug: 'warn',
+            modules: {
+              toolbar: [['bold', 'italic', 'underline', 'strike'],[{ 'color': [] }, { 'background': [] }]]
+            },
+            readOnly: false,
+            theme: 'snow'
+          }
         };
       },
       async created() {
@@ -326,6 +339,7 @@ export default {
                 getEpisodePosts(this.episode.id).then(response => {
                     this.posts = response;
                     this.episode_characters = [...new UniqueSet(response.map(a => ({name: a.name, id: a.char_id})))];
+                    this.episode_players = [...new UniqueSet(response.map(a => a.player_id))];
                     if (location.hash) this.$nextTick(() => this.scrollToElement());
                 });
                 getEpisodeBranches(this.episode.id).then(response => {
@@ -341,6 +355,7 @@ export default {
         },
         addPost(character) {
             let processed_text = this.new_post.replace('- ', '— ').replace('  ', ' ');
+            console.info(processed_text);
             const payload = {
                   body: processed_text,
                   added_time: (new Date().toISOString().slice(0, 19).replace('T', ' ')),

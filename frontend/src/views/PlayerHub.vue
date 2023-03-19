@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-model-argument -->
 <template>
   <section class="section section-shaped section-lg my-0">
     <div class="shape shape-style-1 bg-gradient-default">
@@ -86,13 +87,13 @@
       </div>
       <div class="row">  
         <div class="col-md-12">
-          <textarea
-            v-model="info"
-            name="info"
-            placeholder="Расскажите о себе как об игроке. Вольный формат. :-)"
+          <quill-editor v-model:content="info" 
+            contentType="html" 
+            :options=options
             class="form-control"
-            rows="5"
-          />
+            style="height: 250px"
+            placeholder="Расскажите о себе как об игроке. Вольный формат. :-)"
+            />
         </div>
       </div>
       <div class="row text-white">
@@ -102,13 +103,13 @@
       </div>
       <div class="row">  
         <div class="col-md-12">
-          <textarea
-            v-model="post"
-            name="info"
+          <quill-editor v-model:content="post" 
+            contentType="html" 
+            :options=options
             class="form-control"
-            rows="10"
+            style="height: 250px"
             placeholder="Любой свой пост от любого персонажа, или сборная солянка - помогает в поиске соигроков."
-          />
+            />
         </div>
       </div>
       <p />
@@ -207,10 +208,11 @@
                 <div>Информация/Анкета</div>
               </div>
               <div class="row text-white">
-                <textarea
-                  v-model="newCharacter.info"
-                  class="form-control form-control-alternative"
-                  rows="6"
+                <quill-editor v-model:content="newCharacter.info" 
+                contentType="html" 
+                :options=options
+                class="form-control"
+                style="height: 250px"
                 />
               </div>
             </div>
@@ -239,11 +241,12 @@ import flatPicker from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
 import BaseButton from '@/components/BaseButton';
 import BaseInput from '@/components/BaseInput';
-
+import { QuillEditor } from '@vueup/vue-quill';
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
 export default {
   name: 'PlayerHub',
-  components: { flatPicker, BaseButton, BaseInput },
+  components: { flatPicker, BaseButton, BaseInput, QuillEditor },
   data () {
     return {
       claims: [],
@@ -262,7 +265,15 @@ export default {
         status: ""
       },
       myDebts: [],
-      waitingFor: []
+      waitingFor: [],
+          options: {
+            debug: 'warn',
+            modules: {
+              toolbar: [['bold', 'italic', 'underline', 'strike'],[{ 'color': [] }, { 'background': [] }]]
+            },
+            readOnly: false,
+            theme: 'snow'
+          }
     }
   },
   async created () {
