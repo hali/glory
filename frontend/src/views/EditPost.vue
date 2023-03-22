@@ -36,7 +36,7 @@
             class="col-md-6"
             align="left"
           >  
-            <span @click="$router.push({ name: 'viewepisode', params: { id: post.episode_id } })">
+            <span @click="$router.push({ name: 'viewepisode', params: { id: post.episode_id }, hash: '#' + post.id })">
               <base-button type="secondary">
                 Отмена
               </base-button></span>
@@ -117,7 +117,8 @@ export default {
               id: this.post.id
           };
           updatePost(this.post.id, payload).then(() => {
-            this.$router.push({name:'viewepisode', params:{id:this.post.episode_id}})
+            console.log(this.post.id);
+            this.$router.push({ name: 'viewepisode', params: { id: this.post.episode_id }, hash: '#' + this.post.id })
           });
       } 
     }  

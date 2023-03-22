@@ -108,7 +108,6 @@
             align="right"
           >
             <base-button
-              v-if="posts.length > 2"
               type="primary"
               @click.prevent="scrollToBottom()"
             >
@@ -199,7 +198,6 @@
         <div class="row">
           <p />
           <div
-            v-if="posts.length > 2"
             class="col-md-12"
             align="right"
           >
