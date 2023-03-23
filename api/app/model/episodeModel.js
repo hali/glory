@@ -137,4 +137,36 @@ Episode.getBranches = function(episode_id, result) {
 	});
 };
 
+Episode.getAllBranches = function(result) {
+	sql.query("select b.id, b.description from branch b",
+	function (err, res) {
+		if (err) {
+			console.log("error: ", err);
+        	result(null, err);
+    	} else {
+			result(null, res);
+		}	
+	});
+};
+
+Episode.updateBranches = function (ep_id, branches, result) {    	
+	var sqlstring = "DELETE from episode_branch where episode_id = " + ep_id;
+	sqlstring += "; REPLACE into episode_branch values ";
+	let cl = new Array(Object.values(branches))[0];
+	cl.forEach((branch_id, index) => {
+	    if (index != 0) sqlstring += ", ";
+	    sqlstring += "(" + ep_id + ", " + branch_id + ")";
+	});
+    
+    sql.query(sqlstring, 
+	function (err, res) {            
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        } else{
+            result(null, res.insertId);
+        }
+    });           
+};
+
 module.exports= Episode;

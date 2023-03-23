@@ -21,6 +21,7 @@
     "vue": "^3.2.47",
     "vue-flatpickr-component": "^11.0.2",
     "vue-lazyload": "^1.2.6",
+    "vue-multiselect": "^3.0.0-beta.1",
     "vue-router": "^4.1.6",
     "vue2-transitions": "^0.2.3",
     "vue3-lazyload": "^0.3.6"

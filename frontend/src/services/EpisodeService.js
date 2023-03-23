@@ -57,3 +57,17 @@ export async function getLatestEpisodes() {
     const response = await fetch('/api/latest');
     return await response.json();
 }
+
+export async function getAllBranches() {
+    const response = await fetch('/api/branches');
+    return await response.json();
+}
+
+export async function updateEpisodeBranches(id, payload) {
+    const response = await fetch(`/api/episodes/` + id + `/branches`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(Object.assign({}, payload))
+      })
+    return await response.json();
+}

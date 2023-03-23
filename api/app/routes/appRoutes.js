@@ -25,11 +25,14 @@ module.exports = function(app) {
     .get(episodesList.read_episode)
     .post(episodesList.update_episode);
   app.route('/api/episodes/:episodeId/branches')
-    .get(episodesList.get_branches);
+    .get(episodesList.get_branches)
+    .post(episodesList.update_branches);
   app.route('/api/episodes/:episodeId/close')
     .post(episodesList.close_episode);  
   app.route('/api/episodes/:episodeId/reopen')
     .post(episodesList.reopen_episode);    
+  app.route('/api/branches')
+    .get(episodesList.branches);     
     
   // posts routes
   app.route('/api/posts')

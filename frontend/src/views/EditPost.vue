@@ -117,7 +117,6 @@ export default {
               id: this.post.id
           };
           updatePost(this.post.id, payload).then(() => {
-            console.log(this.post.id);
             this.$router.push({ name: 'viewepisode', params: { id: this.post.episode_id }, hash: '#' + this.post.id })
           });
       } 

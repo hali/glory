@@ -31,13 +31,13 @@
         <div class="row text-white">
           <div class="col-md-6">
             <p>Коллекции:</p>
-            <input
-              v-model="episode.collection"
-              class="form-control col-md-12" 
-              name="branch"
-              placeholder="Пока отключено, пишите админу"
-              disabled
-            >
+            <multiselect v-model="episode.collection" 
+            :options="collection_options" 
+            :searchable="true" 
+            :multiple="true"
+            :close-on-select="false" 
+            label="description" track-by="description"
+            :show-labels="false" placeholder="Pick a value"></multiselect>
           </div> 
           <div class="col-md-6">
             <p class="col-md-6">
@@ -127,16 +127,18 @@
 <script>
 import flatPicker from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
-import { updateEpisode, viewEpisode} from '../services/EpisodeService';
+import { updateEpisode, viewEpisode, getAllBranches, updateEpisodeBranches, getEpisodeBranches } from '../services/EpisodeService';
 import BaseButton from '@/components/BaseButton';
 import BaseInput from '@/components/BaseInput';
 import { getPlayer } from '../services/PlayerService';
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.css';
 
 export default {
     name: "EditEpisode",
-    components: { flatPicker, BaseButton, BaseInput, QuillEditor },
+    components: { flatPicker, BaseButton, BaseInput, QuillEditor, Multiselect },
     data() {
         return {
           episode: {
@@ -151,6 +153,7 @@ export default {
           },
           current_user_id: 1,
           email: '',
+          collection_options: ['one', 'two', 'three'],
           options: {
             debug: 'warn',
             modules: {
@@ -180,6 +183,10 @@ export default {
                 this.episode.author_id = response[0].author_id;
                 document.title = "Glory - Редактировать - " + response[0].name;
             });
+            getAllBranches().then(response => {
+                this.collection_options = response});
+            getEpisodeBranches(this.episode.id).then(response => {
+                this.episode.collection = response});    
         },
     methods: {
       updateEpisode() {
@@ -189,12 +196,18 @@ export default {
               description: processed_description,
               time_of_action: (new Date(this.episode.timeOfAction)).toISOString().split('T')[0],
               author_id: this.episode.author_id,
-              //branch_id: this.episode.collection,
               world: this.episode.world
           };
-          updateEpisode(this.episode.id, payload).then(() => {
-            this.$router.push({name:'viewepisode', params:{id:this.episode.id}})
-          });
+        updateEpisode(this.episode.id, payload).then(() => {
+              let cl = new Array(Object.values(this.episode.collection))[0];
+              let arrayedCollections = [];
+              cl.forEach((value) => arrayedCollections.push(value.id));
+              updateEpisodeBranches(this.episode.id, arrayedCollections).then(() => {
+                  
+              });
+              this.$router.push({name:'viewepisode', params:{id:this.episode.id}});
+        }); 
+        
       } 
     }  
 };

@@ -54,6 +54,22 @@ exports.get_branches = function(req, res) {
   });
 }
 
+exports.update_branches = function(req, res) {
+  Episode.updateBranches(req.params.episodeId, req.body, function(err, response) {
+    if (err)
+      res.send(err);  
+    res.json(response);
+  });
+}
+
+exports.branches = function(req, res) {
+  Episode.getAllBranches(function(err, branches) {
+    if (err)
+      res.send(err);  
+    res.json(branches);
+  });
+}
+
 exports.close_episode = function(req, res) {
   Episode.setEpisodeStatus(req.params.episodeId, 2, function(err, response) {
     if (err)

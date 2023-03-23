@@ -31,13 +31,13 @@
         <div class="row text-white">
           <div class="col-md-6">
             <p>Коллекции:</p>
-            <input
-              v-model="branch"
-              class="form-control col-md-12" 
-              name="branch"
-              placeholder="Пока отключено, пишите админу"
-              disabled
-            >
+            <multiselect v-model="collection" 
+            :options="collection_options" 
+            :searchable="true" 
+            :multiple="true"
+            :close-on-select="false" 
+            label="description" track-by="description"
+            :show-labels="false" placeholder="Pick a value"></multiselect>
           </div> 
           <div class="col-md-6">
             <p class="col-md-6">
@@ -121,16 +121,18 @@
 <script>
 import flatPicker from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
-import {addEpisode} from '../services/EpisodeService';
+import { addEpisode, updateEpisodeBranches, getAllBranches } from '../services/EpisodeService';
 import BaseButton from '@/components/BaseButton';
 import BaseInput from '@/components/BaseInput';
 import { getPlayer } from '../services/PlayerService';
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.css';
 
 export default {
     name: "NewEpisode",
-    components: { flatPicker, BaseButton, BaseInput, QuillEditor },
+    components: { flatPicker, BaseButton, BaseInput, QuillEditor, Multiselect },
     data() {
         return {
           dates: {
@@ -141,8 +143,10 @@ export default {
           status_id: 1,
           author_id: 1,
           branch_id: 1,
+          collection: '',
           world: '',
           warning: '',
+          collection_options: ['one', 'two', 'three'],
           options: {
             debug: 'warn',
             modules: {
@@ -161,6 +165,8 @@ export default {
 				this.author_id = response[0].id;
 			});
 			document.title = "Glory - Открыть эпизод";
+			getAllBranches().then(response => {
+                this.collection_options = response});
 		},
     methods: {
       addEpisode(status) {
@@ -175,6 +181,11 @@ export default {
               world: this.world
           };
           addEpisode(payload).then(response => {
+            let cl = new Array(Object.values(this.collection))[0];
+              let arrayedCollections = [];
+              cl.forEach((value) => arrayedCollections.push(value.id));
+              updateEpisodeBranches(response, arrayedCollections).then(() => {
+              });
             this.$router.push({name:'viewepisode', params:{id:response}})
           });
       } 
