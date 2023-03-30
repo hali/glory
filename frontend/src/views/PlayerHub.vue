@@ -87,13 +87,14 @@
       </div>
       <div class="row">  
         <div class="col-md-12">
-          <quill-editor v-model:content="info" 
-            contentType="html" 
-            :options=options
+          <quill-editor
+            v-model:content="info" 
+            content-type="html" 
+            :options="options"
             class="form-control"
             style="height: 250px"
             placeholder="Расскажите о себе как об игроке. Вольный формат. :-)"
-            />
+          />
         </div>
       </div>
       <div class="row text-white">
@@ -103,13 +104,14 @@
       </div>
       <div class="row">  
         <div class="col-md-12">
-          <quill-editor v-model:content="post" 
-            contentType="html" 
-            :options=options
+          <quill-editor
+            v-model:content="post" 
+            content-type="html" 
+            :options="options"
             class="form-control"
             style="height: 250px"
             placeholder="Любой свой пост от любого персонажа, или сборная солянка - помогает в поиске соигроков."
-            />
+          />
         </div>
       </div>
       <p />
@@ -208,11 +210,12 @@
                 <div>Информация/Анкета</div>
               </div>
               <div class="row text-white">
-                <quill-editor v-model:content="newCharacter.info" 
-                contentType="html" 
-                :options=options
-                class="form-control"
-                style="height: 250px"
+                <quill-editor
+                  v-model:content="newCharacter.info" 
+                  content-type="html" 
+                  :options="options"
+                  class="form-control"
+                  style="height: 250px"
                 />
               </div>
             </div>

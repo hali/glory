@@ -73,8 +73,7 @@
             style="white-space:pre-wrap; text-justify: auto;"
             type="light"
             v-html="episode.description"
-          >
-          </div>
+          />
           <div
             class="col-md-6"
             align="left"
@@ -87,16 +86,25 @@
             ><base-button type="secondary">
               РЕДАКТИРОВАТЬ
             </base-button></span>
+            <span
+              v-if="(episode.status == 'Черновик') && (current_player_id == episode.author_id)" 
+              class="col-md-3"
+              align="left"
+              @click="publishDraft()"
+            >
+            <base-button type="secondary">
+              ОПУБЛИКОВАТЬ
+            </base-button></span>
             
             <span
-              v-if="(episode.status == 'В процессе') && (this.episode_players.includes(current_player_id))" 
+              v-if="(episode.status == 'В процессе') && (episode_players.includes(current_player_id))" 
               class="col-md-3" 
               @click="closeEpisode"
             ><base-button type="secondary">
               Закрыть эпизод
             </base-button></span>
             <span
-              v-if="['Завершен', 'Черновик'].includes(episode.status) && (this.episode_players.includes(current_player_id))" 
+              v-if="['Завершен', 'Черновик'].includes(episode.status) && (episode_players.includes(current_player_id))" 
               class="col-md-3" 
               @click="reopenEpisode"
             ><base-button type="secondary">
@@ -128,8 +136,16 @@
               type="lighter"
             >
               <div class="row">
-                <div class="col-md-2" align="left"><span>#{{ index + 1 }}</span></div>
-                <div class="col-md-10" align="right">
+                <div
+                  class="col-md-2"
+                  align="left"
+                >
+                  <span>#{{ index + 1 }}</span>
+                </div>
+                <div
+                  class="col-md-10"
+                  align="right"
+                >
                   <span>Пост добавлен: {{ item.added_time }}</span>
                 </div>
               </div>
@@ -201,7 +217,10 @@
             class="col-md-12"
             align="right"
           >
-            <base-button type="primary" @click.prevent="scrollToTop()">
+            <base-button
+              type="primary"
+              @click.prevent="scrollToTop()"
+            >
               ВВЕРХ
             </base-button>
             <p />
@@ -212,11 +231,12 @@
           class="row"
         >  
           <div class="col-md-12">
-            <quill-editor v-model:content="new_post" 
-            contentType="html" 
-            :options=options
-            class="form-control"
-            style="height: 250px"
+            <quill-editor
+              v-model:content="new_post" 
+              content-type="html" 
+              :options="options"
+              class="form-control"
+              style="height: 250px"
             />
           </div>
         </div>
@@ -377,6 +397,9 @@ export default {
         closeEpisode() {
           closeEpisode(this.episode.id).then(() => {this.$router.go()});
           
+        },
+        publishDraft() {
+          reopenEpisode(this.episode.id).then(() => {this.$router.go()});
         },
         reopenEpisode() {
           reopenEpisode(this.episode.id).then(() => {this.$router.go()});

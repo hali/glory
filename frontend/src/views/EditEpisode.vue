@@ -31,13 +31,17 @@
         <div class="row text-white">
           <div class="col-md-6">
             <p>Коллекции:</p>
-            <multiselect v-model="episode.collection" 
-            :options="collection_options" 
-            :searchable="true" 
-            :multiple="true"
-            :close-on-select="false" 
-            label="description" track-by="description"
-            :show-labels="false" placeholder="Pick a value"></multiselect>
+            <multiselect
+              v-model="episode.collection" 
+              :options="collection_options" 
+              :searchable="true" 
+              :multiple="true"
+              :close-on-select="false" 
+              label="description"
+              track-by="description"
+              :show-labels="false"
+              placeholder="Pick a value"
+            />
           </div> 
           <div class="col-md-6">
             <p class="col-md-6">
@@ -84,11 +88,12 @@
         </div>
         <div class="row">  
           <div class="col-md-12">
-            <quill-editor v-model:content="episode.description" 
-            contentType="html" 
-            :options=options
-            class="form-control"
-            style="height: 250px"
+            <quill-editor
+              v-model:content="episode.description" 
+              content-type="html" 
+              :options="options"
+              class="form-control"
+              style="height: 250px"
             />
           </div>
         </div>

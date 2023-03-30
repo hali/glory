@@ -31,13 +31,17 @@
         <div class="row text-white">
           <div class="col-md-6">
             <p>Коллекции:</p>
-            <multiselect v-model="collection" 
-            :options="collection_options" 
-            :searchable="true" 
-            :multiple="true"
-            :close-on-select="false" 
-            label="description" track-by="description"
-            :show-labels="false" placeholder="Pick a value"></multiselect>
+            <multiselect
+              v-model="collection" 
+              :options="collection_options" 
+              :searchable="true" 
+              :multiple="true"
+              :close-on-select="false" 
+              label="description"
+              track-by="description"
+              :show-labels="false"
+              placeholder="Pick a value"
+            />
           </div> 
           <div class="col-md-6">
             <p class="col-md-6">
@@ -84,12 +88,13 @@
         </div>
         <div class="row">  
           <div class="col-md-12">
-            <quill-editor v-model:content="description" 
-            contentType="html" 
-            :options=options
-            class="form-control"
-            style="height: 250px"
-            placeholder="Вольное текстовое описание затравки или эпизода в целом..."
+            <quill-editor
+              v-model:content="description" 
+              content-type="html" 
+              :options="options"
+              class="form-control"
+              style="height: 250px"
+              placeholder="Вольное текстовое описание затравки или эпизода в целом..."
             />
           </div>
         </div>
@@ -140,6 +145,7 @@ export default {
           },
           name: '',
           description: '',
+          email: '',
           status_id: 1,
           author_id: 1,
           branch_id: 1,
@@ -163,7 +169,7 @@ export default {
             this.claims.forEach((value) => {
               if (value.key == 'email') this.email = value.value;
             });
-			getPlayer(email).then(response => {
+			getPlayer(this.email).then(response => {
 				this.author_id = response[0].id;
 			});
 			document.title = "Glory - Открыть эпизод";

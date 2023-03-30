@@ -20,11 +20,12 @@
         </div>
         <div class="row">  
           <div class="col-md-12">
-            <quill-editor v-model:content="post.body" 
-            contentType="html" 
-            :options=options
-            class="form-control"
-            style="height: 250px"
+            <quill-editor
+              v-model:content="post.body" 
+              content-type="html" 
+              :options="options"
+              class="form-control"
+              style="height: 250px"
             />
           </div>
         </div>

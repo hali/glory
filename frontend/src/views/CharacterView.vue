@@ -105,17 +105,20 @@
         class="row"
       >  
         <div class="col-md-12">
-          <quill-editor v-model:content="info" 
-            contentType="html" 
-            :options=options
+          <quill-editor
+            v-model:content="info" 
+            content-type="html" 
+            :options="options"
             class="form-control"
             style="height: 250px"
-            />
+          />
         </div>
       </div>
       <card v-if="player_id != character_player_id">
-        <div style="white-space:pre-wrap; text-justify: auto;" v-html="info">
-        </div>
+        <div
+          style="white-space:pre-wrap; text-justify: auto;"
+          v-html="info"
+        />
       </card>
       <div class="row">
         <p />
