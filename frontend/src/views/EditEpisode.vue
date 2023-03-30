@@ -41,6 +41,7 @@
               track-by="description"
               :show-labels="false"
               placeholder="Pick a value"
+              :taggable="true" @tag="addTag"
             />
           </div> 
           <div class="col-md-6">
@@ -132,7 +133,8 @@
 <script>
 import flatPicker from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
-import { updateEpisode, viewEpisode, getAllBranches, updateEpisodeBranches, getEpisodeBranches } from '../services/EpisodeService';
+import { updateEpisode, viewEpisode, getAllBranches, updateEpisodeBranches, 
+    getEpisodeBranches, addBranch } from '../services/EpisodeService';
 import BaseButton from '@/components/BaseButton';
 import BaseInput from '@/components/BaseInput';
 import { getPlayer } from '../services/PlayerService';
@@ -152,7 +154,7 @@ export default {
             description: "",
             timeOfAction: "",
             world: "",
-            collection: "",
+            collection: [],
             author_id: 0,
             warning: ""
           },
@@ -213,7 +215,17 @@ export default {
               this.$router.push({name:'viewepisode', params:{id:this.episode.id}});
         }); 
         
-      } 
+      },
+      addTag (newTag) {
+          addBranch(newTag).then(response => {
+            this.episode.collection.push({id: response, description: newTag});  
+            const tag = {
+              description: newTag,
+              id: response
+            };
+            this.collection_options.push(tag);      
+          });
+      }  
     }  
 };
 </script>

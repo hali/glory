@@ -70,6 +70,14 @@ exports.branches = function(req, res) {
   });
 }
 
+exports.add_branch = function(req, res) {
+  Episode.addBranch(req.params.branch, function(err, response) {
+    if (err)
+      res.send(err);  
+    res.json(response);
+  });
+}
+
 exports.close_episode = function(req, res) {
   Episode.setEpisodeStatus(req.params.episodeId, 2, function(err, response) {
     if (err)

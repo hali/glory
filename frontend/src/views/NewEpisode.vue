@@ -41,6 +41,7 @@
               track-by="description"
               :show-labels="false"
               placeholder="Pick a value"
+              :taggable="true" @tag="addTag"
             />
           </div> 
           <div class="col-md-6">
@@ -126,7 +127,7 @@
 <script>
 import flatPicker from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
-import { addEpisode, updateEpisodeBranches, getAllBranches } from '../services/EpisodeService';
+import { addEpisode, updateEpisodeBranches, getAllBranches, addBranch } from '../services/EpisodeService';
 import BaseButton from '@/components/BaseButton';
 import BaseInput from '@/components/BaseInput';
 import { getPlayer } from '../services/PlayerService';
@@ -149,7 +150,7 @@ export default {
           status_id: 1,
           author_id: 1,
           branch_id: 1,
-          collection: '',
+          collection: [],
           world: '',
           warning: '',
           collection_options: ['one', 'two', 'three'],
@@ -164,18 +165,18 @@ export default {
         };
       },
       async created() {
-			const idToken = await this.$auth.tokenManager.get('idToken');
-			this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
+            const idToken = await this.$auth.tokenManager.get('idToken');
+            this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
             this.claims.forEach((value) => {
               if (value.key == 'email') this.email = value.value;
             });
-			getPlayer(this.email).then(response => {
-				this.author_id = response[0].id;
-			});
-			document.title = "Glory - Открыть эпизод";
-			getAllBranches().then(response => {
+            getPlayer(this.email).then(response => {
+                this.author_id = response[0].id;
+            });
+            document.title = "Glory - Открыть эпизод";
+            getAllBranches().then(response => {
                 this.collection_options = response});
-		},
+        },
     methods: {
       addEpisode(status) {
         let processed_description = this.description.replace('- ', '— ');
@@ -195,6 +196,16 @@ export default {
               updateEpisodeBranches(response, arrayedCollections).then(() => {
               });
             this.$router.push({name:'viewepisode', params:{id:response}})
+          });
+      },
+      addTag (newTag) {
+          addBranch(newTag).then(response => {
+            this.collection.push({id: response, description: newTag});  
+            const tag = {
+                description: newTag,
+                id: response
+              };
+            this.collection_options.push(tag);      
           });
       } 
     }  

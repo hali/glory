@@ -32,7 +32,9 @@ module.exports = function(app) {
   app.route('/api/episodes/:episodeId/reopen')
     .post(episodesList.reopen_episode);    
   app.route('/api/branches')
-    .get(episodesList.branches);     
+    .get(episodesList.branches);    
+  app.route('/api/addBranch/:branch')
+    .post(episodesList.add_branch);   
     
   // posts routes
   app.route('/api/posts')

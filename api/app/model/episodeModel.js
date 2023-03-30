@@ -1,3 +1,5 @@
+var cyrillicToTranslit = require('cyrillic-to-translit-js');
+
 'user strict';
 var sql = require('./db.js');
 
@@ -159,6 +161,19 @@ Episode.updateBranches = function (ep_id, branches, result) {
 	});
     
     sql.query(sqlstring, 
+	function (err, res) {            
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        } else{
+            result(null, res.insertId);
+        }
+    });           
+};
+
+Episode.addBranch = function (branch, result) {   
+    const b_name = cyrillicToTranslit().transform(branch, '_').toLowerCase(); 	
+    sql.query("INSERT INTO branch (name, description) values (?, ?)", [b_name, branch], 
 	function (err, res) {            
         if(err) {
             console.log("error: ", err);

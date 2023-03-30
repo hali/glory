@@ -37,6 +37,13 @@ export async function reopenEpisode(id) {
     return await response.json();
 }
 
+export async function addBranch(branch) {
+    const response = await fetch(`/api/addBranch/` + branch, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+      })
+    return await response.json();
+}
 
 export async function getEpisodePosts(id) {
     const response = await fetch('/api/episodes/' + id + '/posts');
