@@ -252,26 +252,17 @@
             class="col-md-6"
             align="left"
           >
-            <base-dropdown title="Выбери персонажа">
-              <base-button
-                slot="title"
-                type="primary"
-                class="dropdown-toggle"
-              >
-                {{ current_character.name }}
-              </base-button>
-              <div
-                v-for="ch in characters"
-                :key="ch.id"
-              >
-                <a
-                  class="dropdown-item"
-                  @click="current_character = {id: ch.id, name: ch.name}"
-                >
-                  {{ ch.name }}
-                </a>
-              </div>
-            </base-dropdown>
+            <multiselect
+              v-model="current_character" 
+              :options="characters" 
+              :searchable="true" 
+              :multiple="false"
+              :close-on-select="true" 
+              label="name"
+              track-by="id"
+              :show-labels="false"
+              placeholder="Выбери персонажа"
+            />
           </div>  
           <div
             class="col-md-6"
@@ -295,14 +286,15 @@ import { addPost, deletePost, addComment } from '../services/PostService';
 import { getCharacters } from '../services/CharacterService';
 import { getPlayer } from '../services/PlayerService';
 import BaseButton from '@/components/BaseButton';
-import BaseDropdown from '@/components/BaseDropdown';
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 const UniqueSet = require('@sepiariver/unique-set');
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.css';
 
 export default {
     name: "ViewEpisode",
-    components: { BaseButton, BaseDropdown, QuillEditor },
+    components: { BaseButton, QuillEditor, Multiselect },
     data() {
         return {
           episode: {
@@ -373,7 +365,6 @@ export default {
         },
         addPost(character) {
             let processed_text = this.new_post.replace('- ', '— ').replace('  ', ' ');
-            console.info(processed_text);
             const payload = {
                   body: processed_text,
                   added_time: (new Date().toISOString().slice(0, 19).replace('T', ' ')),
