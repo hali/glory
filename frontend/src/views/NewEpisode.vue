@@ -159,8 +159,10 @@ export default {
       },
       async created() {
 			const idToken = await this.$auth.tokenManager.get('idToken');
-			this.claims = await Object.entries(idToken.claims).map(entry => ({ claim: entry[0], value: entry[1] }));
-			const email = this.claims[2].value;
+			this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
+            this.claims.forEach((value) => {
+              if (value.key == 'email') this.email = value.value;
+            });
 			getPlayer(email).then(response => {
 				this.author_id = response[0].id;
 			});
