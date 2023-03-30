@@ -16,47 +16,20 @@
           Эпизоды ({{ episodes.length }})
         </h1>
       </div>
-      <base-dropdown title="Статус">
-        <base-button
-          slot="title"
-          type="primary"
-          class="dropdown-toggle"
-        >
-          {{ status_name }}
-        </base-button>
-        <div>
-          <a
-            class="dropdown-item"
-            @click="filterByStatus(0, 'Все подряд')"
-          >
-            Все подряд
-          </a>
-        </div>
-        <div>
-          <a
-            class="dropdown-item"
-            @click="filterByStatus(3, 'В процессе')"
-          >
-            В процессе
-          </a>
-        </div>
-        <div>
-          <a
-            class="dropdown-item"
-            @click="filterByStatus(2, 'Завершен')"
-          >
-            Завершен
-          </a>
-        </div>
-        <div>
-          <a
-            class="dropdown-item"
-            @click="filterByStatus(4, 'Черновик')"
-          >
-            Черновик
-          </a>
-        </div>
-      </base-dropdown>
+      <div class="row">
+      <div class="col-md-3">
+      <multiselect
+              v-model="current_status" 
+              :options="status_filter" 
+              :searchable="true" 
+              :multiple="false"
+              :close-on-select="true" 
+              label="status"
+              track-by="id"
+              :show-labels="false"
+              @select="selectStatus"
+            /></div>
+      <div class="col-md-9">      
       <badge
         v-if="branch_id != 0"
         type="primary"
@@ -78,6 +51,7 @@
       >
         Сбросить фильтр по моим эпизодам
       </badge>
+      </div></div>
       <card>
         <div v-if="episodes.length == 0">
           У вас пока нет эпизодов. :-( Почитайте чужие и присоединяйтесь к движухе!
@@ -146,23 +120,26 @@
 <script>
 import { getEpisodes, getEpisodeBranches } from '../services/EpisodeService';
 import { getEpisodesByPlayerId, getPlayer } from '../services/PlayerService';
-import BaseDropdown from '@/components/BaseDropdown';
-import BaseButton from '@/components/BaseButton';
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.css';
 
     export default {
         name: 'EpisodesList',
-        components: {BaseButton, BaseDropdown},
+        components: { Multiselect },
         props: [],
         data() {
             return {
                 episodes: [],
-                status: 0,
-                status_name: 'Все подряд',
                 branch_id: 0,
                 branch_name: 'Все коллекции',
                 email: '',
                 player_id: 0,
-                filteredByPlayer: false
+                filteredByPlayer: false,
+                status_filter: [{id: 0, status: 'Всё подряд'}, 
+                                {id: 3, status: 'В процессе'}, 
+                                {id: 2, status: 'Завершён'}, 
+                                {id: 4, status: 'Черновик'}],
+                current_status: {id: 0, status: 'Всё подряд'}                
             }
         },
         async created () {
@@ -216,10 +193,8 @@ import BaseButton from '@/components/BaseButton';
             }                     
           },
         methods: {
-        filterByStatus(status, status_name) {
-            this.status = status;
-            this.status_name = status_name;
-            getEpisodes(this.status, this.branch_id).then(response => {
+        selectStatus() {
+            getEpisodes(this.current_status.id, this.branch_id).then(response => {
                 this.episodes = response;
                 this.episodes.forEach((ep, i) => {
                               getEpisodeBranches(ep.id).then(branches => {
@@ -228,10 +203,14 @@ import BaseButton from '@/components/BaseButton';
                             });
             }); 
         },
+        filterByStatus(id, status) {
+            this.current_status = {id: id, status: status};
+            this.selectStatus()
+        },
         filterByBranch(branch_id, branch_name) {
             this.branch_id = branch_id;
             this.branch_name = branch_name;
-            getEpisodes(this.status, this.branch_id).then(response => {
+            getEpisodes(this.current_status.id, this.branch_id).then(response => {
                 this.episodes = response;
                 this.episodes.forEach((ep, i) => {
                               getEpisodeBranches(ep.id).then(branches => {
@@ -253,7 +232,7 @@ import BaseButton from '@/components/BaseButton';
         },
         clearPlayerFilter() {
           this.filteredByPlayer = false;
-          getEpisodes(this.status, this.branch_id).then(response => {
+          getEpisodes(this.current_status.id, this.branch_id).then(response => {
                 this.episodes = response;
                 this.episodes.forEach((ep, i) => {
                               getEpisodeBranches(ep.id).then(branches => {
