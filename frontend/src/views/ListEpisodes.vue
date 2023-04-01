@@ -148,7 +148,7 @@ import 'vue-multiselect/dist/vue-multiselect.css';
             document.title = "Glory - Эпизоды";
             if (params.get("branch_id")) this.branch_id = params.get("branch_id");
             if (this.branch_id != 0) {
-                getEpisodes(this.status, this.branch_id).then(response => {
+                getEpisodes(this.current_status.id, this.branch_id).then(response => {
                     this.episodes = response;
                     this.episodes.forEach((ep, i) => {
                       getEpisodeBranches(ep.id).then(branches => {
@@ -182,7 +182,7 @@ import 'vue-multiselect/dist/vue-multiselect.css';
                 }               
             }
             if (!(this.authState && this.authState.isAuthenticated) && this.branch_id == 0) {
-                getEpisodes(this.status, this.branch_id).then(response => {
+                getEpisodes(this.current_status.id, this.branch_id).then(response => {
                     this.episodes = response;
                     this.episodes.forEach((ep, i) => {
                               getEpisodeBranches(ep.id).then(branches => {
