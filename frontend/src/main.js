@@ -24,11 +24,14 @@ import './registerServiceWorker';
 import { OktaAuth } from '@okta/okta-auth-js';
 import OktaVue from '@okta/okta-vue';
 import sampleConfig from './config';
-const oktaAuth = new OktaAuth(sampleConfig.oidc)
+const oktaAuth = new OktaAuth(sampleConfig.oidc);
+import {Tabs, Tab} from 'vue3-tabs-component';
 
 createApp(App)
   .use(OktaVue, { oktaAuth })
   .use(router)
   .use(VueLazyLoad)
   .use(Argon)
+  .component('tabs', Tabs)
+  .component('tab', Tab)
   .mount('#app')

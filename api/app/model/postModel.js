@@ -91,4 +91,18 @@ Post.deletePost = function(post_id, result) {
 	});
 };
 
+Post.countPosts = function(player_id, result) {
+	sql.query("select count(*) as n_posts from posts p, `character` c  where\
+	p.author_id = c.id and c.player_id =?",
+	[player_id],
+	function (err, res) {
+		if (err) {
+			console.log("error: ", err);
+        	result(null, err);
+    	} else {
+			result(null, res);
+		}	
+	});
+};
+
 module.exports= Post;

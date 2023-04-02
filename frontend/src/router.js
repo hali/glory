@@ -13,7 +13,6 @@ import OtherPlayer from './views/OtherPlayer';
 import Profile from './views/Profile';
 import CharacterView from './views/CharacterView';
 import ListCharacters from './views/ListCharacters';
-import MyFeedback from './views/MyFeedback';
 import FAQPage from './views/FAQ';
 
 const router = createRouter({
@@ -150,17 +149,6 @@ const router = createRouter({
       components: {
         header: AppHeader,
         default: Profile,
-        footer: AppFooter
-      },
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/myfeedback',
-      components: {
-        header: AppHeader,
-        default: MyFeedback,
         footer: AppFooter
       },
       meta: {

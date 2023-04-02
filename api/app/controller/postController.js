@@ -35,6 +35,14 @@ exports.view_post = function(req, res) {
   });
 }
 
+exports.count_posts = function(req, res) {
+  Post.countPosts(req.params.playerId, function(err, n) {
+    if (err)
+      res.send(err);  
+    res.json(n);
+  });
+}
+
 exports.delete_post = function(req, res) {
   Post.deletePost(req.params.postId, function(err, post) {
     if (err)

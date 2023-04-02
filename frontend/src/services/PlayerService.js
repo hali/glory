@@ -36,3 +36,8 @@ export async function getDebts() {
     const response = await fetch('/api/debts');
     return await response.json();
 }
+
+export async function getPostsNumber(playerId) {
+    const response = await fetch('/api/players/' + playerId + '/posts');
+    return await response.json();
+}

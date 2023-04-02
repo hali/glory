@@ -65,6 +65,8 @@ module.exports = function(app) {
   	.get(playersList.get_feedback);		
   app.route('/api/debts')
     .get(playersList.get_debts);
+  app.route('/api/players/:playerId/posts')
+    .get(postsList.count_posts); 
     
   app.route('/api/sendEmailPost')
     .post(emails.send_post_notification);  

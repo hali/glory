@@ -33,7 +33,8 @@
     "vue-multiselect": "^3.0.0-beta.1",
     "vue-router": "^4.1.6",
     "vue2-transitions": "^0.2.3",
-    "vue3-lazyload": "^0.3.6"
+    "vue3-lazyload": "^0.3.6",
+    "vue3-tabs-component": "^1.2.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.19.1",
