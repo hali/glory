@@ -108,6 +108,14 @@ CREATE TABLE `episode_branch`
 PRIMARY KEY (episode_id, branch_id)
 );
 
+CREATE TABLE `subscriptions`
+(
+ `episode_id`          int NOT NULL,
+ `player_id` 		   int NOT NULL ,
+
+PRIMARY KEY (episode_id, player_id)
+);
+
 
 CREATE TABLE `participants`
 (

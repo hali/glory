@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 module.exports = {
   configureWebpack: {
@@ -6,8 +7,14 @@ module.exports = {
     plugins: [
       new webpack.optimize.LimitChunkCountPlugin({
         maxChunks: 6
-      })
-    ]
+      }),
+      new NodePolyfillPlugin()
+    ],
+resolve: {
+  fallback: {
+    "fs": false
+  }
+  } 
   },
   pwa: {
     name: 'Vue Argon Design',
