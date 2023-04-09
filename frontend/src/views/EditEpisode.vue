@@ -164,7 +164,7 @@ export default {
           options: {
             debug: 'warn',
             modules: {
-              toolbar: [['bold', 'italic', 'underline', 'strike'],[{ 'color': [] }, { 'background': [] }]]
+              toolbar: [['bold', 'italic', 'underline', 'strike'],[{ 'color': [] }, { 'background': [] }], ['clean']]
             },
             readOnly: false,
             theme: 'snow'
