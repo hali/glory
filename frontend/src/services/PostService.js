@@ -4,7 +4,7 @@ export async function addPost(payload) {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(Object.assign({}, payload))
       })
-    return await response.json();
+    return await response.status;
 }
 
 export async function viewPost(id) {

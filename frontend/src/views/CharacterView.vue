@@ -109,7 +109,7 @@
             v-model:content="info" 
             content-type="html" 
             :options="options"
-            class="form-control"
+            class="form-control rounded-0"
             style="height: 250px"
           />
         </div>

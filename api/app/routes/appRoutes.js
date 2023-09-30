@@ -5,6 +5,7 @@ module.exports = function(app) {
   var postsList = require('../controller/postController');
   var playersList = require('../controller/playerController');
   var emails = require('../controller/emailController');
+  var stats = require('../controller/siteController');
 
   // characters routes
   app.route('/api/characters')
@@ -36,6 +37,10 @@ module.exports = function(app) {
     .get(episodesList.branches);    
   app.route('/api/addBranch/:branch')
     .post(episodesList.add_branch);   
+  app.route('/api/episodes/:episodeId/draft')
+    .post(episodesList.update_draft)
+    .get(episodesList.get_draft)
+    .delete(episodesList.delete_draft);    
     
   // posts routes
   app.route('/api/posts')
@@ -76,5 +81,12 @@ module.exports = function(app) {
     .post(emails.check_subscription);  
   app.route('/api/deleteSubscription')  
     .post(emails.delete_subscription);  
+    
+  app.route('/api/stats/episodes')
+  	.get(stats.get_episodes_count);  
+  app.route('/api/stats/characters')
+  	.get(stats.get_characters_count);  
+  app.route('/api/stats/posts')
+  	.get(stats.get_posts_count);  
 };  
     

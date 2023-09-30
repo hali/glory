@@ -94,7 +94,7 @@ Episode.listLatest = function(result) {
     from episode e, posts p, `character` c  \
     where e.id = p.episode_id\
     and p.author_id = c.id \
-    order by p.added_time desc limit 20";
+    order by p.added_time desc limit 10";
 	sql.query(sqlQuery, 
 	function (err, res) {
 
@@ -161,6 +161,45 @@ Episode.updateBranches = function (ep_id, branches, result) {
 	});
     
     sql.query(sqlstring, 
+	function (err, res) {            
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        } else{
+            result(null, res.insertId);
+        }
+    });           
+};
+
+Episode.updatePostDraft = function (ep_id, body, result) {    	
+    sql.query("REPLACE into drafts (episode_id, player_id, text) values (?, ?, ?)", 
+    [ep_id, body.player_id, body.draft],
+	function (err, res) {            
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        } else{
+            result(null, res.insertId);
+        }
+    });           
+};
+
+Episode.getDraft = function (ep_id, player_id, result) {    	
+    sql.query("SELECT text from drafts where episode_id = ? and player_id = ?", 
+    [ep_id, player_id],
+	function (err, res) {            
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        } else{
+            result(null, res);
+        }
+    });           
+};
+
+Episode.deleteDraft = function (ep_id, player_id, result) {    	
+    sql.query("DELETE from drafts where episode_id = ? and player_id = ?", 
+    [ep_id, player_id],
 	function (err, res) {            
         if(err) {
             console.log("error: ", err);

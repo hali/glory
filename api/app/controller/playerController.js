@@ -40,7 +40,7 @@ exports.get_player = function(req, res) {
 };
 
 exports.get_episodes = function(req, res) {
-  Player.getEpisodesById(req.params.playerId, function(err, episodes) {
+  Player.getEpisodesById(req.params.playerId, req.query.statusId, function(err, episodes) {
     if (err)
       res.send(err);  
     res.json(episodes);

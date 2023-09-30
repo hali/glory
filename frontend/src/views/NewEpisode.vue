@@ -15,7 +15,7 @@
       <div class="container">
         <div class="row text-white">
           <p class="col-md-12">
-            Название эпизода:
+            {{ $t('storyName') }}
           </p>
         </div>
         <div class="row">  
@@ -24,13 +24,12 @@
               v-model="name" 
               class="form-control col-md-12"
               name="name"
-              placeholder="Однажды в далёком и тёмном лесу два зайца в ловушку поймали лису"
             >
           </div>
         </div>
         <div class="row text-white">
           <div class="col-md-6">
-            <p>Коллекции:</p>
+            <p>{{ $t('tags') }}</p>
             <multiselect
               v-model="collection" 
               :options="collection_options" 
@@ -41,25 +40,25 @@
               track-by="description"
               :show-labels="false"
               placeholder="Pick a value"
-              :taggable="true" @tag="addTag"
+              :taggable="true"
+              @tag="addTag"
             />
           </div> 
           <div class="col-md-6">
             <p class="col-md-6">
-              Предупреждения:
+              {{ $t('warnings') }}
             </p>
             <input
               v-model="warning"
               class="form-control col-md-12" 
               name="warning"
-              placeholder="МПРЕГ? Обсуждение суицида? Напиши об этом!"
             >
           </div>
         </div>
         <div class="row text-white">
           <div class="col-md-6">
-            <p class="col-md-6">
-              Время действия:
+            <p>
+              {{ $t('storyTime') }}
             </p>
             <base-input addon-left-icon="ni ni-calendar-grid-58">
               <flat-picker
@@ -73,18 +72,17 @@
             </base-input>       
           </div>
           <div class="col-md-6">
-            <p>Сеттинг (игровой мир):</p>
+            <p>{{ $t('world') }}</p>
             <input
               v-model="world" 
               class="form-control col-md-12"
               name="world"
-              placeholder="АУ, магический СССР"
             >
           </div>
         </div>
         <div class="row text-white">
           <p class="col-md-12">
-            Описание эпизода:
+            {{ $t('storyDescription') }}
           </p>
         </div>
         <div class="row">  
@@ -93,9 +91,8 @@
               v-model:content="description" 
               content-type="html" 
               :options="options"
-              class="form-control"
+              class="form-control rounded-0"
               style="height: 250px"
-              placeholder="Вольное текстовое описание затравки или эпизода в целом..."
             />
           </div>
         </div>
@@ -108,7 +105,7 @@
             align="left"
           >
             <span @click="addEpisode(4)"><base-button type="secondary">
-              Черновик
+              {{ $t('createDraft') }}
             </base-button></span>
           </div>
           <div
@@ -116,7 +113,7 @@
             align="right"
           >  
             <span @click="addEpisode(3)"> <base-button type="success">
-              Открыть
+              {{ $t('createStoryButton') }}
             </base-button></span>
           </div>
         </div>
@@ -179,7 +176,7 @@ export default {
         },
     methods: {
       addEpisode(status) {
-        let processed_description = this.description.replace('- ', '— ');
+        let processed_description = this.description.replaceAll('-- ', '— ').replaceAll('- ', '— ').replaceAll('  ', ' ');
         const payload = {
               name: this.name,
               description: processed_description,

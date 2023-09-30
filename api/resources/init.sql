@@ -1,5 +1,4 @@
 drop table posts;
-drop table participants;
 drop table episode;
 drop table episode_status;
 drop table `character`;
@@ -116,21 +115,14 @@ CREATE TABLE `subscriptions`
 PRIMARY KEY (episode_id, player_id)
 );
 
-
-CREATE TABLE `participants`
+CREATE TABLE `drafts`
 (
- `id`           int NOT NULL AUTO_INCREMENT,
- `character_id` int NOT NULL ,
- `episode_id`   int NOT NULL ,
- `posts_number` int NOT NULL ,
+ `episode_id`          int NOT NULL,
+ `player_id` 		   int NOT NULL ,
+ `text`				text NULL,	
 
-PRIMARY KEY (`id`),
-KEY `fkIdx_101` (`character_id`),
-CONSTRAINT `FK_101` FOREIGN KEY `fkIdx_101` (`character_id`) REFERENCES `character` (`id`),
-KEY `fkIdx_104` (`episode_id`),
-CONSTRAINT `FK_104` FOREIGN KEY `fkIdx_104` (`episode_id`) REFERENCES `episode` (`id`)
+PRIMARY KEY (episode_id, player_id)
 );
-CREATE UNIQUE INDEX participants_ep ON `participants` (character_id, episode_id);
 
 
 CREATE TABLE `posts`

@@ -13,48 +13,50 @@
     <div class="container">
       <div class="row text-white">
         <h1 class="display-3  text-white">
-          Эпизоды ({{ episodes.length }})
+          {{ $t('stories') }} ({{ episodes.length }})
         </h1>
       </div>
       <div class="row">
-      <div class="col-md-3">
-      <multiselect
-              v-model="current_status" 
-              :options="status_filter" 
-              :searchable="true" 
-              :multiple="false"
-              :close-on-select="true" 
-              label="status"
-              track-by="id"
-              :show-labels="false"
-              @select="selectStatus"
-            /></div>
-      <div class="col-md-9">      
-      <badge
-        v-if="branch_id != 0"
-        type="primary"
-        @click="filterByBranch(0)"
-      >
-        Сбросить фильтр по коллекции "{{ branch_name }}"
-      </badge>
-      <badge
-        v-if="player_id != 0 && filteredByPlayer == false"
-        type="primary"
-        @click="filterByPlayer"
-      >
-        Показать мои эпизоды
-      </badge>
-      <badge
-        v-if="filteredByPlayer"
-        type="primary"
-        @click="clearPlayerFilter"
-      >
-        Сбросить фильтр по моим эпизодам
-      </badge>
-      </div></div>
+        <div class="col-md-3">
+          <multiselect
+            v-model="current_status" 
+            :options="status_filter" 
+            :searchable="true" 
+            :multiple="false"
+            :close-on-select="true" 
+            label="status"
+            track-by="id"
+            :show-labels="false"
+            @select="selectStatus"
+          />
+        </div>
+        <div class="col-md-9">      
+          <badge
+            v-if="branch_id != 0"
+            type="primary"
+            @click="filterByBranch(0)"
+          >
+            {{ $t('stopFilteringBy')}} "{{ branch_name }}"
+          </badge>
+          <badge
+            v-if="player_id != 0 && filteredByPlayer == false"
+            type="primary"
+            @click="filterByPlayer"
+          >
+            {{ $t('showMyStories')}}
+          </badge>
+          <badge
+            v-if="filteredByPlayer"
+            type="primary"
+            @click="clearPlayerFilter"
+          >
+            {{ $t('stopFilteringByMine')}}
+          </badge>
+        </div>
+      </div>
       <card>
         <div v-if="episodes.length == 0">
-          У вас пока нет эпизодов. :-( Почитайте чужие и присоединяйтесь к движухе!
+          {{ $t('noStoriesSorry')}}
         </div>
         <table class="table table-bordered">
           <tbody>
@@ -220,7 +222,7 @@ import 'vue-multiselect/dist/vue-multiselect.css';
             }); 
         },
         filterByPlayer() {
-            getEpisodesByPlayerId(this.player_id).then(response => {
+            getEpisodesByPlayerId(this.player_id, this.current_status.id).then(response => {
                 this.episodes = response;
                 this.filteredByPlayer = true;
                 this.episodes.forEach((ep, i) => {

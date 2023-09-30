@@ -30,10 +30,9 @@
           <card>
             <div
               name="info"
-              placeholder="Расскажите о себе как об игроке. Вольный формат. :-)"
-            >
-              {{ info }}
-            </div>
+              style="white-space:pre-wrap; text-justify: auto;" 
+              v-html="info"
+            />
           </card>
         </div>
       </div>
@@ -48,9 +47,8 @@
             <div
               name="post"
               style="white-space:pre-wrap; text-justify: auto;"
-            >
-              {{ post }}
-            </div>
+              v-html="post"
+            />
           </card>
         </div>
       </div>
@@ -119,28 +117,24 @@
                 <badge
                   v-if="item.status == 'Заброшен'"
                   type="danger"
-                  @click="filterByStatus(1, 'Заброшен')"
                 >
                   {{ item.status }}
                 </badge>
                 <badge
                   v-if="item.status == 'Завершен'"
                   type="success"
-                  @click="filterByStatus(2, 'Завершен')"
                 >
                   {{ item.status }}
                 </badge>
                 <badge
                   v-if="item.status == 'В процессе'"
                   type="default"
-                  @click="filterByStatus(3, 'В процессе')"
                 >
                   {{ item.status }}
                 </badge>
                 <badge
                   v-if="item.status == 'Черновик'"
                   type="info"
-                  @click="filterByStatus(4, 'Черновик')"
                 >
                   {{ item.status }}
                 </badge>

@@ -22,7 +22,7 @@
             class="nav-link"
             @click="closeMenu"
           >
-            F.A.Q./Правила
+            {{ $t('faq') }}
           </router-link>
         </li>      
         <li class="nav-item">
@@ -31,7 +31,7 @@
             class="nav-link"
             @click="closeMenu"
           >
-            Открыть эпизод
+            {{ $t('createStoryMenu') }}
           </router-link>
         </li> 
         <li class="nav-item">
@@ -39,7 +39,7 @@
             to="/episodes"
             class="nav-link"
           >
-            Эпизоды
+            {{ $t('stories') }}
           </router-link>
         </li>    
         <li class="nav-item">
@@ -47,7 +47,7 @@
             to="/characters"
             class="nav-link"
           >
-            Персонажи
+            {{ $t('characters') }}
           </router-link>
         </li>         
         <li class="nav-item">
@@ -55,7 +55,7 @@
             to="/player"
             class="nav-link"
           >
-            Игрок
+            {{ $t('gamer') }}
           </router-link>
         </li>  
         <li class="nav-item">
@@ -63,7 +63,7 @@
             class="nav-link"
             @click="logout"
           >
-            Выйти
+            {{ $t('logout') }}
           </div>
         </li> 
       </ul>

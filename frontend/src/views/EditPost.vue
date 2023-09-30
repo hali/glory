@@ -24,7 +24,7 @@
               v-model:content="post.body" 
               content-type="html" 
               :options="options"
-              class="form-control"
+              class="form-control rounded-0"
               style="height: 250px"
             />
           </div>
@@ -112,7 +112,7 @@ export default {
         },
     methods: {
       save() {
-        let processed_description = this.post.body.replace('- ', '— ');
+        let processed_description = this.post.body.replaceAll('-- ', '— ').replaceAll('- ', '— ').replaceAll('  ', ' ');
         const payload = {
               body: processed_description,
               id: this.post.id

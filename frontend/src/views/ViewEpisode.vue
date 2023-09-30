@@ -69,7 +69,7 @@
             <strong>Описание эпизода:</strong>
           </p> 
           <div
-            class="col-md-11"
+            class="col-md-11 text-white"
             style="white-space:pre-wrap; text-justify: auto;"
             type="light"
             v-html="episode.description"
@@ -92,9 +92,9 @@
               align="left"
               @click="publishDraft()"
             >
-            <base-button type="secondary">
-              ОПУБЛИКОВАТЬ
-            </base-button></span>
+              <base-button type="secondary">
+                ОПУБЛИКОВАТЬ
+              </base-button></span>
             
             <span
               v-if="(episode.status == 'В процессе') && (episode_players.includes(current_player_id))" 
@@ -255,8 +255,9 @@
               v-model:content="new_post" 
               content-type="html" 
               :options="options"
-              class="form-control"
+              class="form-control rounded-0"
               style="height: 250px"
+              ref="myEditor"
             />
           </div>
         </div>
@@ -300,7 +301,8 @@
   </section>
 </template>
 <script>
-import { viewEpisode, getEpisodePosts, closeEpisode, reopenEpisode, getEpisodeBranches } from '../services/EpisodeService';
+import { viewEpisode, getEpisodePosts, closeEpisode, reopenEpisode, getEpisodeBranches, 
+    updateEpisodeDraft, getEpisodeDraft, deleteEpisodeDraft } from '../services/EpisodeService';
 import { sendNotificationNewPost, addSubscription, checkSubscription, deleteSubscription } from '../services/EmailService';
 import { addPost, deletePost, addComment } from '../services/PostService';
 import { getCharacters } from '../services/CharacterService';
@@ -344,7 +346,8 @@ export default {
             },
             readOnly: false,
             theme: 'snow'
-          }
+          },
+          timer: null
         };
       },
       async created() {
@@ -355,7 +358,7 @@ export default {
             });
             this.url = window.location.href;
             getPlayer(this.email).then(response => {
-                this.current_player_id = response[0].id;
+                if (response.length > 0) this.current_player_id = response[0].id;
                 getCharacters(this.current_player_id).then(characters => {
                     this.characters = characters;
                 });
@@ -379,6 +382,9 @@ export default {
                 getEpisodeBranches(this.episode.id).then(response => {
                     this.branches = response;
                 });
+                getEpisodeDraft(this.episode.id, this.current_player_id).then(response => {
+                    this.new_post = response[0].text;
+                });
                 const subscription_payload = {
                   episode_id: this.episode.id,
                   player_id: this.current_player_id
@@ -389,34 +395,53 @@ export default {
             });
         },
         mounted() {
+          this.timer = setInterval(() => {
+            this.saveDraft()
+          }, 20000)
+        },
+        beforeUnmount() {
+          clearInterval(this.timer)
         },
       methods: {
         scrollToElement() {
             document.getElementById(location.hash).scrollIntoView();
         },
+        saveDraft() {
+            let processed_text = this.new_post.replaceAll('-- ', '— ').replaceAll('- ', '— ').replaceAll('  ', ' ');
+            const payload = {
+                  draft: processed_text,
+                  player_id: this.current_player_id,
+              };
+              if (processed_text != "")
+                updateEpisodeDraft(this.episode.id, payload);
+        },
         addPost(character) {
-            let processed_text = this.new_post.replace('- ', '— ').replace('  ', ' ');
+            let processed_text = this.new_post.replaceAll('-- ', '— ').replaceAll('- ', '— ').replaceAll('  ', ' ');
             const payload = {
                   body: processed_text,
                   added_time: (new Date().toISOString().slice(0, 19).replace('T', ' ')),
                   episode_id: this.episode.id,
                   author_id: character,
               };
-              addPost(payload).then(response => {
-                getEpisodePosts(this.episode.id).then(response => {
-                    this.posts = response;
-                    const notificationPayload = {
-                      thread_name: this.episode.name,
-                      episode_id: this.episode.id,
-                      character_name: this.current_character.name,
-                      thread_url: this.url,
-                      post_text: processed_text,
-                      player_id: this.current_player_id
-                    }
-                    sendNotificationNewPost(notificationPayload);
-                });
-                this.error = response.status;
-                
+              addPost(payload).then(status => {
+                this.error = status > 299;
+                if (!this.error) {
+                    deleteEpisodeDraft(this.episode.id, this.current_player_id);
+                    this.$refs.myEditor.setHTML('');
+                    getEpisodePosts(this.episode.id).then(response => {
+                        this.posts = response;
+                        const notificationPayload = {
+                          thread_name: this.episode.name,
+                          episode_id: this.episode.id,
+                          character_name: this.current_character.name,
+                          thread_url: this.url,
+                          post_text: processed_text,
+                          player_id: this.current_player_id
+                        };
+                    
+                        sendNotificationNewPost(notificationPayload);
+                    });
+                }                
               });
           },
         scrollToTop() {

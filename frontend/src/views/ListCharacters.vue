@@ -14,7 +14,7 @@
     <div class="container">
       <div class="row text-white">
         <h1 class="display-3  text-white">
-          Персонажи
+          {{ $t('characters') }}
         </h1>
       </div>
       <card>

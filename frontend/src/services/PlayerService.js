@@ -17,8 +17,8 @@ export async function savePlayer(payload) {
     return await response.json();
 }
 
-export async function getEpisodesByPlayerId(playerId) {
-    const response = await fetch('/api/players/' + playerId + '/episodes');
+export async function getEpisodesByPlayerId(playerId, statusId) {
+    const response = await fetch('/api/players/' + playerId + '/episodes/?statusId=' + statusId);
     return await response.json();
 }
 

@@ -63,7 +63,7 @@ Player.getCharactersById = function (playerId, result) {
             });   
 };
 
-Player.getEpisodesById = function (playerId, result) {
+Player.getEpisodesById = function (playerId, statusId, result) {
         sql.query("select e.id, e.name, e.status_id, es.description as status, \
            DATE_FORMAT(e.timeOfAction, '%d %M %Y') as timeOfAction, e.timeOfAction as time\
            from episode e, `character` c, player pl, posts p,\
@@ -71,6 +71,7 @@ Player.getEpisodesById = function (playerId, result) {
 			pl.id = c.player_id \
 			and e.id = p.episode_id \
 			and es.id = e.status_id \
+			and es.id = ?\
 			and p.author_id = c.id \
 			and pl.id = ? \
 			UNION \
@@ -79,9 +80,10 @@ Player.getEpisodesById = function (playerId, result) {
 			from episode e2, player p2, episode_status es WHERE \
 			e2.author_id = p2.id \
 			and es.id = e2.status_id \
+			and es.id = ?\
 			and p2.id = ?\
 			order by time asc",
-	[playerId, playerId], function (err, res) {             
+	[playerId, statusId, statusId, playerId], function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
                     result(err, null);

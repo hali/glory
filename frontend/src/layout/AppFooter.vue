@@ -1,43 +1,19 @@
 <template>
-  <footer class="footer has-cards">
+  <footer class="footer">
     <div class="container container-lg">
       <div class="row align-items-center justify-content-md-between">
         <div class="col-md-6">
           <div class="copyright">
             &copy; {{ year }}
             <a
-              href="https://rootcauseengineering.com"
+              href="mailto:hali4qa@gmail.com?subject=По поводу Glory"
               target="_blank"
               rel="noopener"
-            >Root Cause Engineering</a>
+            >Viktoriia Kuznetcova</a>
           </div>
         </div>
         <div class="col-md-6">
           <ul class="nav nav-footer justify-content-end">
-            <li class="nav-item">
-              <a
-                href="https://rootcauseengineering.com"
-                class="nav-link"
-                target="_blank"
-                rel="noopener"
-              >Root Cause Engineering</a>
-            </li>
-            <li class="nav-item">
-              <a
-                href="/manifest"
-                class="nav-link"
-                target="_blank"
-                rel="noopener"
-              >Манифест</a>
-            </li>
-            <li class="nav-item">
-              <a
-                href="http://blog.creative-tim.com"
-                class="nav-link"
-                target="_blank"
-                rel="noopener"
-              >Blog</a>
-            </li>
             <li class="nav-item">
               <a
                 href="https://github.com/creativetimofficial/argon-design-system/blob/master/LICENSE.md"

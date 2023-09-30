@@ -62,6 +62,30 @@ exports.update_branches = function(req, res) {
   });
 }
 
+exports.get_draft = function(req, res) {
+  Episode.getDraft(req.params.episodeId, req.query.playerId, function(err, draft) {
+    if (err)
+      res.send(err);  
+    res.json(draft);
+  });
+}
+
+exports.delete_draft = function(req, res) {
+  Episode.deleteDraft(req.params.episodeId, req.query.playerId, function(err, draft) {
+    if (err)
+      res.send(err);  
+    res.json(draft);
+  });
+}
+
+exports.update_draft = function(req, res) {
+  Episode.updatePostDraft(req.params.episodeId, req.body, function(err, response) {
+    if (err)
+      res.send(err);  
+    res.json(response);
+  });
+}
+
 exports.branches = function(req, res) {
   Episode.getAllBranches(function(err, branches) {
     if (err)

@@ -78,3 +78,24 @@ export async function updateEpisodeBranches(id, payload) {
       })
     return await response.json();
 }
+
+export async function updateEpisodeDraft(id, payload) {
+    const response = await fetch(`/api/episodes/` + id + `/draft`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(Object.assign({}, payload))
+      })
+    return await response.json();
+}
+
+export async function getEpisodeDraft(id, player) {
+    const response = await fetch('/api/episodes/' + id + '/draft?playerId=' + player);
+    return await response.json();
+}
+
+export async function deleteEpisodeDraft(id, player) {
+    const response = await fetch('/api/episodes/' + id + '/draft?playerId=' + player, {
+        method: 'DELETE'
+    });
+    return await response.json();
+}

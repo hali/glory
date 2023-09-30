@@ -41,7 +41,8 @@
               track-by="description"
               :show-labels="false"
               placeholder="Pick a value"
-              :taggable="true" @tag="addTag"
+              :taggable="true"
+              @tag="addTag"
             />
           </div> 
           <div class="col-md-6">
@@ -93,7 +94,7 @@
               v-model:content="episode.description" 
               content-type="html" 
               :options="options"
-              class="form-control"
+              class="form-control rounded-0"
               style="height: 250px"
             />
           </div>
@@ -197,7 +198,7 @@ export default {
         },
     methods: {
       updateEpisode() {
-        let processed_description = this.episode.description.replace('- ', '— ');
+        let processed_description = this.episode.description.replaceAll('-- ', '— ').replaceAll('- ', '— ').replaceAll('  ', ' ');
         const payload = {
               name: this.episode.name,
               description: processed_description,
