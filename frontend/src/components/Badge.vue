@@ -18,6 +18,9 @@
 </template>
 <script>
 export default {
+  compatConfig: {
+    INSTANCE_LISTENERS: false,
+  },
   name: "Badge",
   props: {
     tag: {

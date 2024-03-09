@@ -16,6 +16,23 @@ resolve: {
   }
   } 
   },
+  chainWebpack: (config) => {
+    config.resolve.alias.set('vue', '@vue/compat')
+
+    config.module
+      .rule('vue')
+      .use('vue-loader')
+      .tap((options) => {
+        return {
+          ...options,
+          compilerOptions: {
+            compatConfig: {
+              MODE: 2
+            }
+          }
+        }
+      })
+  },
   pwa: {
     name: 'Vue Argon Design',
     themeColor: '#172b4d',
@@ -27,12 +44,12 @@ resolve: {
     // Enable CSS source maps.
     sourceMap: process.env.NODE_ENV !== 'production'
   },
-  devServer: {
+  /*devServer: {
       proxy: {
         '^/api': {
           target: 'http://localhost:3000',
           changeOrigin: true
         },
       }
-    }
+    }*/
 };

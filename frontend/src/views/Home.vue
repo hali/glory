@@ -19,10 +19,10 @@
             <div class="row">
               <div class="col-lg-12">
                 <h1 class="display-3  text-white">
-                  Глори санбантая
+                  {{ $t('gloryTitle') }}
                 </h1>
                 <p class="lead  text-white">
-                  Сайт, созданный ролевиком для ролевиков, с минимумом драмы и максимумом удобства. Ура самоуправлению!
+                  {{ $t('gloryDescription') }}
                 </p>
                 <div
                   class="btn-wrapper"
@@ -34,19 +34,19 @@
                     icon="fa fa-sign-in"
                     @click="login"
                   >
-                    Войти
+                    {{ $t('login') }}
                   </base-button>
                 </div>
                 <p />
                 <div class="row text-white">
                   <div class="col-lg-3">
-                    Персонажей: {{ characters_n }}
+                    {{ $t('totalCharacters') }}: {{ characters_n }}
                   </div>
                   <div class="col-lg-3">
-                    Эпизодов: {{ episodes_n }}
+                    {{ $t('totalStories') }}: {{ episodes_n }}
                   </div>
                   <div class="col-lg-3">
-                    Постов: {{ posts_n }}
+                    {{ $t('totalPosts') }}: {{ posts_n }}
                   </div>
                 </div>
               </div>
@@ -71,10 +71,10 @@
                       class="mb-4"
                     />
                     <h6 class="text-primary text-uppercase">
-                      Быстрый старт
+                      {{ $t('quickStart') }}
                     </h6>
                     <p class="description mt-3">
-                      Регистрация занимает пару минут и даёт полный доступ. Никаких анкет, танцев с внешками и административными темами и премодерации - начинайте играть сразу после регистрации. Или не начинайте. Здесь никто никого никуда не гонит.
+                      {{ $t('quickStartDetails') }}
                     </p>
                   </card>
                 </div>
@@ -92,10 +92,10 @@
                       class="mb-4"
                     />
                     <h6 class="text-success text-uppercase">
-                      Удобная навигация
+                      {{ $t('navigation') }}
                     </h6>
                     <p class="description mt-3">
-                      Организация эпизодов по веткам, персонажам и игрокам. Тэги. Автоматическая игровая хронология. Найти нужное или перечитать любимое еще никогда не было так просто.
+                      {{ $t('navigationDetails') }}
                     </p>
                   </card>
                 </div>
@@ -113,10 +113,10 @@
                       class="mb-4"
                     />
                     <h6 class="text-warning text-uppercase">
-                      Самоуправление
+                      {{ $t('selfGovernance') }}
                     </h6>
                     <p class="description mt-3">
-                      Создавайте, редактируйте и закрывайте свои эпизоды самостоятельно. Пишите анкеты, или не пишите. Играйте с той скоростью, с которой комфортно, выкладывайте сольные эпизоды или не очень сольные. Или читайте молча - так тоже можно, да.
+                      {{ $t('selfGovernanceDetails') }}
                     </p>
                   </card>
                   <p />

@@ -28,6 +28,7 @@ const oktaAuth = new OktaAuth(sampleConfig.oidc);
 import {Tabs, Tab} from 'vue3-tabs-component';
 import i18n from './i18n';
 
+
 createApp(App)
   .use(OktaVue, { oktaAuth })
   .use(router)

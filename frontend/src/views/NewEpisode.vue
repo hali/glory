@@ -86,18 +86,17 @@
           </p>
         </div>
         <div class="row">  
-          <div class="col-md-12">
+          <p class="col-md-12">
             <quill-editor
               v-model:content="description" 
               content-type="html" 
               :options="options"
               class="form-control rounded-0"
-              style="height: 250px"
             />
-          </div>
+          </p>
         </div>
         <div class="row">
-          <p />
+          <p /> 
         </div>
         <div class="row">
           <div

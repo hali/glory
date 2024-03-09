@@ -55,7 +55,7 @@
             to="/player"
             class="nav-link"
           >
-            {{ $t('gamer') }}
+            {{ $t('playerHub') }}
           </router-link>
         </li>  
         <li class="nav-item">
@@ -90,7 +90,7 @@
             class="nav-link"
             @click="closeMenu"
           >
-            F.A.Q./Правила
+            {{ $t('faq') }}
           </router-link>
         </li>       
         <li class="nav-item">
@@ -98,7 +98,7 @@
             to="/episodes"
             class="nav-link"
           >
-            Эпизоды
+            {{ $t('stories') }}
           </router-link>
         </li> 
         <li class="nav-item">
@@ -106,7 +106,7 @@
             to="/characters"
             class="nav-link"
           >
-            Персонажи
+            {{ $t('characters') }}
           </router-link>
         </li>
         <li class="nav-item">
@@ -114,7 +114,7 @@
             class="nav-link"
             @click="login"
           >
-            <i class="fa fa-sign-in" />Войти
+            <i class="fa fa-sign-in" />{{ $t('login') }}
           </div>
         </li>
       </ul>

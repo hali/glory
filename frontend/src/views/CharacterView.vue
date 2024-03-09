@@ -21,11 +21,13 @@
         </h1>
       </div>
     </div>
-    <div class="container card-profile-image">
+    <div class="container">
+    <div class=" col-md-2 card-profile-image" align="left">
       <img
         :src="`${img}`"
-        class="rounded img-fluid"
+        class="rounded-circle img-fluid"
       >
+    </div>  
     </div>
     <div class="container">
       <div
@@ -33,7 +35,7 @@
         class="row text-white"
       >
         <p class="col-md-12">
-          Имя персонажа:
+          {{ $t('characterName') }}:
         </p>
       </div>
       <div
@@ -70,7 +72,7 @@
       </div>
       <div class="row text-white">
         <div class="col-md-6">
-          <p>Статус:</p>
+          <p>{{ $t('status') }}:</p>
           <input
             v-model="status"
             class="form-control col-md-12" 
@@ -80,7 +82,7 @@
         </div> 
         <div class="col-md-6">
           <p>
-            Дата рождения:
+            {{ $t('characterDOB') }}:
           </p>
           <base-input addon-left-icon="ni ni-calendar-grid-58">
             <flat-picker
@@ -97,7 +99,7 @@
       </div>  
       <div class="row text-white">
         <p class="col-md-12">
-          Анкета/Информация о персонаже:
+          {{ $t('characterInfo') }}:
         </p>
       </div>
       <div
@@ -132,7 +134,7 @@
           align="right"
         >  
           <span @click="save()"> <base-button type="success">
-            Сохранить персонажа
+            {{ $t('save') }}
           </base-button></span>
         </div>
       </div>
@@ -150,7 +152,7 @@
               params: { id: character_player_id }                              
             }"
           >
-            Игрок
+            {{ $t('player') }}
           </router-link>
         </div>
       </div>
@@ -161,10 +163,10 @@
         <div class="col-md-12">
           <card>
             <h6 class="text-primary text-uppercase">
-              Эпизоды ({{ episodes.length }})
+              {{ $t('stories') }} ({{ episodes.length }})
             </h6>
             <div v-if="episodes.length == 0">
-              Нет эпизодов с этим персонажем :-(
+              {{ $t('noStories') }}
             </div>
             <div
               v-for="item in episodes"

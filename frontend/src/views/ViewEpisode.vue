@@ -20,7 +20,7 @@
         </div>
         <div class="row text-white">
           <p class="col-md-6">
-            <strong>Коллекции: </strong>
+            <strong>{{ $t('tags') }} </strong>
             <badge
               v-for="item in branches"
               :key="item.id"
@@ -32,20 +32,20 @@
             </badge>
           </p>
           <p class="col-md-6">
-            <strong>Предупреждения: </strong> <badge type="secondary" />
+            <strong>{{ $t('warnings') }} </strong> <badge type="secondary" />
           </p>
         </div>
         <div class="row text-white">
           <p class="col-md-6">
-            <strong>Время действия:</strong> {{ episode.timeOfAction }}
+            <strong>{{ $t('storyTime') }}</strong> {{ episode.timeOfAction }}
           </p>
           <p class="col-md-6">
-            <strong>Сеттинг (игровой мир):</strong> {{ episode.world }}
+            <strong>{{ $t('world') }}</strong> {{ episode.world }}
           </p>
         </div>
         <div class="row text-white">
           <p class="col-md-12">
-            <strong>Участники: </strong> 
+            <strong>{{ $t('authors') }}: </strong> 
             <badge
               v-for="char in episode_characters"
               :key="char.id"
@@ -66,7 +66,7 @@
           class="row text-white"
         >
           <p class="col-md-12">
-            <strong>Описание эпизода:</strong>
+            <strong>{{ $t('storyDescription') }}</strong>
           </p> 
           <div
             class="col-md-11 text-white"
@@ -84,7 +84,7 @@
               align="left"
               @click="$router.push({ name: 'editepisode', params: { id: episode.id } })"
             ><base-button type="secondary">
-              РЕДАКТИРОВАТЬ
+              {{ $t('edit') }}
             </base-button></span>
             <span
               v-if="(episode.status == 'Черновик') && (current_player_id == episode.author_id)" 
@@ -93,7 +93,7 @@
               @click="publishDraft()"
             >
               <base-button type="secondary">
-                ОПУБЛИКОВАТЬ
+                {{ $t('publish') }}
               </base-button></span>
             
             <span
@@ -101,14 +101,14 @@
               class="col-md-3" 
               @click="closeEpisode"
             ><base-button type="secondary">
-              Закрыть эпизод
+              {{ $t('closeStory') }}
             </base-button></span>
             <span
               v-if="['Завершен', 'Черновик'].includes(episode.status) && (episode_players.includes(current_player_id))" 
               class="col-md-3" 
               @click="reopenEpisode"
             ><base-button type="secondary">
-              Открыть эпизод
+              {{ $t('openStory') }}
             </base-button></span>
           </div>
           <div
@@ -119,7 +119,7 @@
               type="primary"
               @click.prevent="scrollToBottom()"
             >
-              ВНИЗ
+              {{ $t('bottom') }}
             </base-button>
           </div>
         </div>
@@ -146,7 +146,7 @@
                   class="col-md-10"
                   align="right"
                 >
-                  <span>Пост добавлен: {{ item.added_time }}</span>
+                  <span>{{ $t('posted') }}: {{ item.added_time }}</span>
                 </div>
               </div>
               <div
@@ -163,7 +163,7 @@
                   class="col-md-8"
                   align="left"
                 >
-                  <p>{{ item.name }}</p><p>Лет сейчас: {{ item.age }}</p><p>{{ item.status }}</p>
+                  <p>{{ item.name }}</p><p>{{ $t('currentAge') }}: {{ item.age }}</p><p>{{ item.status }}</p>
                 </div>
                 <div
                   class="col-md-2"
@@ -198,7 +198,7 @@
                       size="sm"
                       type="primary"
                       icon="fa fa-comment-o"
-                      title="Оставить комментарий"
+                      :title="$t('leaveFeedbackInstruction')"
                     /></span>
                 </div>
               </div>
@@ -222,14 +222,14 @@
               type="info"
               @click.prevent="subscribe()"
             >
-              ПОДПИСАТЬСЯ
+              {{ $t('subscribe') }}
             </base-button>
             <base-button
               v-if="subscription_status"
               type="info"
               @click.prevent="unsubscribe()"
             >
-              ОТПИСАТЬСЯ
+              {{ $t('unsubscribe') }}
             </base-button>
             <p />
           </div>
@@ -241,7 +241,7 @@
               type="primary"
               @click.prevent="scrollToTop()"
             >
-              ВВЕРХ
+              {{ $t('top') }}
             </base-button>
             <p />
           </div>
@@ -282,7 +282,7 @@
               label="name"
               track-by="id"
               :show-labels="false"
-              placeholder="Выбери персонажа"
+              :placeholder="$t('selectCharacter')"
             />
           </div>  
           <div
@@ -291,7 +291,7 @@
           >
             <span @click="addPost(current_character.id)">
               <base-button type="success">
-                Добавить
+                {{ $t('post') }}
               </base-button>
             </span>
           </div>  
@@ -331,7 +331,7 @@ export default {
           posts: [],
           branches: [],
           new_post: "",
-          current_character: {id: 0, name: "ВЫБЕРИ ПЕРСОНАЖА"},
+          current_character: {id: 0, name: "  "},
           characters: [],
           episode_characters: [],
           episode_players: [],
@@ -383,6 +383,7 @@ export default {
                     this.branches = response;
                 });
                 getEpisodeDraft(this.episode.id, this.current_player_id).then(response => {
+                  if (response.length > 0)
                     this.new_post = response[0].text;
                 });
                 const subscription_payload = {
@@ -412,7 +413,7 @@ export default {
                   draft: processed_text,
                   player_id: this.current_player_id,
               };
-              if (processed_text != "")
+              if (processed_text.length > 15)
                 updateEpisodeDraft(this.episode.id, payload);
         },
         addPost(character) {

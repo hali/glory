@@ -17,13 +17,13 @@
         {{ name }}
       </h1>
       <tabs>
-        <tab name="Статистика">
+        <tab :name="$t('stats')">
           <div class="container">
             <div class="row">
               <div class="col-md-6">
                 <card>
                   <h6 class="text-primary text-uppercase">
-                    Жду ответа:
+                    {{ $t('debtsToMe') }}:
                   </h6>
                   <div
                     v-for="item in waitingFor"
@@ -43,7 +43,7 @@
               <div class="col-md-6">
                 <card>
                   <h6 class="text-primary text-uppercase">
-                    Мои долги:
+                    {{ $t('debtsFromMe') }}:
                   </h6>
                   <div
                     v-for="item in myDebts"
@@ -65,16 +65,16 @@
             <div class="row">
               <div class="col-md-12">
                 <card>
-                  Постов на сайте за всех персонажей в сумме выложено: {{ postsN }}
+                  {{ $t('personalMessagesCount') }}: {{ postsN }}
                 </card>
               </div>  
             </div>
           </div>
           <p />
         </tab>
-        <tab name="Профиль">
+        <tab :name="$t('profile')">
           <div class="row">
-            Имя (для отображения на странице профиля игрока): 
+            {{ $t('playerName') }}: 
           </div>
           <div class="row">  
             <div class="col-md-12">
@@ -86,7 +86,7 @@
             </div>
           </div><p />
           <div class="row">
-            О себе/предпочтения в игре: 
+            {{ $t('aboutMe') }}: 
           </div>
           <div class="row">  
             <div class="col-md-12">
@@ -101,7 +101,7 @@
             </div>
           </div><p />
           <div class="row">
-            Пример поста: 
+            {{ $t('postExample') }}: 
           </div>
           <div class="row">  
             <div class="col-md-12">
@@ -125,12 +125,12 @@
               <base-button
                 type="success"
               >
-                Сохранить
+                {{ $t('save') }}
               </base-button>
             </div>
           </div>    
         </tab>
-        <tab name="Персонажи">
+        <tab :name="$t('characters')">
           <div class="row">
             <div class="col-md-4">
               <card>
@@ -138,7 +138,7 @@
                   {{ $t('characters') }}
                 </h6>
                 <div v-if="characters.length == 0">
-                  Добавьте персонажей!
+                  {{ $t('addCharacters') }}
                 </div>
                 <div
                   v-for="item in characters"
@@ -164,21 +164,20 @@
                 <div class="col-md-12">
                   <div class="row">
                     <h6 class="text-primary text-uppercase">
-                      Новый персонаж
+                      {{ $t('newCharacter') }}
                     </h6>
                   </div>  
                   <div class="row">
-                    <div>Имя персонажа</div>
+                    <div>{{ $t('characterName') }}</div>
                   </div>
                   <div class="row text-white">
                     <input
                       v-model="newCharacter.name"
-                      placeholder="Имя персонажа"
                       class="form-control col-md-11"
                     >
                   </div><p />
                   <div class="row">
-                    <div>Дата рождения</div>
+                    <div>{{ $t('characterDOB') }}</div>
                   </div>
                   <div class="row">
                     <div>
@@ -196,25 +195,27 @@
                   </div>
                   <p />
                   <div class="row">
-                    <div>Статус</div>
+                    <div>{{ $t('status') }}</div>
                   </div>
-                  <div class="row text-white">
+                  <div class="row">
                     <input
                       v-model="newCharacter.status"
-                      class="form-control col-md-12"
+                      class="form-control col-md-11"
                     >
-                  </div><p />
-                  <div class="row">
-                    <div>Информация/Анкета</div>
                   </div>
-                  <div class="row text-white">
+                  <p />
+                  <div class="row">
+                    <div>{{ $t('characterInfo') }}</div>
+                  </div>
+                  <div class="row">
+                  <p class="col-md-11">
                     <quill-editor
                       v-model:content="newCharacter.info" 
                       content-type="html" 
                       :options="options"
-                      class="form-control rounded-0"
-                      style="height: 250px"
+                      class="form-control rounded-0 "
                     />
+                    </p>
                   </div>
                 </div>
               </div>
@@ -227,21 +228,21 @@
               @click.prevent="addCharacter()"
             >
               <base-button type="success">
-                Добавить персонажа
+                {{ $t('addCharacter') }}
               </base-button>
             </div>
           </div>
         </tab>
-        <tab name="Фидбек мне">
+        <tab :name="$t('feedbackToMe')">
           <div v-if="feedback.length == 0">
-            У вас пока нет фидбека. :-(
+            {{ $t('noFeedbackYet') }}
           </div>
           <table class="table table-bordered">
             <thead>
-              <th>Текст</th>
-              <th>От кого</th>
-              <th>Когда</th>
-              <th>По поводу</th>
+              <th>{{ $t('text') }}</th>
+              <th>{{ $t('from') }}</th>
+              <th>{{ $t('when') }}</th>
+              <th>{{ $t('forTheMessage') }}</th>
             </thead>
             <tbody>
               <tr
@@ -268,19 +269,19 @@
             </tbody>
           </table>    
         </tab>
-        <tab name="Фидбек мой">
+        <tab :name="$t('feedbackFromMe')">
           <div v-if="comments.length == 0">
-            Додайте людям фидбека, и он здесь появится!
+            {{ $t('leaveFeedback') }}
           </div>
           <table
             v-if="comments.length > 0"
             class="table table-bordered"
           >
             <thead>
-              <th>Текст</th>
-              <th>Кому</th>
-              <th>Когда</th>
-              <th>По поводу</th>
+              <th>{{ $t('text') }}</th>
+              <th>{{ $t('to') }}</th>
+              <th>{{ $t('when') }}</th>
+              <th>{{ $t('forTheMessage') }}</th>
             </thead>
             <tbody>
               <tr
@@ -385,7 +386,7 @@ export default {
         });
         }
         getDebts().then(response => {
-            getEpisodesByPlayerId(this.id).then(eps => {
+            getEpisodesByPlayerId(this.id, 0).then(eps => {
                 this.episodes = eps;
                 response.forEach((value) => {
                 if (value.player_id == this.id) 

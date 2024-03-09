@@ -30,7 +30,6 @@
 
       <div
         :id="contentId"
-        v-click-outside="closeMenu"
         class="collapse navbar-collapse"
         :class="{show: toggled}"
       >

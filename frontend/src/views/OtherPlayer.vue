@@ -18,11 +18,11 @@
         </h1>
       </div>
       <h6 class="text-primary text-uppercase">
-        Профиль
+        {{ $t('profile') }}
       </h6>
       <div class="row text-white">
         <p class="col-md-12">
-          <strong>О себе/предпочтения в игре: </strong>
+          <strong>{{ $t('aboutMe') }}: </strong>
         </p>
       </div>
       <div class="row">  
@@ -38,7 +38,7 @@
       </div>
       <div class="row text-white">
         <p class="col-md-12">
-          <strong>Пример поста: </strong>
+          <strong>{{ $t('postExample') }}: </strong>
         </p>
       </div>
       <div class="row">  
@@ -59,10 +59,10 @@
         <div class="col-md-12">
           <card>
             <h6 class="text-primary text-uppercase">
-              Персонажи ({{ characters.length }})
+              {{ $t('characters') }} ({{ characters.length }})
             </h6>
             <div v-if="characters.length == 0">
-              Добавьте персонажей!
+              {{ $t('addCharacters') }}
             </div>
             <div
               v-for="item in characters"
@@ -90,10 +90,10 @@
         <div class="col-md-12">
           <card>
             <h6 class="text-primary text-uppercase">
-              Эпизоды ({{ episodes.length }})
+              {{ $t('stories') }} ({{ episodes.length }})
             </h6>
             <div v-if="episodes.length == 0">
-              Нет эпизодов у этого игрока :-(
+              {{ $t('noStoriesPlayer') }}
             </div>
             <div
               v-for="item in episodes"
@@ -174,7 +174,7 @@ export default {
         getCharacters(this.id).then(characters => {
             this.characters = characters;
         });
-        getEpisodesByPlayerId(this.id).then(episodes => {
+        getEpisodesByPlayerId(this.id, 0).then(episodes => {
             this.episodes = episodes;
         })
     });

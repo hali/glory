@@ -1,6 +1,6 @@
 <template>
   <section class="section section-shaped section-lg my-0">
-    <div class="shape shape-style-1 bg-gradient-default">
+    <div class="shape-dark shape-style-1 bg-gradient-default">
       <span />
       <span />
       <span />
@@ -22,7 +22,7 @@
           <div
             v-for="item in characters"
             :key="item.id"
-            class="col-md-2"
+            class="col-md-4"
           >
             <router-link
               :to="{
