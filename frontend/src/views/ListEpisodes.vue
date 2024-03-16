@@ -120,7 +120,7 @@
   </section>
 </template>
 <script>
-import { getEpisodes, getEpisodeBranches } from '../services/EpisodeService';
+import { getEpisodes, getAllBranches } from '../services/EpisodeService';
 import { getEpisodesByPlayerId, getPlayer } from '../services/PlayerService';
 import Multiselect from 'vue-multiselect';
 import 'vue-multiselect/dist/vue-multiselect.css';
@@ -132,6 +132,7 @@ import 'vue-multiselect/dist/vue-multiselect.css';
         data() {
             return {
                 episodes: [],
+                allBranches: [],
                 branch_id: 0,
                 branch_name: 'Все коллекции',
                 email: '',
@@ -152,13 +153,14 @@ import 'vue-multiselect/dist/vue-multiselect.css';
             if (this.branch_id != 0) {
                 getEpisodes(this.current_status.id, this.branch_id).then(response => {
                     this.episodes = response;
-                    this.episodes.forEach((ep, i) => {
-                      getEpisodeBranches(ep.id).then(branches => {
-                        this.episodes[i].branches = branches;                        
-                        this.episodes[i].branches.forEach(branch => {
-                          if (branch.id == this.branch_id) this.branch_name = branch.description;
+                    getAllBranches().then(allBranches => {
+                        this.allBranches = allBranches;
+                        this.branch_name = (this.allBranches.filter(item => item.id == this.branch_id))[0].description;
+                        this.episodes.forEach((ep, i) => {
+                            const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
+                            const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
+                            this.episodes[i].branches = branches;                                                
                         });
-                      });
                     });
                 });
             }
@@ -173,11 +175,16 @@ import 'vue-multiselect/dist/vue-multiselect.css';
                         this.player_id = response[0].id;   
                         getEpisodesByPlayerId(this.player_id, this.current_status.id).then(response => {
                             this.episodes = response;
-                            this.filteredByPlayer = true;
-                            this.episodes.forEach((ep, i) => {
-                              getEpisodeBranches(ep.id).then(branches => {
-                                this.episodes[i].branches = branches;
-                              });
+                            getAllBranches().then(allBranches => {
+                                this.allBranches = allBranches;
+                                this.filteredByPlayer = true;
+                                this.episodes.forEach((ep, i) => {
+                                    const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
+                                    console.log(branchIdsArray);
+                                    console.log(this.allBranches);
+                                    const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
+                                    this.episodes[i].branches = branches;  
+                                });
                             });
                           }); 
                     });
@@ -186,11 +193,14 @@ import 'vue-multiselect/dist/vue-multiselect.css';
             if (!(this.authState && this.authState.isAuthenticated) && this.branch_id == 0) {
                 getEpisodes(this.current_status.id, this.branch_id).then(response => {
                     this.episodes = response;
-                    this.episodes.forEach((ep, i) => {
-                              getEpisodeBranches(ep.id).then(branches => {
-                                this.episodes[i].branches = branches;
-                              });
-                            });
+                    getAllBranches().then(allBranches => {
+                        this.allBranches = allBranches;
+                        this.episodes.forEach((ep, i) => {
+                            const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
+                            const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
+                            this.episodes[i].branches = branches;                                                
+                        });
+                    });
                 });
             }                     
           },
@@ -201,10 +211,10 @@ import 'vue-multiselect/dist/vue-multiselect.css';
             getEpisodes(this.current_status.id, this.branch_id).then(response => {
                 this.episodes = response;
                 this.episodes.forEach((ep, i) => {
-                              getEpisodeBranches(ep.id).then(branches => {
-                                this.episodes[i].branches = branches;
-                              });
-                            });
+                    const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
+                    const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
+                    this.episodes[i].branches = branches;    
+                });
             }); 
         },
         filterByStatus(id, status) {
@@ -217,10 +227,10 @@ import 'vue-multiselect/dist/vue-multiselect.css';
             getEpisodes(this.current_status.id, this.branch_id).then(response => {
                 this.episodes = response;
                 this.episodes.forEach((ep, i) => {
-                              getEpisodeBranches(ep.id).then(branches => {
-                                this.episodes[i].branches = branches;
-                              });
-                            });
+                    const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
+                    const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
+                    this.episodes[i].branches = branches;    
+                });
             }); 
         },
         filterByPlayer() {
@@ -228,10 +238,10 @@ import 'vue-multiselect/dist/vue-multiselect.css';
                 this.episodes = response;
                 this.filteredByPlayer = true;
                 this.episodes.forEach((ep, i) => {
-                              getEpisodeBranches(ep.id).then(branches => {
-                                this.episodes[i].branches = branches;
-                              });
-                            });
+                    const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
+                    const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
+                    this.episodes[i].branches = branches;    
+                });
             });
         },
         clearPlayerFilter() {
@@ -239,10 +249,10 @@ import 'vue-multiselect/dist/vue-multiselect.css';
           getEpisodes(this.current_status.id, this.branch_id).then(response => {
                 this.episodes = response;
                 this.episodes.forEach((ep, i) => {
-                              getEpisodeBranches(ep.id).then(branches => {
-                                this.episodes[i].branches = branches;
-                              });
-                            });
+                    const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
+                    const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
+                    this.episodes[i].branches = branches;    
+                });
             });
         }
         },

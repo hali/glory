@@ -6,6 +6,8 @@ const express = require('express'),
   bodyParser = require('body-parser');
   port = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, './static')));
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 const mysql = require('mysql');
 // connection configurations

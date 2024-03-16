@@ -16,6 +16,7 @@ resolve: {
   }
   } 
   },
+  
   chainWebpack: (config) => {
     config.resolve.alias.set('vue', '@vue/compat')
 

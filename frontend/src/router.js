@@ -14,6 +14,8 @@ import Profile from './views/Profile';
 import CharacterView from './views/CharacterView';
 import ListCharacters from './views/ListCharacters';
 import FAQPage from './views/FAQ';
+import LookingForYou from './views/LookingForYou';
+import ViewTopic from "./views/ViewTopic.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -168,7 +170,33 @@ const router = createRouter({
         default: true,
         footer: false
       }
-    }
+    },
+    {
+      path: "/looking",
+      name: "looking",
+      components: {
+        header: AppHeader,
+        default: LookingForYou,
+        footer: AppFooter
+      }
+    },
+    {
+      path: "/topic/:id",
+      name: "viewtopic",
+      components: {
+        header: AppHeader,
+        default: ViewTopic,
+        footer: AppFooter
+      },
+      props: {
+        header: false,
+        default: true,
+        footer: false
+      },
+      meta: {
+        requiresAuth: true
+      }
+    },
   ]
 })
 

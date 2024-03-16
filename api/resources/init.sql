@@ -6,6 +6,8 @@ drop table `connection`;
 drop table connection_type;
 drop table player;
 drop table branch;
+drop table replies;
+drop table topics;
 
 CREATE TABLE `player`
 (
@@ -151,6 +153,41 @@ CREATE TABLE `comments`
  CONSTRAINT `FK_comment_author` FOREIGN KEY `fkIdx_375` (`author_id`) REFERENCES `player` (`id`)
 );
 
+CREATE TABLE `topic_status`
+(
+ `id`          int NOT NULL AUTO_INCREMENT,
+ `description` varchar(45) NOT NULL ,
+
+PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `topics`
+(
+ `id` int NOT NULL AUTO_INCREMENT,
+ `author_id`	int NOT NULL,
+ `status_id`	int NOT NULL,
+ `name`           varchar(200) NOT NULL ,
+ `description`	  text NULL,
+ `added_time`	datetime,
+ 
+ PRIMARY KEY (id),
+ CONSTRAINT `FK_topic_author` FOREIGN KEY `fkIdx_345` (`author_id`) REFERENCES `player` (`id`)
+);
+
+CREATE TABLE `replies`
+(
+ `id` int NOT NULL AUTO_INCREMENT,
+ `author_id`	int NOT NULL,
+ `topic_id`	int NOT NULL,
+ `body` 		text,
+ `added_time`	datetime,
+ 
+ PRIMARY KEY (id),
+ CONSTRAINT `FK_285` FOREIGN KEY `fkIdx_285` (`topic_id`) REFERENCES `topics` (`id`),
+ CONSTRAINT `FK_reply_author` FOREIGN KEY `fkIdx_395` (`author_id`) REFERENCES `player` (`id`)
+);
+
+
 INSERT into branch (name, description) VALUES
 ('Main', 'Основная ветка'),
 ('Generic AU-verse', 'Какая-то АУ'),
@@ -162,6 +199,10 @@ INSERT INTO episode_status (description) VALUES
 ("Завершен"),
 ("В процессе"),
 ("Черновик");
+
+INSERT INTO topic_status (description) VALUES
+("Открыт"),
+("Закрыт");
 
 insert into connection_type values 
 (1, 'Отец'),

@@ -1,6 +1,6 @@
 <template>
   <section class="section section-shaped section-lg my-0">
-    <div class="shape-dark shape-style-1 bg-gradient-default">
+    <div class="shape shape-style-1 bg-gradient-default">
       <span />
       <span />
       <span />
@@ -14,7 +14,7 @@
     <div class="container">
       <div class="row text-white">
         <h1 class="display-3  text-white">
-          {{ $t('characters') }}
+          {{ $t('characters') }} ({{characters.length}})
         </h1>
       </div>
       <card>

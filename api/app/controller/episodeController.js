@@ -39,18 +39,18 @@ exports.list_latest = function(req, res) {
 };
 
 exports.read_episode = function(req, res) {
-  Episode.getEpisode(req.params.episodeId, function(err, posts) {
+  Episode.getEpisode(req.params.episodeId, function(err, response) {
     if (err)
       res.send(err);  
-    res.json(posts);
+    res.json(response);
   });
 }
 
 exports.get_branches = function(req, res) {
-  Episode.getBranches(req.params.episodeId, function(err, posts) {
+  Episode.getBranches(req.params.episodeId, function(err, response) {
     if (err)
       res.send(err);  
-    res.json(posts);
+    res.json(response);
   });
 }
 
@@ -71,10 +71,10 @@ exports.get_draft = function(req, res) {
 }
 
 exports.delete_draft = function(req, res) {
-  Episode.deleteDraft(req.params.episodeId, req.query.playerId, function(err, draft) {
+  Episode.deleteDraft(req.params.episodeId, req.query.playerId, function(err, response) {
     if (err)
       res.send(err);  
-    res.json(draft);
+    res.json(response);
   });
 }
 
@@ -126,10 +126,10 @@ exports.update_episode = function(req, res) {
             res.status(400).send({ error:true, message: 'Please provide name' });
         }
 else { 
-  		Episode.updateEpisode(parseInt(req.params.episodeId), new_episode, function(err, episode) {    
+  		Episode.updateEpisode(parseInt(req.params.episodeId), new_episode, function(err, response) {    
     	if (err)
       		res.send(err);	
-    	res.json(episode);
+    	res.json(response);
   	});
   };
 };

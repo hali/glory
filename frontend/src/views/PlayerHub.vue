@@ -120,7 +120,7 @@
             <div
               class="col-md-12"
               align="right"
-              @click.prevent="save()"
+              @click="save()"
             >
               <base-button
                 type="success"
@@ -318,7 +318,7 @@
 </template>
 
 <script>
-import { getPlayer, savePlayer, getDebts, getEpisodesByPlayerId, 
+import { getPlayer, getPlayerById, savePlayer, getDebts, getEpisodesByPlayerId, 
 getCommentsByPlayer, getFeedbackByPlayer, getPostsNumber } from '../services/PlayerService';
 import {getCharacters, addCharacter} from '../services/CharacterService';
 import flatPicker from "vue-flatpickr-component";
@@ -377,13 +377,15 @@ export default {
             this.id = addResponse;
           });
         } else {
-        this.id = response[0].id;
-        this.info = response[0].info;
-        this.post = response[0].post;
-        this.name = response[0].nickname;
-        getCharacters(this.id).then(characters => {
-            this.characters = characters;
-        });
+            this.id = response[0].id;
+            getPlayerById(this.id).then(playerInfo => {
+                this.info = playerInfo[0].info;
+                this.post = playerInfo[0].post;
+                this.name = playerInfo[0].nickname;
+            });
+            getCharacters(this.id).then(characters => {
+                this.characters = characters;
+            });
         }
         getDebts().then(response => {
             getEpisodesByPlayerId(this.id, 0).then(eps => {

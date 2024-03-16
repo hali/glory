@@ -189,7 +189,8 @@ export default {
             let cl = new Array(Object.values(this.collection))[0];
               let arrayedCollections = [];
               cl.forEach((value) => arrayedCollections.push(value.id));
-              updateEpisodeBranches(response, arrayedCollections).then(() => {
+              if (arrayedCollections.length > 0) 
+                updateEpisodeBranches(response, arrayedCollections).then(() => {
               });
             this.$router.push({name:'viewepisode', params:{id:response}})
           });

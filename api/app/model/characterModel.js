@@ -14,7 +14,7 @@ var Character = function(character){
 };
 
 Character.getCharacters = function(player_id, result) {
-	sql.query("Select * from `character` where player_id = ? order by name asc", 
+	sql.query("Select id, name, dob, player_id, status, img from `character` where player_id = ? order by name asc", 
 	[player_id],
 	function (err, res) {
     if(err) {
@@ -27,7 +27,7 @@ Character.getCharacters = function(player_id, result) {
 };
 
 Character.getAllCharacters = function(result) {
-	sql.query("Select * from `character` order by name asc", 
+	sql.query("Select id, name, dob, player_id, status, img from `character` order by name asc", 
 	function (err, res) {
     if(err) {
         console.log("error: ", err);

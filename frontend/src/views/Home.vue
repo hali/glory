@@ -143,6 +143,16 @@
           <div class="row">
             <div class="col-md-12">
               <card>
+               Пожалуйста, прочтите объявление во <a href=/episode/114>временной админке</a>!
+              </card>
+            </div>
+          </div>
+        </div>
+        <p />
+        <div class="container">
+          <div class="row">
+            <div class="col-md-12">
+              <card>
                 <h6 class="text-primary text-uppercase">
                   {{ $t('newPosts') }}
                 </h6>

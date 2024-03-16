@@ -6,6 +6,7 @@ module.exports = function(app) {
   var playersList = require('../controller/playerController');
   var emails = require('../controller/emailController');
   var stats = require('../controller/siteController');
+  var topics = require('../controller/topicController');
 
   // characters routes
   app.route('/api/characters')
@@ -88,5 +89,20 @@ module.exports = function(app) {
   	.get(stats.get_characters_count);  
   app.route('/api/stats/posts')
   	.get(stats.get_posts_count);  
+  	
+  // topics routes
+  app.route('/api/topics')
+    .post(topics.create_a_topic)
+    .get(topics.list_topics);
+  app.route('/api/topics/:topicId')
+    .post(topics.update_topic);
+  app.route('/api/topics/:topicId/close')
+    .post(topics.close_topic);  
+  app.route('/api/topics/:topicId/reopen')
+    .post(topics.reopen_topic);  
+  app.route('/api/topics/:topicId/replies')
+    .get(topics.get_replies)   
+    .post(topics.add_reply); 
+  
 };  
     
