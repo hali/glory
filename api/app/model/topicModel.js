@@ -19,7 +19,7 @@ Topic.createTopic = function (t, result) {
 	[t.name, t.description, t.status_id, t.author_id],
 	function (err, res) {            
         if(err) {
-            consolt.log("error: ", err);
+            console.log("error: ", err);
             result(err, null);
         } else{
             result(null, res.insertId);
@@ -28,7 +28,7 @@ Topic.createTopic = function (t, result) {
 };
 
 Topic.updateTopic = function (t_id, t, result) {    	
-	var sqlstring = "UPDATE topic SET\
+	var sqlstring = "UPDATE topics SET\
 	name = ?, \
 	description = ?, \
 	WHERE id = ?;";
@@ -37,7 +37,7 @@ Topic.updateTopic = function (t_id, t, result) {
 	[t.name, t.description, t_id],
 	function (err, res) {            
         if(err) {
-            consolt.log("error: ", err);
+            console.log("error: ", err);
             result(err, null);
         } else{
             result(null, res.insertId);
@@ -46,11 +46,11 @@ Topic.updateTopic = function (t_id, t, result) {
 };
 
 Topic.setTopicStatus = function (t_id, t_status, result) {    	    
-    sql.query("UPDATE topic SET status_id = ? WHERE id = ?", 
+    sql.query("UPDATE topics SET status_id = ? WHERE id = ?", 
 	[t_status, t_id],
 	function (err, res) {            
         if(err) {
-            consolt.log("error: ", err);
+            console.log("error: ", err);
             result(err, null);
         } else{
             result(null, res.insertId);
@@ -59,13 +59,11 @@ Topic.setTopicStatus = function (t_id, t_status, result) {
 };
 
 Topic.listTopics = function(status_id, result) {
-    var sqlQuery = "select t.id, t.name, t.status_id, t.author_id, \
+    var sqlQuery = "select t.id, t.name, t.status_id, t.author_id, pl.nickname, t.description, \
     DATE_FORMAT(t.added_time, '%d %M %Y') as addedTime, count(r.id) as replies_n\
-	from topics t, replies r";
-	sqlQuery += " WHERE t.id = r.topic_id";
-	if (status_id != 0) sqlQuery += " AND t.status_id = ?"
-	 else sqlQuery += " AND 0 = ?";
-	sqlQuery += " group by t.id, t.author_id, t.status_id, t.name, t.added_time order by t.added_time asc";
+	from topics t LEFT JOIN replies r ON t.id = r.topic_id JOIN player pl ON pl.id = t.author_id";
+	if (status_id != 0) sqlQuery += " WHERE t.status_id = ?";
+	sqlQuery += " group by t.id, t.author_id, pl.nickname, t.description, t.status_id, t.name, t.added_time order by t.added_time asc";
 	sql.query(sqlQuery, 
 	[status_id],
 	function (err, res) {

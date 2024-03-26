@@ -66,20 +66,17 @@ Episode.setEpisodeStatus = function (ep_id, ep_status, result) {
 
 Episode.listEpisodes = function(status_id, branch_id, result) {
     var sqlQuery = "select e.id, e.name, e.world, GROUP_CONCAT(eb.branch_id) AS branch_ids, es.description as status, \
-    DATE_FORMAT(e.timeOfAction, '%d %M %Y') as timeOfAction\
+    DATE_FORMAT(e.timeOfAction, '%d %M %Y') as dateOfAction\
 	from episode_status es, episode e LEFT JOIN episode_branch eb ON e.id = eb.episode_id";
 	sqlQuery += " WHERE e.status_id = es.id";
-	if (status_id != 0) sqlQuery += " AND e.status_id = ?"
-	 else sqlQuery += " AND 0 = ?";
-	sqlQuery += " AND eb.episode_id = e.id"; 
 	if (branch_id != 0) sqlQuery += " AND e.id IN (\
     SELECT DISTINCT episode_id\
     FROM episode_branch\
-    WHERE branch_id = ?)";
-	sqlQuery += " group by e.id, e.name, e.world, status, timeOfAction" 
+    WHERE branch_id = " + branch_id + ")";
+    if (status_id != 0) sqlQuery += " AND e.status_id = " + status_id;
+	sqlQuery += " group by e.id, e.name, e.world, status, dateOfAction" 
 	sqlQuery += " order by e.timeOfAction asc";
 	sql.query(sqlQuery, 
-	[status_id, branch_id],
 	function (err, res) {
 
     if(err) {

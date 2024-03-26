@@ -66,16 +66,16 @@ Player.getCharactersById = function (playerId, result) {
 Player.getEpisodesById = function (playerId, statusId, result) {
 		let fullQuery = "SELECT DISTINCT e.id, e.name, GROUP_CONCAT(DISTINCT eb.branch_id) AS branch_ids,\
 			es.description as status, DATE_FORMAT(e.timeOfAction, '%d %M %Y') as dateOfAction, e.timeOfAction as time\
-			FROM episode e JOIN episode_branch eb ON e.id = eb.episode_id\
+			FROM episode e LEFT JOIN episode_branch eb ON e.id = eb.episode_id\
 			LEFT JOIN posts p ON e.id = p.episode_id JOIN episode_status es on es.id = e.status_id\
 			LEFT JOIN `character` c ON c.id = p.author_id\
 			LEFT JOIN player pl ON pl.id = c.player_id\
 			WHERE \
-			e.author_id = ? OR pl.id = ?";
+			(e.author_id = ? OR pl.id = ?)";
 			if (statusId != 0)
 			  fullQuery += " AND es.id = ?";
 			fullQuery += " GROUP BY e.id, e.name, status, dateOfAction, time\
-			order by id asc;"
+			order by time asc;"
 
         sql.query(fullQuery,
 			[playerId, playerId, statusId], function (err, res) {             

@@ -57,7 +57,15 @@
           >
             {{ $t('playerHub') }}
           </router-link>
-        </li>  
+        </li> 
+        <li class="nav-item">
+          <router-link
+            to="/looking"
+            class="nav-link"
+          >
+            {{ $t('looking') }}
+          </router-link>
+        </li>   
         <li class="nav-item">
           <div
             class="nav-link"

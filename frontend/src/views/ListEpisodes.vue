@@ -71,7 +71,7 @@
                     params: { id:item.id }                              
                   }"
                 >
-                  {{ item.name }} ({{ item.timeOfAction }})
+                  {{ item.name }} ({{ item.dateOfAction }})
                 </router-link>
                 <div>
                   <badge
@@ -157,9 +157,12 @@ import 'vue-multiselect/dist/vue-multiselect.css';
                         this.allBranches = allBranches;
                         this.branch_name = (this.allBranches.filter(item => item.id == this.branch_id))[0].description;
                         this.episodes.forEach((ep, i) => {
+                          if (ep.branch_ids !== null)   
+                          {
                             const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
                             const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
-                            this.episodes[i].branches = branches;                                                
+                            this.episodes[i].branches = branches;   
+                          }                                               
                         });
                     });
                 });
@@ -179,11 +182,12 @@ import 'vue-multiselect/dist/vue-multiselect.css';
                                 this.allBranches = allBranches;
                                 this.filteredByPlayer = true;
                                 this.episodes.forEach((ep, i) => {
+                                  if (ep.branch_ids !== null)   
+                                  {
                                     const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
-                                    console.log(branchIdsArray);
-                                    console.log(this.allBranches);
                                     const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
                                     this.episodes[i].branches = branches;  
+                                  }
                                 });
                             });
                           }); 
@@ -196,9 +200,12 @@ import 'vue-multiselect/dist/vue-multiselect.css';
                     getAllBranches().then(allBranches => {
                         this.allBranches = allBranches;
                         this.episodes.forEach((ep, i) => {
+                          if (ep.branch_ids !== null)   
+                          {
                             const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
                             const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
-                            this.episodes[i].branches = branches;                                                
+                            this.episodes[i].branches = branches;  
+                          }                                                
                         });
                     });
                 });
@@ -211,9 +218,12 @@ import 'vue-multiselect/dist/vue-multiselect.css';
             getEpisodes(this.current_status.id, this.branch_id).then(response => {
                 this.episodes = response;
                 this.episodes.forEach((ep, i) => {
+                  if (ep.branch_ids !== null)   
+                  {
                     const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
                     const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
-                    this.episodes[i].branches = branches;    
+                    this.episodes[i].branches = branches;   
+                  } 
                 });
             }); 
         },
@@ -227,9 +237,12 @@ import 'vue-multiselect/dist/vue-multiselect.css';
             getEpisodes(this.current_status.id, this.branch_id).then(response => {
                 this.episodes = response;
                 this.episodes.forEach((ep, i) => {
+                  if (ep.branch_ids !== null)   
+                  {
                     const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
                     const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
                     this.episodes[i].branches = branches;    
+                  }
                 });
             }); 
         },
@@ -238,9 +251,12 @@ import 'vue-multiselect/dist/vue-multiselect.css';
                 this.episodes = response;
                 this.filteredByPlayer = true;
                 this.episodes.forEach((ep, i) => {
+                  if (ep.branch_ids !== null)   
+                  {
                     const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
                     const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
                     this.episodes[i].branches = branches;    
+                  }
                 });
             });
         },
@@ -249,9 +265,12 @@ import 'vue-multiselect/dist/vue-multiselect.css';
           getEpisodes(this.current_status.id, this.branch_id).then(response => {
                 this.episodes = response;
                 this.episodes.forEach((ep, i) => {
+                  if (ep.branch_ids !== null)   
+                  {
                     const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
                     const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
-                    this.episodes[i].branches = branches;    
+                    this.episodes[i].branches = branches; 
+                  }   
                 });
             });
         }

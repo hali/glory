@@ -20,7 +20,7 @@ Email.addSubscription = function (episode_id, player_id, result) {
 };
 
 Email.getRecipients = function(episode_id, player_id, result) {
-	sql.query("select p.email, p.nickname \
+	sql.query("select p.email as Email, p.nickname as Name\
 	from subscriptions sc, player p \
 	where sc.player_id = p.id\
 	and sc.episode_id = ?\
