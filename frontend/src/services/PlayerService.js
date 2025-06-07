@@ -1,43 +1,33 @@
+import { get, post } from './ApiService';
+
 export async function getPlayer(email) {
-    const response = await fetch('/api/players/?email=' + email);
-    return await response.json();
+    return await get('/api/players/?email=' + email);
 }
 
 export async function getPlayerById(id) {
-    const response = await fetch('/api/players/?id=' + id);
-    return await response.json();
+    return await get('/api/players/?id=' + id);
 }
 
 export async function savePlayer(payload) {
-    const response = await fetch(`/api/players/`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(Object.assign({}, payload))
-      })
-    return await response.json();
+    return await post('/api/players/', payload);
 }
 
 export async function getEpisodesByPlayerId(playerId, statusId) {
-    const response = await fetch('/api/players/' + playerId + '/episodes/?statusId=' + statusId);
-    return await response.json();
+    return await get('/api/players/' + playerId + '/episodes/?statusId=' + statusId);
 }
 
 export async function getCommentsByPlayer(playerId) {
-    const response = await fetch('/api/players/' + playerId + '/comments');
-    return await response.json();
+    return await get('/api/players/' + playerId + '/comments');
 }
 
 export async function getFeedbackByPlayer(playerId) {
-    const response = await fetch('/api/players/' + playerId + '/feedback');
-    return await response.json();
+    return await get('/api/players/' + playerId + '/feedback');
 }
 
 export async function getDebts() {
-    const response = await fetch('/api/debts');
-    return await response.json();
+    return await get('/api/debts');
 }
 
 export async function getPostsNumber(playerId) {
-    const response = await fetch('/api/players/' + playerId + '/posts');
-    return await response.json();
+    return await get('/api/players/' + playerId + '/posts');
 }
