@@ -198,35 +198,103 @@ import { getEpisodesCount, getCharactersCount, getPostsCount } from '../services
 
 export default ({
   name: 'Home',
-  props: ['auth'],
   data() {
             return {
                 episodes: [],
                 episodes_n: '...',
                 characters_n: '...',
-                posts_n: '...'
+                posts_n: '...',
+                authState: null,
+                email: ''
             }
         },
-        async created () {
-            const idToken = await this.$auth.tokenManager.get('idToken');
-            if (this.authState && this.authState.isAuthenticated) {
-                this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
-                this.claims.forEach((value) => {
-                  if (value.key == 'email') this.email = value.value;
-                });
-                document.title = "Glory"; 
+        created() {
+            document.title = "Glory";
+            
+            // Get public stats regardless of authentication
+            getEpisodesCount().then(response => {
+              if (response && response[0]) {
+                this.episodes_n = response[0].episodes_n;
+              }
+            }).catch(err => console.error("Error fetching episode count:", err));
+            
+            getCharactersCount().then(response => {
+              if (response && response[0]) {
+                this.characters_n = response[0].characters_n;
+              }
+            }).catch(err => console.error("Error fetching character count:", err));
+            
+            getPostsCount().then(response => {
+              if (response && response[0]) {
+                this.posts_n = response[0].posts_n;
+              }
+            }).catch(err => console.error("Error fetching post count:", err));
+
+            // Try to get auth state
+            try {
+              this.authState = this.$auth.authStateManager.getAuthState();
+              
+              // Only fetch authenticated data if logged in
+              if (this.authState && this.authState.isAuthenticated) {
+                this.getUserInfo();
+                this.getLatestEpisodeData();
+              }
+              
+              // Subscribe to auth state changes
+              this.$auth.authStateManager.subscribe(authState => {
+                this.authState = authState;
+                if (authState && authState.isAuthenticated) {
+                  this.getUserInfo();
+                  this.getLatestEpisodeData();
+                }
+              });
+            } catch (error) {
+              console.error("Auth state error in Home:", error);
+              this.authState = null;
             }
-              getEpisodesCount().then(response => {this.episodes_n = response[0].episodes_n});
-              getCharactersCount().then(response => {this.characters_n = response[0].characters_n});
-              getPostsCount().then(response => {this.posts_n = response[0].posts_n});
-              getLatestEpisodes().then(response => this.episodes = response);
-          },
+        },
   methods: {
-    async login () {
-      await this.$auth.signInWithRedirect({ originalUri: '/' })
+    async login() {
+      try {
+        await this.$auth.signInWithRedirect({ originalUri: '/' });
+      } catch (error) {
+        console.error("Login error:", error);
+        // Fallback for login failures
+        window.location.href = '/';
+      }
     },
-    async logout () {
-      await this.$auth.signOut()
+    async logout() {
+      try {
+        await this.$auth.signOut();
+      } catch (error) {
+        console.error("Logout error:", error);
+        window.location.href = '/';
+      }
+    },
+    getUserInfo() {
+      try {
+        if (this.authState && this.authState.isAuthenticated && this.authState.idToken) {
+          const claims = this.authState.idToken.claims;
+          this.email = claims.email || '';
+        }
+      } catch (error) {
+        console.error("Error getting user info:", error);
+      }
+    },
+    getLatestEpisodeData() {
+      getLatestEpisodes()
+        .then(response => {
+          if (Array.isArray(response)) {
+            this.episodes = response;
+          } else {
+            console.warn("Unexpected response format for episodes:", response);
+            this.episodes = [];
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching latest episodes:", err);
+          this.episodes = [];
+        });
     }
   }
 })
