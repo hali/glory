@@ -38,13 +38,12 @@ export async function getEpisodes(status, branch) {
 }
 
 export async function getLatestEpisodes() {
-  // This endpoint is public, no auth required
   return await get("/api/latest");
 }
 
 export async function getAllBranches() {
   // This endpoint is public, no auth required
-  return await get("/api/branches");
+  return await get("/api/branches", false);
 }
 
 export async function updateEpisodeBranches(id, payload) {

@@ -83,6 +83,7 @@ export function isPublicRoute(url, method = "GET") {
     { path: "/api/stats/episodes", methods: ["GET"] },
     { path: "/api/stats/posts", methods: ["GET"] },
     { path: "/api/stats/characters", methods: ["GET"] },
+    { path: "/api/branches", methods: ["GET"] },
   ];
 
   // Check if URL matches any public route
