@@ -1,56 +1,56 @@
-const webpack = require('webpack');
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
+const webpack = require("webpack");
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 
 module.exports = {
   configureWebpack: {
     // Set up all the aliases we use in our app.
     plugins: [
       new webpack.optimize.LimitChunkCountPlugin({
-        maxChunks: 6
+        maxChunks: 6,
       }),
-      new NodePolyfillPlugin()
+      new NodePolyfillPlugin(),
     ],
-resolve: {
-  fallback: {
-    "fs": false
-  }
-  } 
+    resolve: {
+      fallback: {
+        fs: false,
+      },
+    },
   },
-  
+
   chainWebpack: (config) => {
-    config.resolve.alias.set('vue', '@vue/compat')
+    config.resolve.alias.set("vue", "@vue/compat");
 
     config.module
-      .rule('vue')
-      .use('vue-loader')
+      .rule("vue")
+      .use("vue-loader")
       .tap((options) => {
         return {
           ...options,
           compilerOptions: {
             compatConfig: {
-              MODE: 2
-            }
-          }
-        }
-      })
+              MODE: 2,
+            },
+          },
+        };
+      });
   },
   pwa: {
-    name: 'Vue Argon Design',
-    themeColor: '#172b4d',
-    msTileColor: '#172b4d',
-    appleMobileWebAppCapable: 'yes',
-    appleMobileWebAppStatusBarStyle: '#172b4d'
+    name: "Vue Argon Design",
+    themeColor: "#172b4d",
+    msTileColor: "#172b4d",
+    appleMobileWebAppCapable: "yes",
+    appleMobileWebAppStatusBarStyle: "#172b4d",
   },
   css: {
     // Enable CSS source maps.
-    sourceMap: process.env.NODE_ENV !== 'production'
+    sourceMap: process.env.NODE_ENV !== "production",
   },
-  devServer: {
+  /*devServer: {
       proxy: {
         '^/api': {
           target: 'http://localhost:3000',
           changeOrigin: true
         },
       }
-    }
+    }*/
 };
