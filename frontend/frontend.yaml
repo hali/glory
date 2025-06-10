@@ -1,18 +1,19 @@
 runtime: nodejs20
 service: default
 handlers:
-    # Serve all static files with urls ending with a file extension
-    - url: /(.*\..+)$
-      static_files: dist/\1
-      upload: dist/(.*\..+)$
-      # catch all handler to index.html
-      expiration: '10s'
-      http_headers: 
-        cache-control: no-store, no-cache, must-revalidate, proxy-revalidate
-    - url: /.*
-      static_files: dist/index.html
-      upload: dist/index.html
-      secure: always
-      expiration: '10s'
+  # Serve all static files with urls ending with a file extension
+  - url: /(.*\..+)$
+    static_files: dist/\1
+    upload: dist/(.*\..+)$
+    # catch all handler to index.html
+    expiration: "10s"
+    http_headers:
+      cache-control: no-store, no-cache, must-revalidate, proxy-revalidate
+  - url: /.*
+    static_files: dist/index.html
+    upload: dist/index.html
+    secure: always
+    expiration: "10s"
 automatic_scaling:
-  min_instances: 1      
+  min_instances: 1
+  max_instances: 2
