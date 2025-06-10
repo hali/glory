@@ -32,11 +32,11 @@
         </div>
         <div class="col-md-9">      
           <badge
-            v-if="branch_id != 0"
+            v-if="selectedBranches.length > 0"
             type="primary"
-            @click="filterByBranch(0)"
+            @click="clearBranchFilters"
           >
-            {{ $t('stopFilteringBy')}} "{{ branch_name }}"
+            {{ $t('clearAllFilters') || 'Clear all filters' }}
           </badge>
           <badge
             v-if="player_id != 0 && filteredByPlayer == false"
@@ -53,6 +53,23 @@
             {{ $t('stopFilteringByMine')}}
           </badge>
         </div>
+      </div>
+      
+      <!-- Tag Cloud for Branches -->
+      <div class="tag-cloud mt-3 mb-3">
+        <badge
+          v-for="branch in allBranches"
+          :key="branch.id"
+          :type="isBranchSelected(branch.id) ? 'success' : 'primary'"
+          :class="{'selected-branch': isBranchSelected(branch.id)}"
+          @click="toggleBranchFilter(branch.id)"
+          class="mr-2 mb-2"
+        >
+          {{ branch.description }}
+          <span v-if="isBranchSelected(branch.id)" class="badge-counter">
+            <i class="fa fa-check"></i>
+          </span>
+        </badge>
       </div>
       <card>
         <div v-if="episodes.length == 0">
@@ -77,8 +94,8 @@
                   <badge
                     v-for="branch in item.branches"
                     :key="branch.id"
-                    type="primary"
-                    @click="filterByBranch(branch.id, branch.description)"
+                    :type="isBranchSelected(branch.id) ? 'success' : 'primary'"
+                    @click="toggleBranchFilter(branch.id)"
                   >
                     {{ branch.description }}
                   </badge>
@@ -132,7 +149,9 @@ import 'vue-multiselect/dist/vue-multiselect.css';
         data() {
             return {
                 episodes: [],
+                allEpisodes: [], // Store all episodes for client-side filtering
                 allBranches: [],
+                selectedBranches: [], // Array of selected branch IDs for multi-tag filtering
                 branch_id: 0,
                 branch_name: 'Все коллекции',
                 email: '',
@@ -150,23 +169,23 @@ import 'vue-multiselect/dist/vue-multiselect.css';
             let params = new URLSearchParams(uri);
             document.title = "Glory - Эпизоды";
             if (params.get("branch_id")) this.branch_id = params.get("branch_id");
-            if (this.branch_id != 0) {
-                getEpisodes(this.current_status.id, this.branch_id).then(response => {
-                    this.episodes = response;
-                    getAllBranches().then(allBranches => {
-                        this.allBranches = allBranches;
-                        this.branch_name = (this.allBranches.filter(item => item.id == this.branch_id))[0].description;
-                        this.episodes.forEach((ep, i) => {
-                          if (ep.branch_ids !== null)   
-                          {
-                            const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
-                            const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
-                            this.episodes[i].branches = branches;   
-                          }                                               
-                        });
-                    });
-                });
-            }
+            // Always load all branches for the tag cloud
+            getAllBranches().then(allBranches => {
+                this.allBranches = allBranches;
+                
+                // Check for URL parameter for branch_id
+                if (params.get("branch_id")) {
+                    this.branch_id = parseInt(params.get("branch_id"));
+                    if (this.branch_id !== 0) {
+                        // Add the branch from URL to selected branches
+                        this.selectedBranches = [this.branch_id];
+                        this.branch_name = (this.allBranches.filter(item => item.id == this.branch_id))[0]?.description || 'Unknown';
+                    }
+                }
+                
+                // Load episodes and apply filters
+                this.applyFilters();
+            });
             if (this.authState && this.authState.isAuthenticated && this.branch_id == 0) {
                 const idToken = await this.$auth.tokenManager.get('idToken');
                 this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
@@ -190,7 +209,7 @@ import 'vue-multiselect/dist/vue-multiselect.css';
                                   }
                                 });
                             });
-                          }); 
+                          });
                     });
                 }               
             }
@@ -209,73 +228,151 @@ import 'vue-multiselect/dist/vue-multiselect.css';
                         });
                     });
                 });
-            }                     
+            }
           },
         methods: {
         selectStatus() {
-            if (this.filteredByPlayer) this.filterByPlayer();
-            else
-            getEpisodes(this.current_status.id, this.branch_id).then(response => {
-                this.episodes = response;
-                this.episodes.forEach((ep, i) => {
-                  if (ep.branch_ids !== null)   
-                  {
-                    const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
-                    const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
-                    this.episodes[i].branches = branches;   
-                  } 
-                });
-            }); 
+            if (this.filteredByPlayer) {
+                this.filterByPlayer();
+            } else {
+                this.applyFilters();
+            }
         },
         filterByStatus(id, status) {
             this.current_status = {id: id, status: status};
             this.selectStatus()
         },
-        filterByBranch(branch_id, branch_name) {
-            this.branch_id = branch_id;
-            this.branch_name = branch_name;
-            getEpisodes(this.current_status.id, this.branch_id).then(response => {
-                this.episodes = response;
-                this.episodes.forEach((ep, i) => {
-                  if (ep.branch_ids !== null)   
-                  {
-                    const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
-                    const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
-                    this.episodes[i].branches = branches;    
-                  }
+        // New method to check if a branch is selected
+        isBranchSelected(branchId) {
+            return this.selectedBranches.includes(branchId);
+        },
+        
+        // Toggle a branch in the multi-tag filter
+        toggleBranchFilter(branchId) {
+            const index = this.selectedBranches.indexOf(branchId);
+            if (index > -1) {
+                // Branch is already selected, remove it
+                this.selectedBranches.splice(index, 1);
+            } else {
+                // Branch is not selected, add it
+                this.selectedBranches.push(branchId);
+            }
+            this.applyFilters();
+        },
+        
+        // Clear all branch filters
+        clearBranchFilters() {
+            this.selectedBranches = [];
+            this.applyFilters();
+        },
+        
+        // Apply all current filters
+        applyFilters() {
+            if (this.filteredByPlayer) {
+                this.filterByPlayer();
+                return;
+            }
+            
+            // Get episodes based on status filter
+            getEpisodes(this.current_status.id, 0).then(response => {
+                this.allEpisodes = response;
+                
+                // Process all episodes to add branches
+                this.allEpisodes.forEach((ep, i) => {
+                    if (ep.branch_ids !== null) {
+                        const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
+                        const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
+                        this.allEpisodes[i].branches = branches;
+                        this.allEpisodes[i].branchIds = branchIdsArray;
+                    } else {
+                        this.allEpisodes[i].branches = [];
+                        this.allEpisodes[i].branchIds = [];
+                    }
                 });
-            }); 
+                
+                // Filter by selected branches if any
+                if (this.selectedBranches.length > 0) {
+                    this.episodes = this.allEpisodes.filter(episode => {
+                        if (!episode.branchIds || episode.branchIds.length === 0) {
+                            return false;
+                        }
+                        // Check if episode has ALL of the selected branches
+                        return this.selectedBranches.every(branchId => 
+                            episode.branchIds.includes(branchId)
+                        );
+                    });
+                } else {
+                    // No branch filters, show all episodes
+                    this.episodes = [...this.allEpisodes];
+                }
+            });
         },
         filterByPlayer() {
             getEpisodesByPlayerId(this.player_id, this.current_status.id).then(response => {
-                this.episodes = response;
+                this.allEpisodes = response;
                 this.filteredByPlayer = true;
-                this.episodes.forEach((ep, i) => {
-                  if (ep.branch_ids !== null)   
-                  {
-                    const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
-                    const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
-                    this.episodes[i].branches = branches;    
-                  }
+                
+                // Process all episodes to add branches
+                this.allEpisodes.forEach((ep, i) => {
+                    if (ep.branch_ids !== null) {
+                        const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
+                        const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
+                        this.allEpisodes[i].branches = branches;
+                        this.allEpisodes[i].branchIds = branchIdsArray;
+                    } else {
+                        this.allEpisodes[i].branches = [];
+                        this.allEpisodes[i].branchIds = [];
+                    }
                 });
+                
+                // Filter by selected branches if any
+                if (this.selectedBranches.length > 0) {
+                    this.episodes = this.allEpisodes.filter(episode => {
+                        if (!episode.branchIds || episode.branchIds.length === 0) {
+                            return false;
+                        }
+                        // Check if episode has ALL of the selected branches
+                        return this.selectedBranches.every(branchId => 
+                            episode.branchIds.includes(branchId)
+                        );
+                    });
+                } else {
+                    // No branch filters, show all episodes
+                    this.episodes = [...this.allEpisodes];
+                }
             });
         },
         clearPlayerFilter() {
-          this.filteredByPlayer = false;
-          getEpisodes(this.current_status.id, this.branch_id).then(response => {
-                this.episodes = response;
-                this.episodes.forEach((ep, i) => {
-                  if (ep.branch_ids !== null)   
-                  {
-                    const branchIdsArray = ep.branch_ids.split(',').map(id => parseInt(id));
-                    const branches = this.allBranches.filter(item => branchIdsArray.includes(item.id));
-                    this.episodes[i].branches = branches; 
-                  }   
-                });
-            });
+            this.filteredByPlayer = false;
+            this.applyFilters();
         }
         },
      }
 </script>
 <style>
+/* Tag cloud styling */
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.selected-branch {
+  font-weight: bold;
+  border: 2px solid #fff;
+}
+
+.badge-counter {
+  margin-left: 5px;
+}
+
+/* Small animation for tag selection */
+.badge {
+  transition: all 0.2s ease;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+}
 </style>
