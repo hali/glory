@@ -63,7 +63,6 @@
           :type="isBranchSelected(branch.id) ? 'success' : 'primary'"
           :class="{'selected-branch': isBranchSelected(branch.id)}"
           @click="toggleBranchFilter(branch.id)"
-          class="mr-2 mb-2"
         >
           {{ branch.description }}
           <span v-if="isBranchSelected(branch.id)" class="badge-counter">
@@ -357,9 +356,29 @@ import 'vue-multiselect/dist/vue-multiselect.css';
   margin-bottom: 15px;
 }
 
+/* Custom tag cloud badge styles that override the default badge styles */
+.tag-cloud .badge-primary {
+  background-color: #c0d6ff !important;
+  color: #000000 !important;
+  font-weight: 600;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  border: 1px solid #4c6ef5;
+}
+
+.tag-cloud .badge-success {
+  background-color: #a0ffca !important;
+  color: #000000 !important;
+  font-weight: 600;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  border: 1px solid #2dce89;
+}
+
 .selected-branch {
   font-weight: bold;
-  border: 2px solid #fff;
+  border: 2px solid #fff !important;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
 }
 
 .badge-counter {
@@ -367,12 +386,16 @@ import 'vue-multiselect/dist/vue-multiselect.css';
 }
 
 /* Small animation for tag selection */
-.badge {
+.tag-cloud .badge {
   transition: all 0.2s ease;
+  opacity: 0.95;
+  padding: 6px 10px;
 }
 
-.badge:hover {
+.tag-cloud .badge:hover {
   transform: scale(1.05);
   cursor: pointer;
+  opacity: 1;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
 }
 </style>
