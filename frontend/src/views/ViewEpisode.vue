@@ -456,6 +456,8 @@ export default {
           container.style.padding = "0";
           container.style.margin = "0";
           container.style.backgroundColor = "#ffffff";
+          // Avoid line breaking issues by adding a slight line spacing
+          container.style.lineHeight = "1.5";
           document.body.appendChild(container);
           this.pdfContainer = container;
 
@@ -666,6 +668,10 @@ export default {
                   clonedContainer.querySelectorAll("div, p, span");
                 allTextElements.forEach((el) => {
                   el.style.whiteSpace = "pre-wrap";
+                  // Ensure text doesn't break at inconvenient places
+                  el.style.lineHeight = "1.5";
+                  el.style.pageBreakInside = "avoid";
+                  el.style.breakInside = "avoid";
                 });
               }
             },
@@ -698,8 +704,13 @@ export default {
 
             // Calculate which part of the canvas to use for this page
             const canvasSectionHeight = pdfHeight * pxToMmRatio;
-            const sourceY = i * canvasSectionHeight;
-            let sectionHeight = canvasSectionHeight;
+            // Apply an overlap between pages to prevent text clipping
+            const overlap = 10; // 10px overlap to prevent text clipping at boundaries
+            const sourceY = Math.max(
+              0,
+              i * canvasSectionHeight - (i > 0 ? overlap : 0)
+            );
+            let sectionHeight = canvasSectionHeight + (i > 0 ? overlap : 0);
 
             // If it's the last section, it might not be a full page
             if (sourceY + sectionHeight > contentHeight) {
@@ -729,13 +740,15 @@ export default {
 
               // Add this section to the PDF
               const imgData = sectionCanvas.toDataURL("image/png", 1.0);
+              // For pages after the first, adjust the placement to account for overlap
+              const yOffset = i > 0 ? overlap / pxToMmRatio : 0;
               doc.addImage(
                 imgData,
                 "PNG",
                 margin,
-                margin,
+                margin - yOffset,
                 pdfWidth,
-                Math.min(pdfHeight, sectionHeight / pxToMmRatio)
+                Math.min(pdfHeight + yOffset, sectionHeight / pxToMmRatio)
               );
             }
 
