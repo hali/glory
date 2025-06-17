@@ -462,12 +462,24 @@ export default {
           // Helper function to create styled HTML elements
           const createStyledElement = (tag, text, style = {}) => {
             const element = document.createElement(tag);
-            // Convert HTML content to text to avoid issues
+            // Convert HTML content to preserve newlines
             if (typeof text === "string") {
               const tempDiv = document.createElement("div");
-              tempDiv.innerHTML = text;
-              element.textContent =
-                tempDiv.textContent || tempDiv.innerText || text;
+              // Convert BR tags to newlines before setting innerHTML
+              tempDiv.innerHTML = text
+                .replace(/<br\s*\/?>/gi, "\n")
+                .replace(/<p>/gi, "")
+                .replace(/<\/p>/gi, "\n\n");
+
+              // Use innerHTML for div elements to preserve formatting
+              if (tag === "div") {
+                element.innerHTML = tempDiv.innerHTML;
+                // Set whiteSpace property to preserve newlines
+                element.style.whiteSpace = "pre-wrap";
+              } else {
+                element.textContent =
+                  tempDiv.textContent || tempDiv.innerText || text;
+              }
             } else {
               element.textContent = text;
             }
@@ -494,6 +506,7 @@ export default {
             section.style.width = "100%";
             section.style.boxSizing = "border-box";
             section.style.overflowWrap = "break-word";
+            section.style.whiteSpace = "pre-wrap"; // Preserve newlines
             elements.forEach((element) => section.appendChild(element));
             container.appendChild(section);
             return section;
@@ -526,11 +539,12 @@ export default {
                 fontWeight: "bold",
                 marginBottom: "5px",
               }),
-              createStyledElement("p", this.episode.description, {
+              createStyledElement("div", this.episode.description, {
                 fontSize: "14px",
                 lineHeight: "1.4",
                 whiteSpace: "pre-wrap",
                 maxWidth: "100%",
+                textAlign: "left",
               }),
             ]);
           }
@@ -607,12 +621,15 @@ export default {
                 fontWeight: "bold",
                 marginBottom: "5px",
               }),
-              createStyledElement("p", post.body, {
+              createStyledElement("div", post.body, {
                 fontSize: "14px",
                 lineHeight: "1.4",
                 whiteSpace: "pre-wrap",
                 maxWidth: "100%",
                 wordBreak: "break-word",
+                textAlign: "left",
+                padding: "0",
+                display: "block",
               }),
             ]);
 
@@ -639,6 +656,19 @@ export default {
             letterRendering: true,
             width: container.offsetWidth,
             height: container.offsetHeight,
+            onclone: (clonedDoc) => {
+              // Make sure newlines are preserved in the cloned document
+              const clonedContainer = clonedDoc.body.querySelector(
+                "[style*='position: absolute']"
+              );
+              if (clonedContainer) {
+                const allTextElements =
+                  clonedContainer.querySelectorAll("div, p, span");
+                allTextElements.forEach((el) => {
+                  el.style.whiteSpace = "pre-wrap";
+                });
+              }
+            },
           });
 
           // Get the canvas dimensions
