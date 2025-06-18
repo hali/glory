@@ -442,8 +442,20 @@ export default {
             unit: "mm",
             format: "a4",
             compress: true,
+            putOnlyUsedFonts: true,
           });
-          doc.setFont("DejaVuSans-ExtraLight", "normal");
+          // Set Unicode-compatible fonts
+          doc.addFont(
+            "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf",
+            "DejaVuSans",
+            "normal"
+          );
+          doc.addFont(
+            "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans-Bold.ttf",
+            "DejaVuSans",
+            "bold"
+          );
+          doc.setFont("DejaVuSans", "normal");
 
           // Get page dimensions
           const pageWidth = doc.internal.pageSize.getWidth();
@@ -453,8 +465,7 @@ export default {
 
           // Create the main container for the entire PDF
           const mainContainer = document.createElement("div");
-          mainContainer.style.fontFamily =
-            "DejaVuSans-ExtraLight, Arial, sans-serif";
+          mainContainer.style.fontFamily = "DejaVuSans, Arial, sans-serif";
           mainContainer.style.width = contentWidth * 3.5 + "px"; // Convert to pixels for better rendering
           mainContainer.style.maxWidth = "100%";
           mainContainer.style.margin = "0";
@@ -648,44 +659,185 @@ export default {
 
           const filename = `${sanitizedName}.pdf`;
 
-          // Render HTML to PDF using jsPDF's html method
-          await doc.html(mainContainer, {
-            callback: function (doc) {
-              // Add page numbers
-              const totalPages = doc.internal.getNumberOfPages();
-              for (let i = 1; i <= totalPages; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setTextColor(100, 100, 100);
-                doc.text(
-                  `Page ${i} of ${totalPages}`,
-                  pageWidth / 2,
-                  pageHeight - 10,
-                  { align: "center" }
-                );
+          // Direct PDF text rendering instead of using HTML conversion
+          // This drastically reduces file size
+
+          // First, add meta info
+          let y = margin;
+
+          // Title
+          doc.setFontSize(14);
+          doc.setFont("DejaVuSans", "bold");
+          doc.text(this.episode.name, pageWidth / 2, (y += 10), {
+            align: "center",
+            maxWidth: pageWidth - 2 * margin,
+          });
+          y += 8;
+
+          // Description
+          if (this.episode.description) {
+            doc.setFontSize(10);
+            doc.setFont("DejaVuSans", "bold");
+            doc.text("Description:", margin, (y += 5));
+            y += 3;
+
+            doc.setFontSize(9);
+            doc.setFont("DejaVuSans", "normal");
+            const descLines = doc.splitTextToSize(
+              this.episode.description,
+              pageWidth - 2 * margin - 5
+            );
+            doc.text(descLines, margin, y);
+            y += descLines.length * 4.5 + 5;
+          }
+
+          // Date of Action
+          doc.setFontSize(10);
+          doc.setFont("DejaVuSans", "bold");
+          doc.text("Date of Action:", margin, (y += 5));
+          y += 3;
+
+          doc.setFontSize(9);
+          doc.setFont("DejaVuSans", "normal");
+          doc.text(this.episode.timeOfAction, margin, y);
+          y += 7;
+
+          // World
+          doc.setFontSize(10);
+          doc.setFont("DejaVuSans", "bold");
+          doc.text("World:", margin, y);
+          y += 3;
+
+          doc.setFontSize(9);
+          doc.setFont("DejaVuSans", "normal");
+          doc.text(this.episode.world, margin, y);
+          y += 7;
+
+          // Notes
+          if (this.episode.notes) {
+            doc.setFontSize(10);
+            doc.setFont("DejaVuSans", "bold");
+            doc.text("Notes:", margin, y);
+            y += 3;
+
+            doc.setFontSize(9);
+            doc.setFont("DejaVuSans", "normal");
+            const notesLines = doc.splitTextToSize(
+              this.episode.notes,
+              pageWidth - 2 * margin - 5
+            );
+            doc.text(notesLines, margin, y);
+            y += notesLines.length * 4.5 + 5;
+          }
+
+          // Characters
+          doc.setFontSize(10);
+          doc.setFont("DejaVuSans", "bold");
+          doc.text("Characters:", margin, y);
+          y += 5;
+
+          // Add each character with age
+          this.episode_characters.forEach((char) => {
+            const charPost = this.posts.find(
+              (post) => post.char_id === char.id
+            );
+            const age = charPost ? charPost.age : "Unknown";
+
+            doc.setFontSize(9);
+            doc.setFont("DejaVuSans", "normal");
+            doc.text(`${char.name} (Age: ${age})`, margin, y);
+            y += 4.5;
+
+            // Check for page overflow and create new page if needed
+            if (y > pageHeight - margin) {
+              doc.addPage();
+              y = margin + 10;
+            }
+          });
+
+          // Process each post
+          for (let index = 0; index < this.posts.length; index++) {
+            const post = this.posts[index];
+
+            // Always start a new page for each post
+            doc.addPage();
+            y = margin + 10;
+
+            // Character name
+            doc.setFontSize(10);
+            doc.setFont("DejaVuSans", "bold");
+            doc.text(`${post.name}:`, margin, y);
+            y += 5;
+
+            // Post body - clean up HTML
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = post.body;
+            const cleanText =
+              tempDiv.textContent || tempDiv.innerText || post.body;
+
+            // Split long text into lines that fit the page width
+            doc.setFontSize(9);
+            doc.setFont("DejaVuSans", "normal");
+            const textLines = doc.splitTextToSize(
+              cleanText,
+              pageWidth - 2 * margin - 5
+            );
+
+            // Add lines with pagination
+            let lineIndex = 0;
+            while (lineIndex < textLines.length) {
+              // Calculate how many lines will fit on current page
+              const linesRemaining = Math.floor(
+                (pageHeight - y - margin) / 4.5
+              );
+              const linesToRender = Math.min(
+                linesRemaining,
+                textLines.length - lineIndex
+              );
+
+              if (linesToRender <= 0) {
+                // No space left, add a new page
+                doc.addPage();
+                y = margin + 10;
+                continue;
               }
 
-              // Save the PDF with compression
-              doc.save(filename);
-            },
-            x: margin,
-            y: margin,
-            width: contentWidth - 5, // Reduce width for better margin
-            windowWidth: 350, // Fixed pixel width for rendering
-            autoPaging: true,
-            margin: [margin, margin, margin, margin],
-            html2canvas: {
-              scale: 0.5, // Lower scale for better fit
-              useCORS: true,
-              logging: false,
-              imageTimeout: 0,
-              letterRendering: false,
-              allowTaint: true,
-              removeContainer: true,
-              backgroundColor: null,
-              quality: 0.5,
-            },
-          });
+              // Add text for this page
+              const pageText = textLines.slice(
+                lineIndex,
+                lineIndex + linesToRender
+              );
+              doc.text(pageText, margin, y);
+
+              // Update position
+              lineIndex += linesToRender;
+              y += linesToRender * 4.5;
+
+              // Add a new page if more text remains
+              if (lineIndex < textLines.length) {
+                doc.addPage();
+                y = margin + 10;
+              }
+            }
+          }
+
+          // Add page numbers
+          const totalPages = doc.internal.getNumberOfPages();
+          for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont("DejaVuSans", "normal");
+            doc.text(
+              `Page ${i} of ${totalPages}`,
+              pageWidth / 2,
+              pageHeight - 5,
+              { align: "center" }
+            );
+          }
+
+          // Save the PDF
+          doc.save(filename);
 
           // Clean up - remove the temporary container
           if (this.pdfContainer && this.pdfContainer.parentNode) {
