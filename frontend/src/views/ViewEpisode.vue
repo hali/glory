@@ -661,7 +661,7 @@ export default {
               // Calculate which part of the canvas to use for this page
               const canvasSectionHeight = pdfHeight * pxToMmRatio;
               // Apply an overlap between pages to prevent text clipping
-              const overlap = 10; // 10px overlap to prevent text clipping at boundaries
+              const overlap = 5; // 5px overlap to prevent text clipping at boundaries
               const sourceY = Math.max(
                 0,
                 i * canvasSectionHeight - (i > 0 ? overlap : 0)
@@ -698,13 +698,21 @@ export default {
                 const imgData = sectionCanvas.toDataURL("image/png", 1.0);
                 // For pages after the first, adjust the placement to account for overlap
                 const yOffset = i > 0 ? overlap / pxToMmRatio : 0;
+                // Calculate proper height for image on PDF
+                const imageHeight = sectionHeight / pxToMmRatio;
+                // Ensure we're not exceeding page boundaries with a safety margin
+                const safeHeight = Math.min(
+                  pdfHeight + yOffset - 2,
+                  imageHeight
+                );
+
                 doc.addImage(
                   imgData,
                   "PNG",
                   margin,
                   margin - yOffset,
                   pdfWidth,
-                  Math.min(pdfHeight + yOffset, sectionHeight / pxToMmRatio)
+                  safeHeight
                 );
               }
 
@@ -901,15 +909,11 @@ export default {
               }),
             ]);
 
-            // Add separator between posts (except for the last one)
-            if (index < this.posts.length - 1) {
-              const separator = document.createElement("div");
-              separator.textContent = "***";
-              separator.style.textAlign = "center";
-              separator.style.margin = "15px 0";
-              separator.style.fontSize = "14px";
-              container.appendChild(separator);
-            }
+            // Add extra padding at the bottom to prevent content cutoff
+            const paddingDiv = document.createElement("div");
+            paddingDiv.style.height = "100px";
+            paddingDiv.style.width = "100%";
+            container.appendChild(paddingDiv);
 
             // Capture post as canvas
             const postCanvas = await html2canvas(container, {
