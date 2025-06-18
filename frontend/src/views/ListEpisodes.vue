@@ -480,14 +480,14 @@ export default {
             return section;
           };
 
-          // Helper function to add a page break
-          /* const addPageBreak = () => {
-            const pageBreak = document.createElement("div");
-            pageBreak.style.pageBreakAfter = "always";
-            pageBreak.style.breakAfter = "page";
-            pageBreak.style.height = "1px";
-            container.appendChild(pageBreak);
-          };*/
+          // Helper function to add a separator
+          const addSeparator = () => {
+            const hr = document.createElement("hr");
+            hr.style.border = "none";
+            hr.style.borderTop = "1px solid #888";
+            hr.style.margin = "15px 0";
+            container.appendChild(hr);
+          };
 
           // Collect all character data from episodes
           let allCharacters = [];
@@ -509,6 +509,7 @@ export default {
                 episodePosts.map((post) => ({
                   name: post.name,
                   id: post.char_id,
+                  status: post.status,
                 }))
               ),
             ];
@@ -699,7 +700,7 @@ export default {
                 // Calculate which part of the canvas to use for this page
                 const canvasSectionHeight = pdfHeight * pxToMmRatio;
                 // Apply an overlap between pages to prevent text clipping
-                const overlap = 5; // Increased overlap to prevent text clipping at boundaries
+                const overlap = 10; // Increased overlap to prevent text clipping at boundaries
                 const sourceY = Math.max(
                   0,
                   i * canvasSectionHeight - (i > 0 ? overlap : 0)
@@ -818,6 +819,26 @@ export default {
                 }
               ),
             ]);
+            addSeparator();
+
+            // Episode info
+            if (episode.description) {
+              addSection([
+                createStyledElement("h3", "Description:", {
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  marginBottom: "5px",
+                }),
+                createStyledElement("div", episode.description, {
+                  fontSize: "14px",
+                  lineHeight: "1.4",
+                  whiteSpace: "pre-wrap",
+                  maxWidth: "100%",
+                  textAlign: "left",
+                }),
+              ]);
+            }
+            addSeparator();
 
             // Generate episode meta canvases
             const episodeMetaCanvases = await generateCanvases(container);
@@ -841,8 +862,17 @@ export default {
 
               // Character name
               addSection([
-                createStyledElement("h3", `${post.name}:`, {
-                  fontSize: "16px",
+                createStyledElement(
+                  "h3",
+                  `${post.name} (${post.age} years old):`,
+                  {
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    marginBottom: "5px",
+                  }
+                ),
+                createStyledElement("div", `${post.status}`, {
+                  fontSize: "14px",
                   fontWeight: "bold",
                   marginBottom: "5px",
                 }),
