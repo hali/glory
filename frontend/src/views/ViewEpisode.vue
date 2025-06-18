@@ -727,19 +727,8 @@ export default {
               }
             }
 
-            // Add page numbers after all content is added
-            const finalPageCount = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= finalPageCount; i++) {
-              doc.setPage(i);
-              doc.setFontSize(10);
-              doc.setTextColor(100, 100, 100);
-              doc.text(
-                `Page ${doc.internal.getNumberOfPages()}`,
-                pageWidth / 2,
-                pageHeight - 10,
-                { align: "center" }
-              );
-            }
+            // Page numbers will be added at the end of the entire PDF generation
+            // to avoid duplicate numbering, so we'll skip adding them here
 
             // Calculate how many pages were actually added
             const actualPageCount =
@@ -1025,6 +1014,20 @@ export default {
           }
 
           const filename = `${sanitizedName}.pdf`;
+
+          // Add page numbers to all pages before saving
+          const totalPages = doc.internal.getNumberOfPages();
+          for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(
+              `Page ${i} of ${totalPages}`,
+              pageWidth / 2,
+              pageHeight - 10,
+              { align: "center" }
+            );
+          }
 
           // Save the PDF
           doc.save(filename);
