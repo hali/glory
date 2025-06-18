@@ -481,13 +481,13 @@ export default {
           };
 
           // Helper function to add a page break
-          const addPageBreak = () => {
+          /* const addPageBreak = () => {
             const pageBreak = document.createElement("div");
             pageBreak.style.pageBreakAfter = "always";
             pageBreak.style.breakAfter = "page";
             pageBreak.style.height = "1px";
             container.appendChild(pageBreak);
-          };
+          };*/
 
           // Collect all character data from episodes
           let allCharacters = [];
@@ -557,128 +557,25 @@ export default {
             ]);
           });
 
-          // Add page break before episodes
-          addPageBreak();
-
-          // Process each episode
-          for (let i = 0; i < allEpisodeData.length; i++) {
-            const episodeData = allEpisodeData[i];
-            const episode = episodeData.details;
-            const posts = episodeData.posts;
-
-            // If not the first episode, add a page break
-            if (i > 0) {
-              addPageBreak();
+          // Helper function to prepare element for canvas conversion
+          const prepareForCanvas = (clonedDoc, containerSelector) => {
+            const clonedContainer =
+              clonedDoc.body.querySelector(containerSelector);
+            if (clonedContainer) {
+              const allTextElements =
+                clonedContainer.querySelectorAll("div, p, span");
+              allTextElements.forEach((el) => {
+                el.style.whiteSpace = "pre-wrap";
+                // Ensure text doesn't break at inconvenient places
+                el.style.lineHeight = "1.5";
+                el.style.pageBreakInside = "avoid";
+                el.style.breakInside = "avoid";
+              });
             }
-
-            // Episode title
-            addSection([
-              createStyledElement("h2", episode.name, {
-                fontSize: "18px",
-                fontWeight: "bold",
-                textAlign: "center",
-                marginBottom: "10px",
-                color: "#000000", // Explicitly set text color to black
-              }),
-            ]);
-
-            // Episode time of action
-            addSection([
-              createStyledElement("h3", "Time of action:", {
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "5px",
-              }),
-              createStyledElement(
-                "p",
-                new Date(episode.timeOfAction).toISOString().split("T")[0],
-                {
-                  fontSize: "14px",
-                }
-              ),
-            ]);
-
-            // Add each post
-            for (let j = 0; j < posts.length; j++) {
-              const post = posts[j];
-
-              // Character name
-              addSection([
-                createStyledElement("h3", `${post.name}:`, {
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  marginBottom: "5px",
-                }),
-                createStyledElement("p", `Age: ${post.age || "Unknown"}`, {
-                  fontSize: "12px",
-                  marginBottom: "5px",
-                  marginLeft: "10px",
-                }),
-                createStyledElement("div", post.body, {
-                  fontSize: "14px",
-                  lineHeight: "1.4",
-                  whiteSpace: "pre-wrap",
-                  maxWidth: "100%",
-                  wordBreak: "break-word",
-                  textAlign: "left",
-                  padding: "0",
-                  display: "block",
-                }),
-              ]);
-
-              // Add extra padding at the bottom to prevent content cutoff
-              const paddingDiv = document.createElement("div");
-              paddingDiv.style.height = "200px";
-              paddingDiv.style.width = "100%";
-              container.appendChild(paddingDiv);
-            }
-          }
-
-          // First, make sure the container is visible (but off-screen)
-          container.style.visibility = "visible";
-          container.style.display = "block";
-          container.style.color = "#000000";
-          document.body.appendChild(container);
-
-          // Insert a test element to verify rendering
-          const testElem = document.createElement("div");
-          testElem.textContent = "Test content - should be visible in PDF";
-          testElem.style.color = "#000000";
-          testElem.style.fontSize = "16px";
-          testElem.style.fontWeight = "bold";
-          testElem.style.margin = "20px 0";
-          container.appendChild(testElem);
-
-          // Longer delay to ensure DOM is fully ready and all styles are applied
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          // Force a reflow to make sure all styles are applied
-          container.getBoundingClientRect();
-
-          // Set specific rendering styles before creating canvas
-          container.querySelectorAll("*").forEach((el) => {
-            el.style.color = "#000000";
-            el.style.fontFamily = "Arial, Helvetica, sans-serif";
-            if (
-              el.tagName === "DIV" ||
-              el.tagName === "P" ||
-              el.tagName === "SPAN"
-            ) {
-              el.style.whiteSpace = "pre-wrap";
-            }
-          });
-
-          // Fix for canvas security issues
-          try {
-            document.fonts.ready.then(async () => {
-              console.log("Fonts are loaded and ready");
-            });
-            await document.fonts.ready;
-          } catch (e) {
-            console.log("Font loading error:", e);
-          }
+          };
 
           // Function to split large content into smaller canvases
+          // Generate canvases
           const generateCanvases = async (
             contentContainer,
             maxHeight = 4000
@@ -695,43 +592,10 @@ export default {
                 logging: false,
                 allowTaint: true,
                 letterRendering: true,
-                backgroundColor: "#ffffff",
                 width: width,
                 height: totalHeight,
-                foreignObjectRendering: false, // Try native rendering
-                ignoreElements: (element) => {
-                  return (
-                    element.nodeName === "SCRIPT" ||
-                    element.nodeName === "LINK" ||
-                    element.classList.contains("hidden")
-                  );
-                },
                 onclone: (clonedDoc) => {
-                  // Make sure newlines are preserved in the cloned document
-                  const clonedContainer = clonedDoc.body.querySelector(
-                    "[style*='position: absolute']"
-                  );
-                  if (clonedContainer) {
-                    // Ensure container is visible in cloned document
-                    clonedContainer.style.visibility = "visible";
-                    clonedContainer.style.display = "block";
-                    clonedContainer.style.color = "#000000";
-                    clonedContainer.style.width = width + "px";
-                    clonedContainer.style.height = "auto";
-
-                    const allTextElements = clonedContainer.querySelectorAll(
-                      "div, p, span, h1, h2, h3"
-                    );
-                    allTextElements.forEach((el) => {
-                      el.style.whiteSpace = "pre-wrap";
-                      el.style.lineHeight = "1.5";
-                      el.style.pageBreakInside = "avoid";
-                      el.style.breakInside = "avoid";
-                      el.style.color = "#000000";
-                      el.style.opacity = "1";
-                      el.style.fontFamily = "Arial, Helvetica, sans-serif";
-                    });
-                  }
+                  prepareForCanvas(clonedDoc, "[style*='position: absolute']");
                 },
               });
               return [canvas];
@@ -764,35 +628,14 @@ export default {
                   logging: false,
                   allowTaint: true,
                   letterRendering: true,
-                  backgroundColor: "#ffffff",
                   width: width,
                   height: Math.min(maxHeight, totalHeight - yStart),
                   y: yStart,
-                  foreignObjectRendering: false,
-                  ignoreElements: (element) => {
-                    return (
-                      element.nodeName === "SCRIPT" ||
-                      element.nodeName === "LINK" ||
-                      element.classList.contains("hidden")
-                    );
-                  },
                   onclone: (clonedDoc) => {
-                    const clonedContainer = clonedDoc.body.querySelector(
+                    prepareForCanvas(
+                      clonedDoc,
                       "[style*='position: absolute']"
                     );
-                    if (clonedContainer) {
-                      const allTextElements = clonedContainer.querySelectorAll(
-                        "div, p, span, h1, h2, h3"
-                      );
-                      allTextElements.forEach((el) => {
-                        el.style.whiteSpace = "pre-wrap";
-                        el.style.lineHeight = "1.5";
-                        el.style.pageBreakInside = "avoid";
-                        el.style.breakInside = "avoid";
-                        el.style.color = "#000000";
-                        el.style.opacity = "1";
-                      });
-                    }
                   },
                 });
                 canvases.push(canvas);
@@ -814,9 +657,12 @@ export default {
             pageWidth,
             pageHeight,
             margin,
-            isNewPage = false
+            isNewPage = false,
+            returnPageCount = false
           ) => {
             // Process each canvas and add to PDF
+            const initialPageNumber = doc.internal.getNumberOfPages();
+
             // For each canvas (we might have multiple if content was split)
             for (
               let canvasIndex = 0;
@@ -846,7 +692,7 @@ export default {
               // Add each section of the canvas as a new page
               for (let i = 0; i < pagesForThisCanvas; i++) {
                 // For pages after the first, add a new page
-                if (i > 0 || canvasIndex > 0 || (i === 0 && isNewPage)) {
+                if (i > 0 || canvasIndex > 0 || isNewPage) {
                   doc.addPage();
                 }
 
@@ -902,37 +748,149 @@ export default {
                   } catch (err) {
                     console.error("Error adding section to PDF:", err);
                     // Skip this section but continue with the rest
-                    // Fallback: add a text note instead of an image
-                    doc.setFontSize(12);
-                    doc.setFont(undefined, "normal");
-                    doc.setTextColor(0, 0, 0);
-                    doc.text(
-                      "Content rendering failed for this page",
-                      margin,
-                      margin + 10
-                    );
                   }
                 }
               }
             }
 
-            return doc;
+            // Calculate how many pages were actually added
+            let actualPageCount =
+              doc.internal.getNumberOfPages() - initialPageNumber;
+
+            // Check if any content was added at all
+            if (isNewPage && actualPageCount === 0) {
+              // If we requested a new page but none was added (empty content),
+              // still add a page to ensure separation
+              doc.addPage();
+              return returnPageCount ? { doc, pageCount: 1 } : doc;
+            }
+
+            return returnPageCount ? { doc, pageCount: actualPageCount } : doc;
           };
 
-          // Generate content canvases
-          const contentCanvases = await generateCanvases(container);
+          // STEP 1: Render and add overview content (title, character list)
+          const overviewCanvases = await generateCanvases(container);
           console.log(
-            `Generated ${contentCanvases.length} canvases for content`
+            `Generated ${overviewCanvases.length} canvases for overview`
           );
 
-          // Add content to PDF
+          // Add overview content to PDF
           doc = await addCanvasToPDF(
-            contentCanvases,
+            overviewCanvases,
             doc,
             pageWidth,
             pageHeight,
             margin
           );
+
+          // STEP 2: Process each episode and its posts
+          for (let i = 0; i < allEpisodeData.length; i++) {
+            const episodeData = allEpisodeData[i];
+            const episode = episodeData.details;
+            const posts = episodeData.posts;
+
+            // Clear container for this episode's meta info
+            container.innerHTML = "";
+
+            // Episode title
+            addSection([
+              createStyledElement("h2", episode.name, {
+                fontSize: "18px",
+                fontWeight: "bold",
+                textAlign: "center",
+                marginBottom: "10px",
+                color: "#000000", // Explicitly set text color to black
+              }),
+            ]);
+
+            // Episode time of action
+            addSection([
+              createStyledElement("h3", "Time of action:", {
+                fontSize: "16px",
+                fontWeight: "bold",
+                marginBottom: "5px",
+              }),
+              createStyledElement(
+                "p",
+                new Date(episode.timeOfAction).toISOString().split("T")[0],
+                {
+                  fontSize: "14px",
+                }
+              ),
+            ]);
+
+            // Generate episode meta canvases
+            const episodeMetaCanvases = await generateCanvases(container);
+
+            // Add episode meta info to PDF - always start on a new page
+            doc = await addCanvasToPDF(
+              episodeMetaCanvases,
+              doc,
+              pageWidth,
+              pageHeight,
+              margin,
+              true // start on a new page
+            );
+
+            // Process each post for this episode one by one
+            for (let index = 0; index < posts.length; index++) {
+              const post = posts[index];
+
+              // Clear container for this post
+              container.innerHTML = "";
+
+              // Character name
+              addSection([
+                createStyledElement("h3", `${post.name}:`, {
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  marginBottom: "5px",
+                }),
+                createStyledElement("div", post.body, {
+                  fontSize: "14px",
+                  lineHeight: "1.4",
+                  whiteSpace: "pre-wrap",
+                  maxWidth: "100%",
+                  wordBreak: "break-word",
+                  textAlign: "left",
+                  padding: "0",
+                  display: "block",
+                }),
+              ]);
+
+              // Add extra padding at the bottom to prevent content cutoff
+              const paddingDiv = document.createElement("div");
+              paddingDiv.style.height = "200px";
+              paddingDiv.style.width = "100%";
+              container.appendChild(paddingDiv);
+
+              // Generate post canvases - split large posts into multiple canvases to prevent string length errors
+              const postCanvases = await generateCanvases(container);
+
+              // Add post to the PDF - always start each post on a new page
+              const { doc: updatedPostDoc } = await addCanvasToPDF(
+                postCanvases,
+                doc,
+                pageWidth,
+                pageHeight,
+                margin,
+                true, // true = start on a new page
+                true
+              );
+              // Update the doc reference
+              doc = updatedPostDoc;
+            }
+          }
+
+          // Fix for canvas security issues
+          try {
+            document.fonts.ready.then(async () => {
+              console.log("Fonts are loaded and ready");
+            });
+            await document.fonts.ready;
+          } catch (e) {
+            console.log("Font loading error:", e);
+          }
 
           // Generate sanitized filename from title
           const sanitizedName = this.pdfTitle
