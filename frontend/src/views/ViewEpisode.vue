@@ -312,7 +312,7 @@ import "dotenv/config";
 // Import jsPDF for PDF generation
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
-import "../assets/fonts/NotoSans-Regular-normal.js";
+import "../assets/fonts/DejaVuSans-ExtraLight-normal.js";
 
 export default {
   name: "ViewEpisode",
@@ -436,13 +436,14 @@ export default {
 
       const generatePDF = async () => {
         try {
-          // Create a new PDF document
+          // Create a new PDF document with compression
           let doc = new jsPDF({
             orientation: "portrait",
             unit: "mm",
             format: "a4",
+            compress: true,
           });
-          doc.setFont("NotoSans-Regular", "normal");
+          doc.setFont("DejaVuSans-ExtraLight", "normal");
 
           // Get page dimensions
           const pageWidth = doc.internal.pageSize.getWidth();
@@ -453,11 +454,14 @@ export default {
           // Create the main container for the entire PDF
           const mainContainer = document.createElement("div");
           mainContainer.style.fontFamily =
-            "NotoSans-Regular, Arial, sans-serif";
+            "DejaVuSans-ExtraLight, Arial, sans-serif";
           mainContainer.style.width = contentWidth * 3.5 + "px"; // Convert to pixels for better rendering
           mainContainer.style.maxWidth = "100%";
           mainContainer.style.margin = "0";
           mainContainer.style.padding = "0";
+          mainContainer.style.color = "#000000";
+          mainContainer.style.backgroundColor = "#ffffff";
+          mainContainer.style.lineHeight = "1.2";
 
           // STEP 1: Create meta info container
           const metaContainer = document.createElement("div");
@@ -593,9 +597,12 @@ export default {
 
             // Post body
             const bodyDiv = document.createElement("div");
-            // Clean up any HTML tags in the body
+            // Clean up any HTML tags in the body, minimize text processing
             const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = post.body;
+            tempDiv.innerHTML = post.body.replace(
+              /<(?!\/?br|\/?p)[^>]+>/gi,
+              ""
+            );
             const cleanText =
               tempDiv.textContent || tempDiv.innerText || post.body;
 
@@ -658,7 +665,7 @@ export default {
                 );
               }
 
-              // Save the PDF
+              // Save the PDF with compression
               doc.save(filename);
             },
             x: margin,
@@ -671,6 +678,12 @@ export default {
               scale: 0.5, // Lower scale for better fit
               useCORS: true,
               logging: false,
+              imageTimeout: 0,
+              letterRendering: false,
+              allowTaint: true,
+              removeContainer: true,
+              backgroundColor: null,
+              quality: 0.5,
             },
           });
 
