@@ -436,6 +436,25 @@ export default {
 
       const generatePDF = async () => {
         try {
+          // Helper function to clean HTML text while preserving newlines
+          const cleanHtmlText = (htmlText) => {
+            if (!htmlText || typeof htmlText !== "string") return "";
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = htmlText
+              .replace(/<br\s*\/?>/gi, "\n")
+              .replace(/<p>/gi, "")
+              .replace(/<\/p>/gi, "\n\n")
+              .replace(/<(?!\/?br|\/?p)[^>]+>/gi, ""); // Remove all other HTML tags
+
+            const cleanText = (
+              tempDiv.textContent ||
+              tempDiv.innerText ||
+              htmlText
+            ).replace(/\r\n/g, "\n"); // Normalize all newlines
+
+            return cleanText;
+          };
+
           // Create a new PDF document with compression
           let doc = new jsPDF({
             orientation: "portrait",
@@ -684,7 +703,7 @@ export default {
             doc.setFontSize(9);
             doc.setFont("DejaVuSans", "normal");
             // Preserve newlines in description
-            const descText = this.episode.description.replace(/\r\n/g, "\n");
+            const descText = cleanHtmlText(this.episode.description);
             const descLines = doc.splitTextToSize(
               descText,
               pageWidth - 2 * margin - 5
@@ -764,7 +783,7 @@ export default {
           for (let index = 0; index < this.posts.length; index++) {
             const post = this.posts[index];
 
-            // Always start a new page for each post (first post after meta info already on a new page)
+            // Always start a new page for each post
             doc.addPage();
             y = margin + 10;
 
@@ -774,7 +793,6 @@ export default {
             doc.text(`${post.name}:`, margin, y);
             y += 5;
 
-            // Post body - clean up HTML while preserving newlines
             // Post body - clean up HTML while preserving newlines
             const tempDiv = document.createElement("div");
             tempDiv.innerHTML = post.body

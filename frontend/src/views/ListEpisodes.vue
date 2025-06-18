@@ -554,8 +554,14 @@ export default {
             const cleanDescription = cleanHtmlText(episode.description);
             doc.setFontSize(9);
             doc.setFont("DejaVuSans", "normal");
-            doc.text(cleanDescription, margin + 5, y);
-            y += 8;
+
+            // Split description text to fit page width
+            const descLines = doc.splitTextToSize(
+              cleanDescription,
+              pageWidth - 2 * margin - 10
+            );
+            doc.text(descLines, margin + 5, y);
+            y += descLines.length * 4.5 + 3;
 
             // Process each post for this episode
             for (let j = 0; j < posts.length; j++) {
