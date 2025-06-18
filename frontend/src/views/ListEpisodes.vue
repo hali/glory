@@ -194,6 +194,7 @@ import "vue-multiselect/dist/vue-multiselect.css";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import BaseButton from "@/components/BaseButton";
+import "../assets/fonts/NotoSans-Regular-normal.js";
 const UniqueSet = require("@sepiariver/unique-set");
 
 export default {
@@ -395,6 +396,7 @@ export default {
             unit: "mm",
             format: "a4",
           });
+          doc.setFont("NotoSans-Regular", "normal");
 
           // Get page dimensions
           const pageWidth = doc.internal.pageSize.getWidth();
@@ -404,7 +406,8 @@ export default {
 
           // Create the main container for the entire PDF
           const mainContainer = document.createElement("div");
-          mainContainer.style.fontFamily = "Arial, Helvetica, sans-serif";
+          mainContainer.style.fontFamily =
+            "NotoSans-Regular, Arial, sans-serif";
           mainContainer.style.width = contentWidth * 3.5 + "px"; // Convert to pixels for better rendering
           mainContainer.style.maxWidth = "100%";
           mainContainer.style.margin = "0";
@@ -412,6 +415,7 @@ export default {
           mainContainer.style.color = "#000000";
           mainContainer.style.backgroundColor = "#ffffff";
           mainContainer.style.lineHeight = "1.2";
+          mainContainer.style.letterSpacing = "0.5px";
           document.body.appendChild(mainContainer);
           this.pdfContainer = mainContainer;
 

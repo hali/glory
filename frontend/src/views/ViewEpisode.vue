@@ -312,6 +312,7 @@ import "dotenv/config";
 // Import jsPDF for PDF generation
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
+import "../assets/fonts/NotoSans-Regular-normal.js";
 
 export default {
   name: "ViewEpisode",
@@ -441,6 +442,7 @@ export default {
             unit: "mm",
             format: "a4",
           });
+          doc.setFont("NotoSans-Regular", "normal");
 
           // Get page dimensions
           const pageWidth = doc.internal.pageSize.getWidth();
@@ -450,7 +452,8 @@ export default {
 
           // Create the main container for the entire PDF
           const mainContainer = document.createElement("div");
-          mainContainer.style.fontFamily = "Arial, Helvetica, sans-serif";
+          mainContainer.style.fontFamily =
+            "NotoSans-Regular, Arial, sans-serif";
           mainContainer.style.width = contentWidth * 3.5 + "px"; // Convert to pixels for better rendering
           mainContainer.style.maxWidth = "100%";
           mainContainer.style.margin = "0";
