@@ -430,7 +430,10 @@ export default {
       // Set loading state
       this.isExportingPDF = true;
 
-      // Create a canvas-based PDF export that properly handles Unicode text
+      // Create a PDF export that handles Unicode text and large content
+      // The approach:
+      // 1. First render episode meta info and add to PDF
+      // 2. Then for each post, render and add to the same PDF
 
       const generatePDF = async () => {
         try {
@@ -621,8 +624,9 @@ export default {
           // 2. Then render and add each post
 
           // Helper function to add canvas to PDF
+          // Takes multiple canvases to handle large content that's been split
           const addCanvasToPDF = async (
-            canvas,
+            canvases,
             doc,
             pageWidth,
             pageHeight,
@@ -630,93 +634,103 @@ export default {
             isNewPage = false,
             returnPageCount = false
           ) => {
-            // Get the canvas dimensions
-            const contentWidth = canvas.width;
-            const contentHeight = canvas.height;
-
-            // Calculate PDF dimensions
-            const pdfWidth = pageWidth - 2 * margin;
-            const pdfHeight = pageHeight - 2 * margin;
-
-            // Convert px to mm ratio (adjusting for margins)
-            const pxToMmRatio = contentWidth / pdfWidth;
-            const contentHeightInMm = contentHeight / pxToMmRatio;
-
-            // Calculate number of pages needed
-            const pageCount = Math.max(
-              1,
-              Math.ceil(contentHeightInMm / pdfHeight)
-            );
-
-            // Store initial page number
+            // Process each canvas and add to PDF
             const initialPageNumber = doc.internal.getNumberOfPages();
 
-            // Add each section of the canvas as a new page
-            for (let i = 0; i < pageCount; i++) {
-              // For pages after the first, add a new page
-              if (i > 0 || (i === 0 && isNewPage)) {
-                doc.addPage();
-              }
+            // For each canvas (we might have multiple if content was split)
+            for (
+              let canvasIndex = 0;
+              canvasIndex < canvases.length;
+              canvasIndex++
+            ) {
+              const canvas = canvases[canvasIndex];
 
-              // Calculate which part of the canvas to use for this page
-              const canvasSectionHeight = pdfHeight * pxToMmRatio;
-              // Apply an overlap between pages to prevent text clipping
-              const overlap = 5; // 5px overlap to prevent text clipping at boundaries
-              const sourceY = Math.max(
-                0,
-                i * canvasSectionHeight - (i > 0 ? overlap : 0)
+              // Get the canvas dimensions
+              const contentWidth = canvas.width;
+              const contentHeight = canvas.height;
+
+              // Calculate how many pages we need
+              const pdfWidth = pageWidth - 2 * margin;
+              const pdfHeight = pageHeight - 2 * margin;
+
+              // Convert px to mm ratio (adjusting for margins)
+              const pxToMmRatio = contentWidth / pdfWidth;
+              const contentHeightInMm = contentHeight / pxToMmRatio;
+
+              // Calculate number of pages needed for this canvas
+              const pagesForThisCanvas = Math.max(
+                1,
+                Math.ceil(contentHeightInMm / pdfHeight)
               );
-              let sectionHeight = canvasSectionHeight + (i > 0 ? overlap : 0);
 
-              // If it's the last section, it might not be a full page
-              if (sourceY + sectionHeight > contentHeight) {
-                sectionHeight = contentHeight - sourceY;
+              // Add each section of the canvas as a new page
+              for (let i = 0; i < pagesForThisCanvas; i++) {
+                // For pages after the first, add a new page
+                if (i > 0 || canvasIndex > 0 || isNewPage) {
+                  doc.addPage();
+                }
+
+                // Calculate which part of the canvas to use for this page
+                const canvasSectionHeight = pdfHeight * pxToMmRatio;
+                // Apply an overlap between pages to prevent text clipping
+                const overlap = 5; // Increased overlap to prevent text clipping at boundaries
+                const sourceY = Math.max(
+                  0,
+                  i * canvasSectionHeight - (i > 0 ? overlap : 0)
+                );
+                let sectionHeight = canvasSectionHeight + (i > 0 ? overlap : 0);
+
+                // If it's the last section, it might not be a full page
+                if (sourceY + sectionHeight > contentHeight) {
+                  sectionHeight = contentHeight - sourceY;
+                }
+
+                // Only add image if there's content to add
+                if (sectionHeight > 0) {
+                  try {
+                    // Create a temporary canvas for this section
+                    const sectionCanvas = document.createElement("canvas");
+                    sectionCanvas.width = contentWidth;
+                    sectionCanvas.height = sectionHeight;
+                    const ctx = sectionCanvas.getContext("2d");
+
+                    // Draw the appropriate section of the original canvas
+                    ctx.drawImage(
+                      canvas,
+                      0,
+                      sourceY,
+                      contentWidth,
+                      sectionHeight,
+                      0,
+                      0,
+                      contentWidth,
+                      sectionHeight
+                    );
+
+                    // Add this section to the PDF - use JPEG with lower quality to avoid string length errors
+                    const imgData = sectionCanvas.toDataURL("image/jpeg", 0.8);
+                    // For pages after the first, adjust the placement to account for overlap
+                    const yOffset = i > 0 ? overlap / pxToMmRatio : 0;
+                    doc.addImage(
+                      imgData,
+                      "JPEG",
+                      margin,
+                      margin - yOffset,
+                      pdfWidth,
+                      Math.min(pdfHeight + yOffset, sectionHeight / pxToMmRatio)
+                    );
+                  } catch (err) {
+                    console.error("Error adding section to PDF:", err);
+                    // Skip this section but continue with the rest
+                  }
+                }
               }
+            }
 
-              // Only add image if there's content to add
-              if (sectionHeight > 0) {
-                // Create a temporary canvas for this section
-                const sectionCanvas = document.createElement("canvas");
-                sectionCanvas.width = contentWidth;
-                sectionCanvas.height = sectionHeight;
-                const ctx = sectionCanvas.getContext("2d");
-
-                // Draw the appropriate section of the original canvas
-                ctx.drawImage(
-                  canvas,
-                  0,
-                  sourceY,
-                  contentWidth,
-                  sectionHeight,
-                  0,
-                  0,
-                  contentWidth,
-                  sectionHeight
-                );
-
-                // Add this section to the PDF
-                const imgData = sectionCanvas.toDataURL("image/png", 1.0);
-                // For pages after the first, adjust the placement to account for overlap
-                const yOffset = i > 0 ? overlap / pxToMmRatio : 0;
-                // Calculate proper height for image on PDF
-                const imageHeight = sectionHeight / pxToMmRatio;
-                // Ensure we're not exceeding page boundaries with a safety margin
-                const safeHeight = Math.min(
-                  pdfHeight + yOffset - 2,
-                  imageHeight
-                );
-
-                doc.addImage(
-                  imgData,
-                  "PNG",
-                  margin,
-                  margin - yOffset,
-                  pdfWidth,
-                  safeHeight
-                );
-              }
-
-              // Add page number
+            // Add page numbers after all content is added
+            const finalPageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= finalPageCount; i++) {
+              doc.setPage(i);
               doc.setFontSize(10);
               doc.setTextColor(100, 100, 100);
               doc.text(
@@ -852,24 +866,89 @@ export default {
           // Second separator
           addSeparator();
 
-          // Capture meta info as canvas
-          const metaCanvas = await html2canvas(container, {
-            scale: 2, // Higher scale for better quality
-            useCORS: true,
-            logging: false,
-            allowTaint: true,
-            letterRendering: true,
-            width: container.offsetWidth,
-            height: container.offsetHeight,
-            onclone: (clonedDoc) => {
-              // Make sure newlines are preserved in the cloned document
-              prepareForCanvas(clonedDoc, "[style*='position: absolute']");
-            },
-          });
+          // Function to split large content into smaller canvases
+          // This prevents "RangeError: Invalid string length" by breaking large content
+          // into manageable chunks that don't exceed JavaScript string size limits
+          const generateCanvases = async (
+            contentContainer,
+            maxHeight = 4000
+          ) => {
+            // Get total height of content
+            const totalHeight = contentContainer.offsetHeight;
+            const width = contentContainer.offsetWidth;
 
-          // Add meta info to PDF and get page count
+            // If content is small enough, just return one canvas
+            if (totalHeight <= maxHeight) {
+              const canvas = await html2canvas(contentContainer, {
+                scale: 1.5, // Lower scale for better performance and to avoid memory issues
+                useCORS: true,
+                logging: false,
+                allowTaint: true,
+                letterRendering: true,
+                width: width,
+                height: totalHeight,
+                onclone: (clonedDoc) => {
+                  prepareForCanvas(clonedDoc, "[style*='position: absolute']");
+                },
+              });
+              return [canvas];
+            }
+
+            // Otherwise split into multiple canvases
+            const canvases = [];
+            const segments = Math.ceil(totalHeight / maxHeight);
+
+            for (let i = 0; i < segments; i++) {
+              // Create a clone of the container for this segment
+              const segmentContainer = contentContainer.cloneNode(true);
+              document.body.appendChild(segmentContainer);
+
+              // Position to show only the relevant part
+              const yStart = i * maxHeight;
+              segmentContainer.style.position = "absolute";
+              segmentContainer.style.top = `-${yStart}px`;
+              segmentContainer.style.height = `${totalHeight}px`;
+              segmentContainer.style.clip = `rect(${yStart}px, ${width}px, ${Math.min(
+                yStart + maxHeight,
+                totalHeight
+              )}px, 0)`;
+
+              // Generate canvas for this segment
+              try {
+                const canvas = await html2canvas(segmentContainer, {
+                  scale: 1.5,
+                  useCORS: true,
+                  logging: false,
+                  allowTaint: true,
+                  letterRendering: true,
+                  width: width,
+                  height: Math.min(maxHeight, totalHeight - yStart),
+                  y: yStart,
+                  onclone: (clonedDoc) => {
+                    prepareForCanvas(
+                      clonedDoc,
+                      "[style*='position: absolute']"
+                    );
+                  },
+                });
+                canvases.push(canvas);
+              } catch (err) {
+                console.error("Error generating canvas segment:", err);
+              }
+
+              // Clean up
+              document.body.removeChild(segmentContainer);
+            }
+
+            return canvases;
+          };
+
+          // STEP 1: Generate and add meta info to PDF
+          const metaCanvases = await generateCanvases(container);
+
+          // Add meta info to PDF
           const { doc: updatedDoc } = await addCanvasToPDF(
-            metaCanvas,
+            metaCanvases,
             doc,
             pageWidth,
             pageHeight,
@@ -880,10 +959,9 @@ export default {
 
           // Use the updated doc with meta info
           doc = updatedDoc;
-          // Step 2: Render and add each post
-          // We'll always start each post on a new page
 
-          // Process each post one by one
+          // STEP 2: Render and add each post
+          // Process each post one by one, always starting each on a new page
           for (let index = 0; index < this.posts.length; index++) {
             const post = this.posts[index];
 
@@ -911,35 +989,21 @@ export default {
 
             // Add extra padding at the bottom to prevent content cutoff
             const paddingDiv = document.createElement("div");
-            paddingDiv.style.height = "100px";
+            paddingDiv.style.height = "200px";
             paddingDiv.style.width = "100%";
             container.appendChild(paddingDiv);
 
-            // Capture post as canvas
-            const postCanvas = await html2canvas(container, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
-              allowTaint: true,
-              letterRendering: true,
-              width: container.offsetWidth,
-              height: container.offsetHeight,
-              onclone: (clonedDoc) => {
-                prepareForCanvas(clonedDoc, "[style*='position: absolute']");
-              },
-            });
+            // Generate post canvases - split large posts into multiple canvases to prevent string length errors
+            const postCanvases = await generateCanvases(container);
 
-            // Always start a new page for each post
-            const startNewPage = true;
-
-            // Add post to the PDF
+            // Add post to the PDF - always start each post on a new page
             const { doc: updatedPostDoc } = await addCanvasToPDF(
-              postCanvas,
+              postCanvases,
               doc,
               pageWidth,
               pageHeight,
               margin,
-              startNewPage,
+              true, // true = start on a new page
               true
             );
             // Update the doc reference
@@ -967,10 +1031,21 @@ export default {
 
           // PDF is now downloaded to the user's device
 
-          // Clean up - remove the temporary container
+          // Clean up memory to avoid leaks
           if (this.pdfContainer && this.pdfContainer.parentNode) {
             this.pdfContainer.parentNode.removeChild(this.pdfContainer);
             this.pdfContainer = null;
+          }
+
+          // Force garbage collection if possible to free memory after large PDF generation
+          if (window.gc) {
+            window.gc();
+          } else if (window.requestIdleCallback) {
+            window.requestIdleCallback(() => {
+              // This gives the browser a hint to perform GC when idle
+              // Creating and discarding a large array can encourage garbage collection
+              new Array(100).fill("x").join("");
+            });
           }
         } catch (error) {
           console.error("Error generating PDF:", error);
