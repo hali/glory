@@ -435,7 +435,7 @@ export default {
       const generatePDF = async () => {
         try {
           // Create a new PDF document
-          const doc = new jsPDF({
+          let doc = new jsPDF({
             orientation: "portrait",
             unit: "mm",
             format: "a4",
@@ -627,7 +627,8 @@ export default {
             pageWidth,
             pageHeight,
             margin,
-            isNewPage = false
+            isNewPage = false,
+            returnPageCount = false
           ) => {
             // Get the canvas dimensions
             const contentWidth = canvas.width;
@@ -647,10 +648,13 @@ export default {
               Math.ceil(contentHeightInMm / pdfHeight)
             );
 
+            // Store initial page number
+            const initialPageNumber = doc.internal.getNumberOfPages();
+
             // Add each section of the canvas as a new page
             for (let i = 0; i < pageCount; i++) {
               // For pages after the first, add a new page
-              if (i > 0 || isNewPage) {
+              if (i > 0 || (i === 0 && isNewPage)) {
                 doc.addPage();
               }
 
@@ -715,7 +719,16 @@ export default {
               );
             }
 
-            return doc;
+            // Calculate how many pages were actually added
+            const actualPageCount =
+              doc.internal.getNumberOfPages() - initialPageNumber;
+            if (isNewPage && actualPageCount === 0) {
+              // If we requested a new page but none was added (empty content),
+              // still add a page to ensure separation
+              doc.addPage();
+            }
+
+            return returnPageCount ? { doc, pageCount: actualPageCount } : doc;
           };
 
           // Helper function to prepare element for canvas conversion
@@ -846,11 +859,21 @@ export default {
             },
           });
 
-          // Add meta info to PDF
-          await addCanvasToPDF(metaCanvas, doc, pageWidth, pageHeight, margin);
+          // Add meta info to PDF and get page count
+          const { doc: updatedDoc } = await addCanvasToPDF(
+            metaCanvas,
+            doc,
+            pageWidth,
+            pageHeight,
+            margin,
+            false,
+            true
+          );
 
+          // Use the updated doc with meta info
+          doc = updatedDoc;
           // Step 2: Render and add each post
-          let isFirstPost = true;
+          // We'll always start each post on a new page
 
           // Process each post one by one
           for (let index = 0; index < this.posts.length; index++) {
@@ -902,16 +925,21 @@ export default {
               },
             });
 
-            // Add post to the PDF, creating a new page for first post
-            await addCanvasToPDF(
+            // Always start a new page for each post
+            const startNewPage = true;
+
+            // Add post to the PDF
+            const { doc: updatedPostDoc } = await addCanvasToPDF(
               postCanvas,
               doc,
               pageWidth,
               pageHeight,
               margin,
-              isFirstPost
+              startNewPage,
+              true
             );
-            isFirstPost = false;
+            // Update the doc reference
+            doc = updatedPostDoc;
           }
 
           // Generate sanitized filename
