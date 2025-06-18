@@ -391,7 +391,7 @@ export default {
       const generatePDF = async () => {
         try {
           // Create a new PDF document
-          const doc = new jsPDF({
+          let doc = new jsPDF({
             orientation: "portrait",
             unit: "mm",
             format: "a4",
@@ -509,7 +509,6 @@ export default {
                 episodePosts.map((post) => ({
                   name: post.name,
                   id: post.char_id,
-                  age: post.age,
                 }))
               ),
             ];
@@ -551,14 +550,10 @@ export default {
           // List all unique characters with their ages
           uniqueCharacters.forEach((char) => {
             addSection([
-              createStyledElement(
-                "p",
-                `${char.name} (Age: ${char.age || "Unknown"})`,
-                {
-                  fontSize: "14px",
-                  marginBottom: "5px",
-                }
-              ),
+              createStyledElement("p", `${char.name}`, {
+                fontSize: "14px",
+                marginBottom: "5px",
+              }),
             ]);
           });
 
@@ -626,18 +621,16 @@ export default {
                   maxWidth: "100%",
                   wordBreak: "break-word",
                   textAlign: "left",
+                  padding: "0",
+                  display: "block",
                 }),
               ]);
 
-              // Add separator between posts (except for the last one)
-              if (j < posts.length - 1) {
-                const separator = document.createElement("div");
-                separator.textContent = "***";
-                separator.style.textAlign = "center";
-                separator.style.margin = "15px 0";
-                separator.style.fontSize = "14px";
-                container.appendChild(separator);
-              }
+              // Add extra padding at the bottom to prevent content cutoff
+              const paddingDiv = document.createElement("div");
+              paddingDiv.style.height = "200px";
+              paddingDiv.style.width = "100%";
+              container.appendChild(paddingDiv);
             }
           }
 
@@ -685,210 +678,261 @@ export default {
             console.log("Font loading error:", e);
           }
 
-          // Capture the HTML as canvas
-          const canvas = await html2canvas(container, {
-            scale: 2, // Higher scale for better quality
-            useCORS: true,
-            logging: true, // Enable logging for debugging
-            allowTaint: true,
-            letterRendering: true,
-            backgroundColor: "#ffffff",
-            width: container.offsetWidth,
-            height: container.offsetHeight,
-            foreignObjectRendering: false, // Try native rendering
-            ignoreElements: (element) => {
-              return (
-                element.nodeName === "SCRIPT" ||
-                element.nodeName === "LINK" ||
-                element.classList.contains("hidden")
-              );
-            },
-            onclone: (clonedDoc) => {
-              // Make sure newlines are preserved in the cloned document
-              const clonedContainer = clonedDoc.body.querySelector(
-                "[style*='position: absolute']"
-              );
-              if (clonedContainer) {
-                // Ensure container is visible in cloned document
-                clonedContainer.style.visibility = "visible";
-                clonedContainer.style.display = "block";
-                clonedContainer.style.color = "#000000";
-                clonedContainer.style.width = container.offsetWidth + "px";
-                clonedContainer.style.height = "auto";
+          // Function to split large content into smaller canvases
+          const generateCanvases = async (
+            contentContainer,
+            maxHeight = 4000
+          ) => {
+            // Get total height of content
+            const totalHeight = contentContainer.offsetHeight;
+            const width = contentContainer.offsetWidth;
 
-                const allTextElements = clonedContainer.querySelectorAll(
-                  "div, p, span, h1, h2, h3"
-                );
-                allTextElements.forEach((el) => {
-                  el.style.whiteSpace = "pre-wrap";
-                  el.style.lineHeight = "1.5";
-                  el.style.pageBreakInside = "avoid";
-                  el.style.breakInside = "avoid";
-                  el.style.color = "#000000";
-                  el.style.opacity = "1";
-                  el.style.fontFamily = "Arial, Helvetica, sans-serif";
+            // If content is small enough, just return one canvas
+            if (totalHeight <= maxHeight) {
+              const canvas = await html2canvas(contentContainer, {
+                scale: 1.5, // Lower scale for better performance and to avoid memory issues
+                useCORS: true,
+                logging: false,
+                allowTaint: true,
+                letterRendering: true,
+                backgroundColor: "#ffffff",
+                width: width,
+                height: totalHeight,
+                foreignObjectRendering: false, // Try native rendering
+                ignoreElements: (element) => {
+                  return (
+                    element.nodeName === "SCRIPT" ||
+                    element.nodeName === "LINK" ||
+                    element.classList.contains("hidden")
+                  );
+                },
+                onclone: (clonedDoc) => {
+                  // Make sure newlines are preserved in the cloned document
+                  const clonedContainer = clonedDoc.body.querySelector(
+                    "[style*='position: absolute']"
+                  );
+                  if (clonedContainer) {
+                    // Ensure container is visible in cloned document
+                    clonedContainer.style.visibility = "visible";
+                    clonedContainer.style.display = "block";
+                    clonedContainer.style.color = "#000000";
+                    clonedContainer.style.width = width + "px";
+                    clonedContainer.style.height = "auto";
+
+                    const allTextElements = clonedContainer.querySelectorAll(
+                      "div, p, span, h1, h2, h3"
+                    );
+                    allTextElements.forEach((el) => {
+                      el.style.whiteSpace = "pre-wrap";
+                      el.style.lineHeight = "1.5";
+                      el.style.pageBreakInside = "avoid";
+                      el.style.breakInside = "avoid";
+                      el.style.color = "#000000";
+                      el.style.opacity = "1";
+                      el.style.fontFamily = "Arial, Helvetica, sans-serif";
+                    });
+                  }
+                },
+              });
+              return [canvas];
+            }
+
+            // Otherwise split into multiple canvases
+            const canvases = [];
+            const segments = Math.ceil(totalHeight / maxHeight);
+
+            for (let i = 0; i < segments; i++) {
+              // Create a clone of the container for this segment
+              const segmentContainer = contentContainer.cloneNode(true);
+              document.body.appendChild(segmentContainer);
+
+              // Position to show only the relevant part
+              const yStart = i * maxHeight;
+              segmentContainer.style.position = "absolute";
+              segmentContainer.style.top = `-${yStart}px`;
+              segmentContainer.style.height = `${totalHeight}px`;
+              segmentContainer.style.clip = `rect(${yStart}px, ${width}px, ${Math.min(
+                yStart + maxHeight,
+                totalHeight
+              )}px, 0)`;
+
+              // Generate canvas for this segment
+              try {
+                const canvas = await html2canvas(segmentContainer, {
+                  scale: 1.5,
+                  useCORS: true,
+                  logging: false,
+                  allowTaint: true,
+                  letterRendering: true,
+                  backgroundColor: "#ffffff",
+                  width: width,
+                  height: Math.min(maxHeight, totalHeight - yStart),
+                  y: yStart,
+                  foreignObjectRendering: false,
+                  ignoreElements: (element) => {
+                    return (
+                      element.nodeName === "SCRIPT" ||
+                      element.nodeName === "LINK" ||
+                      element.classList.contains("hidden")
+                    );
+                  },
+                  onclone: (clonedDoc) => {
+                    const clonedContainer = clonedDoc.body.querySelector(
+                      "[style*='position: absolute']"
+                    );
+                    if (clonedContainer) {
+                      const allTextElements = clonedContainer.querySelectorAll(
+                        "div, p, span, h1, h2, h3"
+                      );
+                      allTextElements.forEach((el) => {
+                        el.style.whiteSpace = "pre-wrap";
+                        el.style.lineHeight = "1.5";
+                        el.style.pageBreakInside = "avoid";
+                        el.style.breakInside = "avoid";
+                        el.style.color = "#000000";
+                        el.style.opacity = "1";
+                      });
+                    }
+                  },
                 });
+                canvases.push(canvas);
+              } catch (err) {
+                console.error("Error generating canvas segment:", err);
               }
-            },
-          });
 
-          // Get the canvas dimensions
-          const contentWidth = canvas.width;
-          const contentHeight = canvas.height;
+              // Clean up
+              document.body.removeChild(segmentContainer);
+            }
 
-          // Calculate how many pages we need
-          const pdfWidth = pageWidth - 2 * margin;
-          const pdfHeight = pageHeight - 2 * margin;
+            return canvases;
+          };
 
-          // Check if the canvas has valid content
-          if (contentWidth === 0 || contentHeight === 0) {
-            console.error(
-              "Canvas has zero width or height",
-              contentWidth,
-              contentHeight
-            );
-            throw new Error("Canvas rendering failed - zero dimensions");
-          }
+          // Helper function to add canvas to PDF
+          const addCanvasToPDF = async (
+            canvases,
+            doc,
+            pageWidth,
+            pageHeight,
+            margin,
+            isNewPage = false
+          ) => {
+            // Process each canvas and add to PDF
+            // For each canvas (we might have multiple if content was split)
+            for (
+              let canvasIndex = 0;
+              canvasIndex < canvases.length;
+              canvasIndex++
+            ) {
+              const canvas = canvases[canvasIndex];
 
-          console.log("Canvas dimensions:", contentWidth, contentHeight);
+              // Get the canvas dimensions
+              const contentWidth = canvas.width;
+              const contentHeight = canvas.height;
 
-          // Convert px to mm ratio (adjusting for margins)
-          const pxToMmRatio = contentWidth / pdfWidth;
-          const contentHeightInMm = contentHeight / pxToMmRatio;
+              // Calculate how many pages we need
+              const pdfWidth = pageWidth - 2 * margin;
+              const pdfHeight = pageHeight - 2 * margin;
 
-          // Calculate number of pages needed
-          const pageCount = Math.max(
-            1,
-            Math.ceil(contentHeightInMm / pdfHeight)
+              // Convert px to mm ratio (adjusting for margins)
+              const pxToMmRatio = contentWidth / pdfWidth;
+              const contentHeightInMm = contentHeight / pxToMmRatio;
+
+              // Calculate number of pages needed for this canvas
+              const pagesForThisCanvas = Math.max(
+                1,
+                Math.ceil(contentHeightInMm / pdfHeight)
+              );
+
+              // Add each section of the canvas as a new page
+              for (let i = 0; i < pagesForThisCanvas; i++) {
+                // For pages after the first, add a new page
+                if (i > 0 || canvasIndex > 0 || (i === 0 && isNewPage)) {
+                  doc.addPage();
+                }
+
+                // Calculate which part of the canvas to use for this page
+                const canvasSectionHeight = pdfHeight * pxToMmRatio;
+                // Apply an overlap between pages to prevent text clipping
+                const overlap = 5; // Increased overlap to prevent text clipping at boundaries
+                const sourceY = Math.max(
+                  0,
+                  i * canvasSectionHeight - (i > 0 ? overlap : 0)
+                );
+                let sectionHeight = canvasSectionHeight + (i > 0 ? overlap : 0);
+
+                // If it's the last section, it might not be a full page
+                if (sourceY + sectionHeight > contentHeight) {
+                  sectionHeight = contentHeight - sourceY;
+                }
+
+                // Only add image if there's content to add
+                if (sectionHeight > 0) {
+                  try {
+                    // Create a temporary canvas for this section
+                    const sectionCanvas = document.createElement("canvas");
+                    sectionCanvas.width = contentWidth;
+                    sectionCanvas.height = sectionHeight;
+                    const ctx = sectionCanvas.getContext("2d");
+
+                    // Draw the appropriate section of the original canvas
+                    ctx.drawImage(
+                      canvas,
+                      0,
+                      sourceY,
+                      contentWidth,
+                      sectionHeight,
+                      0,
+                      0,
+                      contentWidth,
+                      sectionHeight
+                    );
+
+                    // Add this section to the PDF - use JPEG with lower quality to avoid string length errors
+                    const imgData = sectionCanvas.toDataURL("image/jpeg", 0.8);
+                    // For pages after the first, adjust the placement to account for overlap
+                    const yOffset = i > 0 ? overlap / pxToMmRatio : 0;
+                    doc.addImage(
+                      imgData,
+                      "JPEG",
+                      margin,
+                      margin - yOffset,
+                      pdfWidth,
+                      Math.min(pdfHeight + yOffset, sectionHeight / pxToMmRatio)
+                    );
+                  } catch (err) {
+                    console.error("Error adding section to PDF:", err);
+                    // Skip this section but continue with the rest
+                    // Fallback: add a text note instead of an image
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, "normal");
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(
+                      "Content rendering failed for this page",
+                      margin,
+                      margin + 10
+                    );
+                  }
+                }
+              }
+            }
+
+            return doc;
+          };
+
+          // Generate content canvases
+          const contentCanvases = await generateCanvases(container);
+          console.log(
+            `Generated ${contentCanvases.length} canvases for content`
           );
 
-          console.log("PDF will have", pageCount, "pages");
-
-          // Add each section of the canvas as a new page
-          for (let i = 0; i < pageCount; i++) {
-            // For pages after the first, add a new page
-            if (i > 0) {
-              doc.addPage();
-            }
-
-            // Calculate which part of the canvas to use for this page
-            const canvasSectionHeight = pdfHeight * pxToMmRatio;
-            // Apply an overlap between pages to prevent text clipping
-            const overlap = 10; // 10px overlap to prevent text clipping at boundaries
-            const sourceY = Math.max(
-              0,
-              i * canvasSectionHeight - (i > 0 ? overlap : 0)
-            );
-            let sectionHeight = canvasSectionHeight + (i > 0 ? overlap : 0);
-
-            // If it's the last section, it might not be a full page
-            if (sourceY + sectionHeight > contentHeight) {
-              sectionHeight = contentHeight - sourceY;
-            }
-
-            // Only add image if there's content to add
-            if (sectionHeight > 0) {
-              // Create a temporary canvas for this section
-              const sectionCanvas = document.createElement("canvas");
-              sectionCanvas.width = contentWidth;
-              sectionCanvas.height = sectionHeight;
-              const ctx = sectionCanvas.getContext("2d");
-
-              // Draw the appropriate section of the original canvas
-              ctx.drawImage(
-                canvas,
-                0,
-                sourceY,
-                contentWidth,
-                sectionHeight,
-                0,
-                0,
-                contentWidth,
-                sectionHeight
-              );
-
-              try {
-                // First try with toDataURL
-                let imgData;
-                try {
-                  imgData = sectionCanvas.toDataURL("image/png", 1.0);
-                } catch (e) {
-                  console.warn(
-                    "toDataURL failed, trying alternative approach:",
-                    e
-                  );
-
-                  // Fallback to blob approach if toDataURL fails
-                  const blob = await new Promise((resolve) => {
-                    sectionCanvas.toBlob(resolve, "image/png", 1.0);
-                  });
-
-                  if (!blob) {
-                    throw new Error("Failed to create blob from canvas");
-                  }
-
-                  const reader = new FileReader();
-                  imgData = await new Promise((resolve, reject) => {
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(blob);
-                  });
-                }
-
-                // Debug check for valid image data
-                console.log(
-                  `Page ${i + 1} image data length: ${imgData.length}`
-                );
-
-                if (imgData && imgData.length > 1000) {
-                  // For pages after the first, adjust the placement to account for overlap
-                  const yOffset = i > 0 ? overlap / pxToMmRatio : 0;
-                  doc.addImage(
-                    imgData,
-                    "PNG",
-                    margin,
-                    margin - yOffset,
-                    pdfWidth,
-                    Math.min(pdfHeight + yOffset, sectionHeight / pxToMmRatio)
-                  );
-                } else {
-                  console.error(`Generated empty image data for page ${i + 1}`);
-
-                  // Fallback: add a text note instead of an image
-                  doc.setFontSize(12);
-                  doc.setFont(undefined, "normal");
-                  doc.setTextColor(0, 0, 0);
-                  doc.text(
-                    "Content rendering failed for this page",
-                    margin,
-                    margin + 10
-                  );
-                }
-              } catch (err) {
-                console.error("Error adding image to PDF:", err);
-
-                // Add text note when image fails
-                doc.setFontSize(12);
-                doc.setFont(undefined, "normal");
-                doc.setTextColor(0, 0, 0);
-                doc.text(
-                  "Content rendering failed for this page",
-                  margin,
-                  margin + 10
-                );
-              }
-            }
-
-            // Add page number
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text(
-              `Page ${i + 1} of ${pageCount}`,
-              pageWidth / 2,
-              pageHeight - 10,
-              { align: "center" }
-            );
-          }
+          // Add content to PDF
+          doc = await addCanvasToPDF(
+            contentCanvases,
+            doc,
+            pageWidth,
+            pageHeight,
+            margin
+          );
 
           // Generate sanitized filename from title
           const sanitizedName = this.pdfTitle
@@ -897,6 +941,20 @@ export default {
             .toLowerCase();
           const filename = `${sanitizedName}.pdf`;
 
+          // Add page numbers to all pages before saving
+          const totalPages = doc.internal.getNumberOfPages();
+          for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(
+              `Page ${i} of ${totalPages}`,
+              pageWidth / 2,
+              pageHeight - 10,
+              { align: "center" }
+            );
+          }
+
           // Save the PDF
           doc.save(filename);
 
@@ -904,6 +962,17 @@ export default {
           if (this.pdfContainer && this.pdfContainer.parentNode) {
             this.pdfContainer.parentNode.removeChild(this.pdfContainer);
             this.pdfContainer = null;
+          }
+
+          // Force garbage collection if possible to free memory after large PDF generation
+          if (window.gc) {
+            window.gc();
+          } else if (window.requestIdleCallback) {
+            window.requestIdleCallback(() => {
+              // This gives the browser a hint to perform GC when idle
+              // Creating and discarding a large array can encourage garbage collection
+              new Array(100).fill("x").join("");
+            });
           }
         } catch (error) {
           console.error("Error generating PDF:", error);

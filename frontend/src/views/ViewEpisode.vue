@@ -459,8 +459,14 @@ export default {
           container.style.padding = "0";
           container.style.margin = "0";
           container.style.backgroundColor = "#ffffff";
-          // Avoid line breaking issues by adding a slight line spacing
           container.style.lineHeight = "1.5";
+          container.style.color = "#000000"; // Explicitly set text color
+          container.style.display = "block";
+          container.style.visibility = "visible";
+          container.style.minHeight = "100px"; // Ensure minimum height
+          container.style.wordBreak = "normal"; // Prevent word breaking issues
+          container.style.wordWrap = "break-word";
+          container.style.overflowWrap = "break-word";
           document.body.appendChild(container);
           this.pdfContainer = container;
 
