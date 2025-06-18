@@ -312,8 +312,6 @@ import "dotenv/config";
 // Import jsPDF for PDF generation
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
-// Import html2canvas for rendering Unicode text
-import html2canvas from "html2canvas";
 
 export default {
   name: "ViewEpisode",
@@ -430,7 +428,7 @@ export default {
       // Set loading state
       this.isExportingPDF = true;
 
-      // Create a PDF export that handles Unicode text and large content
+      // Create a PDF export that renders text directly
       // The approach:
       // 1. First render episode meta info and add to PDF
       // 2. Then for each post, render and add to the same PDF
@@ -447,163 +445,104 @@ export default {
           // Get page dimensions
           const pageWidth = doc.internal.pageSize.getWidth();
           const pageHeight = doc.internal.pageSize.getHeight();
-          const margin = 20; // 20mm margins
+          const margin = 10; // 10mm margins
+          const contentWidth = pageWidth - 2 * margin;
 
-          // Create a temporary container to render content
-          // We'll use this to generate HTML that will be converted to images
-          const container = document.createElement("div");
-          container.style.position = "absolute";
-          container.style.left = "-9999px";
-          container.style.width = pageWidth - 2 * margin + "mm";
-          container.style.fontFamily = "Arial, Helvetica, sans-serif";
-          container.style.padding = "0";
-          container.style.margin = "0";
-          container.style.backgroundColor = "#ffffff";
-          container.style.lineHeight = "1.5";
-          container.style.color = "#000000"; // Explicitly set text color
-          container.style.display = "block";
-          container.style.visibility = "visible";
-          container.style.minHeight = "100px"; // Ensure minimum height
-          container.style.wordBreak = "normal"; // Prevent word breaking issues
-          container.style.wordWrap = "break-word";
-          container.style.overflowWrap = "break-word";
-          document.body.appendChild(container);
-          this.pdfContainer = container;
+          // Create the main container for the entire PDF
+          const mainContainer = document.createElement("div");
+          mainContainer.style.fontFamily = "Arial, Helvetica, sans-serif";
+          mainContainer.style.width = contentWidth * 3.5 + "px"; // Convert to pixels for better rendering
+          mainContainer.style.maxWidth = "100%";
+          mainContainer.style.margin = "0";
+          mainContainer.style.padding = "0";
 
-          // Helper function to create styled HTML elements
-          const createStyledElement = (tag, text, style = {}) => {
-            const element = document.createElement(tag);
-            // Convert HTML content to preserve newlines
-            if (typeof text === "string") {
-              const tempDiv = document.createElement("div");
-              // Convert BR tags to newlines before setting innerHTML
-              tempDiv.innerHTML = text
-                .replace(/<br\s*\/?>/gi, "\n")
-                .replace(/<p>/gi, "")
-                .replace(/<\/p>/gi, "\n\n");
-
-              // Use innerHTML for div elements to preserve formatting
-              if (tag === "div") {
-                element.innerHTML = tempDiv.innerHTML;
-                // Set whiteSpace property to preserve newlines
-                element.style.whiteSpace = "pre-wrap";
-              } else {
-                element.textContent =
-                  tempDiv.textContent || tempDiv.innerText || text;
-              }
-            } else {
-              element.textContent = text;
-            }
-
-            Object.assign(element.style, {
-              margin: "0",
-              padding: "0",
-              width: "100%",
-              overflowWrap: "break-word",
-              wordWrap: "break-word",
-              wordBreak: "break-word",
-              maxWidth: "100%",
-              boxSizing: "border-box",
-              ...style,
-            });
-
-            return element;
-          };
-
-          // Helper function to add a section to our container
-          const addSection = (elements) => {
-            const section = document.createElement("div");
-            section.style.marginBottom = "15px";
-            section.style.width = "100%";
-            section.style.boxSizing = "border-box";
-            section.style.overflowWrap = "break-word";
-            section.style.whiteSpace = "pre-wrap"; // Preserve newlines
-            elements.forEach((element) => section.appendChild(element));
-            container.appendChild(section);
-            return section;
-          };
-
-          // Helper function to add a separator
-          const addSeparator = () => {
-            const hr = document.createElement("hr");
-            hr.style.border = "none";
-            hr.style.borderTop = "1px solid #888";
-            hr.style.margin = "15px 0";
-            container.appendChild(hr);
-          };
+          // STEP 1: Create meta info container
+          const metaContainer = document.createElement("div");
 
           // Title
-          addSection([
-            createStyledElement("h1", this.episode.name, {
-              fontSize: "24px",
-              fontWeight: "bold",
-              textAlign: "center",
-              marginBottom: "20px",
-            }),
-          ]);
+          const title = document.createElement("h1");
+          title.textContent = this.episode.name;
+          title.style.fontSize = "10px";
+          title.style.fontWeight = "bold";
+          title.style.textAlign = "center";
+          title.style.marginBottom = "10px";
+          metaContainer.appendChild(title);
 
           // Episode info
           if (this.episode.description) {
-            addSection([
-              createStyledElement("h3", "Description:", {
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "5px",
-              }),
-              createStyledElement("div", this.episode.description, {
-                fontSize: "14px",
-                lineHeight: "1.4",
-                whiteSpace: "pre-wrap",
-                maxWidth: "100%",
-                textAlign: "left",
-              }),
-            ]);
+            const descTitle = document.createElement("h3");
+            descTitle.textContent = "Description:";
+            descTitle.style.fontSize = "8px";
+            descTitle.style.fontWeight = "bold";
+            descTitle.style.marginBottom = "3px";
+            metaContainer.appendChild(descTitle);
+
+            const descText = document.createElement("div");
+            descText.innerHTML = this.episode.description;
+            descText.style.fontSize = "7px";
+            descText.style.lineHeight = "1.2";
+            descText.style.whiteSpace = "pre-wrap";
+            descText.style.marginBottom = "8px";
+            metaContainer.appendChild(descText);
           }
 
-          addSection([
-            createStyledElement("h3", "Date of Action:", {
-              fontSize: "16px",
-              fontWeight: "bold",
-              marginBottom: "5px",
-            }),
-            createStyledElement("p", this.episode.timeOfAction, {
-              fontSize: "14px",
-            }),
-          ]);
+          // Date of Action
+          const dateTitle = document.createElement("h3");
+          dateTitle.textContent = "Date of Action:";
+          dateTitle.style.fontSize = "8px";
+          dateTitle.style.fontWeight = "bold";
+          dateTitle.style.marginBottom = "3px";
+          metaContainer.appendChild(dateTitle);
 
-          addSection([
-            createStyledElement("h3", "World:", {
-              fontSize: "16px",
-              fontWeight: "bold",
-              marginBottom: "5px",
-            }),
-            createStyledElement("p", this.episode.world, { fontSize: "14px" }),
-          ]);
+          const dateText = document.createElement("p");
+          dateText.textContent = this.episode.timeOfAction;
+          dateText.style.fontSize = "7px";
+          dateText.style.marginBottom = "8px";
+          metaContainer.appendChild(dateText);
 
+          // World
+          const worldTitle = document.createElement("h3");
+          worldTitle.textContent = "World:";
+          worldTitle.style.fontSize = "8px";
+          worldTitle.style.fontWeight = "bold";
+          worldTitle.style.marginBottom = "3px";
+          metaContainer.appendChild(worldTitle);
+
+          const worldText = document.createElement("p");
+          worldText.textContent = this.episode.world;
+          worldText.style.fontSize = "7px";
+          worldText.style.marginBottom = "8px";
+          metaContainer.appendChild(worldText);
+
+          // Notes
           if (this.episode.notes) {
-            addSection([
-              createStyledElement("h3", "Notes:", {
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "5px",
-              }),
-              createStyledElement("p", this.episode.notes, {
-                fontSize: "14px",
-              }),
-            ]);
+            const notesTitle = document.createElement("h3");
+            notesTitle.textContent = "Notes:";
+            notesTitle.style.fontSize = "8px";
+            notesTitle.style.fontWeight = "bold";
+            notesTitle.style.marginBottom = "3px";
+            metaContainer.appendChild(notesTitle);
+
+            const notesText = document.createElement("p");
+            notesText.textContent = this.episode.notes;
+            notesText.style.fontSize = "7px";
+            notesText.style.marginBottom = "8px";
+            metaContainer.appendChild(notesText);
           }
 
           // First separator
-          addSeparator();
+          const firstSeparator = document.createElement("hr");
+          firstSeparator.style.borderTop = "1px solid #888";
+          firstSeparator.style.margin = "6px 0";
+          metaContainer.appendChild(firstSeparator);
 
           // Characters
-          addSection([
-            createStyledElement("h2", "Characters:", {
-              fontSize: "18px",
-              fontWeight: "bold",
-              marginBottom: "10px",
-            }),
-          ]);
+          const charsTitle = document.createElement("h2");
+          charsTitle.textContent = "Characters:";
+          charsTitle.style.fontSize = "9px";
+          charsTitle.style.fontWeight = "bold";
+          charsTitle.style.marginBottom = "5px";
+          metaContainer.appendChild(charsTitle);
 
           // Add each character with age
           this.episode_characters.forEach((char) => {
@@ -612,401 +551,79 @@ export default {
             );
             const age = charPost ? charPost.age : "Unknown";
 
-            addSection([
-              createStyledElement("p", `${char.name} (Age: ${age})`, {
-                fontSize: "14px",
-                marginBottom: "5px",
-              }),
-            ]);
+            const charText = document.createElement("p");
+            charText.textContent = `${char.name} (Age: ${age})`;
+            charText.style.fontSize = "7px";
+            charText.style.marginBottom = "3px";
+            metaContainer.appendChild(charText);
           });
 
           // Second separator
-          addSeparator();
+          const secondSeparator = document.createElement("hr");
+          secondSeparator.style.borderTop = "1px solid #888";
+          secondSeparator.style.margin = "6px 0";
+          metaContainer.appendChild(secondSeparator);
 
-          // Posts are now handled separately in the second part of the PDF generation
+          // Add meta container to main container
+          mainContainer.appendChild(metaContainer);
 
-          // Generate the PDF in two stages:
-          // 1. First render and add the episode meta info
-          // 2. Then render and add each post
-
-          // Helper function to add canvas to PDF
-          // Takes multiple canvases to handle large content that's been split
-          const addCanvasToPDF = async (
-            canvases,
-            doc,
-            pageWidth,
-            pageHeight,
-            margin,
-            isNewPage = false,
-            returnPageCount = false
-          ) => {
-            // Process each canvas and add to PDF
-            const initialPageNumber = doc.internal.getNumberOfPages();
-
-            // For each canvas (we might have multiple if content was split)
-            for (
-              let canvasIndex = 0;
-              canvasIndex < canvases.length;
-              canvasIndex++
-            ) {
-              const canvas = canvases[canvasIndex];
-
-              // Get the canvas dimensions
-              const contentWidth = canvas.width;
-              const contentHeight = canvas.height;
-
-              // Calculate how many pages we need
-              const pdfWidth = pageWidth - 2 * margin;
-              const pdfHeight = pageHeight - 2 * margin;
-
-              // Convert px to mm ratio (adjusting for margins)
-              const pxToMmRatio = contentWidth / pdfWidth;
-              const contentHeightInMm = contentHeight / pxToMmRatio;
-
-              // Calculate number of pages needed for this canvas
-              const pagesForThisCanvas = Math.max(
-                1,
-                Math.ceil(contentHeightInMm / pdfHeight)
-              );
-
-              // Add each section of the canvas as a new page
-              for (let i = 0; i < pagesForThisCanvas; i++) {
-                // For pages after the first, add a new page
-                if (i > 0 || canvasIndex > 0 || isNewPage) {
-                  doc.addPage();
-                }
-
-                // Calculate which part of the canvas to use for this page
-                const canvasSectionHeight = pdfHeight * pxToMmRatio;
-                // Apply an overlap between pages to prevent text clipping
-                const overlap = 5; // Increased overlap to prevent text clipping at boundaries
-                const sourceY = Math.max(
-                  0,
-                  i * canvasSectionHeight - (i > 0 ? overlap : 0)
-                );
-                let sectionHeight = canvasSectionHeight + (i > 0 ? overlap : 0);
-
-                // If it's the last section, it might not be a full page
-                if (sourceY + sectionHeight > contentHeight) {
-                  sectionHeight = contentHeight - sourceY;
-                }
-
-                // Only add image if there's content to add
-                if (sectionHeight > 0) {
-                  try {
-                    // Create a temporary canvas for this section
-                    const sectionCanvas = document.createElement("canvas");
-                    sectionCanvas.width = contentWidth;
-                    sectionCanvas.height = sectionHeight;
-                    const ctx = sectionCanvas.getContext("2d");
-
-                    // Draw the appropriate section of the original canvas
-                    ctx.drawImage(
-                      canvas,
-                      0,
-                      sourceY,
-                      contentWidth,
-                      sectionHeight,
-                      0,
-                      0,
-                      contentWidth,
-                      sectionHeight
-                    );
-
-                    // Add this section to the PDF - use JPEG with lower quality to avoid string length errors
-                    const imgData = sectionCanvas.toDataURL("image/jpeg", 0.8);
-                    // For pages after the first, adjust the placement to account for overlap
-                    const yOffset = i > 0 ? overlap / pxToMmRatio : 0;
-                    doc.addImage(
-                      imgData,
-                      "JPEG",
-                      margin,
-                      margin - yOffset,
-                      pdfWidth,
-                      Math.min(pdfHeight + yOffset, sectionHeight / pxToMmRatio)
-                    );
-                  } catch (err) {
-                    console.error("Error adding section to PDF:", err);
-                    // Skip this section but continue with the rest
-                  }
-                }
-              }
-            }
-
-            // Page numbers will be added at the end of the entire PDF generation
-            // to avoid duplicate numbering, so we'll skip adding them here
-
-            // Calculate how many pages were actually added
-            const actualPageCount =
-              doc.internal.getNumberOfPages() - initialPageNumber;
-            if (isNewPage && actualPageCount === 0) {
-              // If we requested a new page but none was added (empty content),
-              // still add a page to ensure separation
-              doc.addPage();
-            }
-
-            return returnPageCount ? { doc, pageCount: actualPageCount } : doc;
-          };
-
-          // Helper function to prepare element for canvas conversion
-          const prepareForCanvas = (clonedDoc, containerSelector) => {
-            const clonedContainer =
-              clonedDoc.body.querySelector(containerSelector);
-            if (clonedContainer) {
-              const allTextElements =
-                clonedContainer.querySelectorAll("div, p, span");
-              allTextElements.forEach((el) => {
-                el.style.whiteSpace = "pre-wrap";
-                // Ensure text doesn't break at inconvenient places
-                el.style.lineHeight = "1.5";
-                el.style.pageBreakInside = "avoid";
-                el.style.breakInside = "avoid";
-              });
-            }
-          };
-
-          // Step 1: Render and add episode meta info
-          // Clear container first
-          container.innerHTML = "";
-
-          // Add episode meta info
-          // Title
-          addSection([
-            createStyledElement("h1", this.episode.name, {
-              fontSize: "24px",
-              fontWeight: "bold",
-              textAlign: "center",
-              marginBottom: "20px",
-            }),
-          ]);
-
-          // Episode info
-          if (this.episode.description) {
-            addSection([
-              createStyledElement("h3", "Description:", {
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "5px",
-              }),
-              createStyledElement("div", this.episode.description, {
-                fontSize: "14px",
-                lineHeight: "1.4",
-                whiteSpace: "pre-wrap",
-                maxWidth: "100%",
-                textAlign: "left",
-              }),
-            ]);
-          }
-
-          addSection([
-            createStyledElement("h3", "Date of Action:", {
-              fontSize: "16px",
-              fontWeight: "bold",
-              marginBottom: "5px",
-            }),
-            createStyledElement("p", this.episode.timeOfAction, {
-              fontSize: "14px",
-            }),
-          ]);
-
-          addSection([
-            createStyledElement("h3", "World:", {
-              fontSize: "16px",
-              fontWeight: "bold",
-              marginBottom: "5px",
-            }),
-            createStyledElement("p", this.episode.world, { fontSize: "14px" }),
-          ]);
-
-          if (this.episode.notes) {
-            addSection([
-              createStyledElement("h3", "Notes:", {
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "5px",
-              }),
-              createStyledElement("p", this.episode.notes, {
-                fontSize: "14px",
-              }),
-            ]);
-          }
-
-          // First separator
-          addSeparator();
-
-          // Characters
-          addSection([
-            createStyledElement("h2", "Characters:", {
-              fontSize: "18px",
-              fontWeight: "bold",
-              marginBottom: "10px",
-            }),
-          ]);
-
-          // Add each character with age
-          this.episode_characters.forEach((char) => {
-            const charPost = this.posts.find(
-              (post) => post.char_id === char.id
-            );
-            const age = charPost ? charPost.age : "Unknown";
-
-            addSection([
-              createStyledElement("p", `${char.name} (Age: ${age})`, {
-                fontSize: "14px",
-                marginBottom: "5px",
-              }),
-            ]);
-          });
-
-          // Second separator
-          addSeparator();
-
-          // Function to split large content into smaller canvases
-          // This prevents "RangeError: Invalid string length" by breaking large content
-          // into manageable chunks that don't exceed JavaScript string size limits
-          const generateCanvases = async (
-            contentContainer,
-            maxHeight = 4000
-          ) => {
-            // Get total height of content
-            const totalHeight = contentContainer.offsetHeight;
-            const width = contentContainer.offsetWidth;
-
-            // If content is small enough, just return one canvas
-            if (totalHeight <= maxHeight) {
-              const canvas = await html2canvas(contentContainer, {
-                scale: 1.5, // Lower scale for better performance and to avoid memory issues
-                useCORS: true,
-                logging: false,
-                allowTaint: true,
-                letterRendering: true,
-                width: width,
-                height: totalHeight,
-                onclone: (clonedDoc) => {
-                  prepareForCanvas(clonedDoc, "[style*='position: absolute']");
-                },
-              });
-              return [canvas];
-            }
-
-            // Otherwise split into multiple canvases
-            const canvases = [];
-            const segments = Math.ceil(totalHeight / maxHeight);
-
-            for (let i = 0; i < segments; i++) {
-              // Create a clone of the container for this segment
-              const segmentContainer = contentContainer.cloneNode(true);
-              document.body.appendChild(segmentContainer);
-
-              // Position to show only the relevant part
-              const yStart = i * maxHeight;
-              segmentContainer.style.position = "absolute";
-              segmentContainer.style.top = `-${yStart}px`;
-              segmentContainer.style.height = `${totalHeight}px`;
-              segmentContainer.style.clip = `rect(${yStart}px, ${width}px, ${Math.min(
-                yStart + maxHeight,
-                totalHeight
-              )}px, 0)`;
-
-              // Generate canvas for this segment
-              try {
-                const canvas = await html2canvas(segmentContainer, {
-                  scale: 1.5,
-                  useCORS: true,
-                  logging: false,
-                  allowTaint: true,
-                  letterRendering: true,
-                  width: width,
-                  height: Math.min(maxHeight, totalHeight - yStart),
-                  y: yStart,
-                  onclone: (clonedDoc) => {
-                    prepareForCanvas(
-                      clonedDoc,
-                      "[style*='position: absolute']"
-                    );
-                  },
-                });
-                canvases.push(canvas);
-              } catch (err) {
-                console.error("Error generating canvas segment:", err);
-              }
-
-              // Clean up
-              document.body.removeChild(segmentContainer);
-            }
-
-            return canvases;
-          };
-
-          // STEP 1: Generate and add meta info to PDF
-          const metaCanvases = await generateCanvases(container);
-
-          // Add meta info to PDF
-          const { doc: updatedDoc } = await addCanvasToPDF(
-            metaCanvases,
-            doc,
-            pageWidth,
-            pageHeight,
-            margin,
-            false,
-            true
-          );
-
-          // Use the updated doc with meta info
-          doc = updatedDoc;
-
-          // STEP 2: Render and add each post
-          // Process each post one by one, always starting each on a new page
+          // STEP 2: Create post containers
           for (let index = 0; index < this.posts.length; index++) {
             const post = this.posts[index];
 
-            // Clear container for this post
-            container.innerHTML = "";
+            // Force page break before each post
+            const pageBreak = document.createElement("div");
+            pageBreak.style.pageBreakBefore = "always";
+            mainContainer.appendChild(pageBreak);
+
+            // Create post container
+            const postContainer = document.createElement("div");
+            postContainer.style.marginTop = "10px";
 
             // Character name
-            addSection([
-              createStyledElement("h3", `${post.name}:`, {
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "5px",
-              }),
-              createStyledElement("div", post.body, {
-                fontSize: "14px",
-                lineHeight: "1.4",
-                whiteSpace: "pre-wrap",
-                maxWidth: "100%",
-                wordBreak: "break-word",
-                textAlign: "left",
-                padding: "0",
-                display: "block",
-              }),
-            ]);
+            const nameHeading = document.createElement("h3");
+            nameHeading.textContent = `${post.name}:`;
+            nameHeading.style.fontSize = "8px";
+            nameHeading.style.fontWeight = "bold";
+            nameHeading.style.marginBottom = "3px";
+            postContainer.appendChild(nameHeading);
 
-            // Add extra padding at the bottom to prevent content cutoff
-            const paddingDiv = document.createElement("div");
-            paddingDiv.style.height = "200px";
-            paddingDiv.style.width = "100%";
-            container.appendChild(paddingDiv);
+            // Post body
+            const bodyDiv = document.createElement("div");
+            // Clean up any HTML tags in the body
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = post.body;
+            const cleanText =
+              tempDiv.textContent || tempDiv.innerText || post.body;
 
-            // Generate post canvases - split large posts into multiple canvases to prevent string length errors
-            const postCanvases = await generateCanvases(container);
+            bodyDiv.textContent = cleanText;
+            bodyDiv.style.fontSize = "7px";
+            bodyDiv.style.lineHeight = "1.2";
+            bodyDiv.style.whiteSpace = "pre-wrap";
+            bodyDiv.style.wordBreak = "break-word";
+            bodyDiv.style.textAlign = "left";
+            bodyDiv.style.padding = "0";
+            postContainer.appendChild(bodyDiv);
 
-            // Add post to the PDF - always start each post on a new page
-            const { doc: updatedPostDoc } = await addCanvasToPDF(
-              postCanvases,
-              doc,
-              pageWidth,
-              pageHeight,
-              margin,
-              true, // true = start on a new page
-              true
-            );
-            // Update the doc reference
-            doc = updatedPostDoc;
+            // Add separator between posts (except for the last one)
+            if (index < this.posts.length - 1) {
+              const separator = document.createElement("div");
+              separator.textContent = "***";
+              separator.style.textAlign = "center";
+              separator.style.margin = "6px 0";
+              separator.style.fontSize = "7px";
+              postContainer.appendChild(separator);
+            }
+
+            // Add post container to main container
+            mainContainer.appendChild(postContainer);
           }
 
+          // Add the main container to document body temporarily (required for jsPDF.html)
+          document.body.appendChild(mainContainer);
+          this.pdfContainer = mainContainer;
+
           // Generate sanitized filename
-          // Generate a safe filename from the episode name
           let sanitizedName = this.episode.name
             .replace(/[^a-z0-9а-яА-Я]/gi, "_")
             .replace(/_+/g, "_")
@@ -1021,40 +638,43 @@ export default {
 
           const filename = `${sanitizedName}.pdf`;
 
-          // Add page numbers to all pages before saving
-          const totalPages = doc.internal.getNumberOfPages();
-          for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i);
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text(
-              `Page ${i} of ${totalPages}`,
-              pageWidth / 2,
-              pageHeight - 10,
-              { align: "center" }
-            );
-          }
+          // Render HTML to PDF using jsPDF's html method
+          await doc.html(mainContainer, {
+            callback: function (doc) {
+              // Add page numbers
+              const totalPages = doc.internal.getNumberOfPages();
+              for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(100, 100, 100);
+                doc.text(
+                  `Page ${i} of ${totalPages}`,
+                  pageWidth / 2,
+                  pageHeight - 10,
+                  { align: "center" }
+                );
+              }
 
-          // Save the PDF
-          doc.save(filename);
+              // Save the PDF
+              doc.save(filename);
+            },
+            x: margin,
+            y: margin,
+            width: contentWidth - 5, // Reduce width for better margin
+            windowWidth: 350, // Fixed pixel width for rendering
+            autoPaging: true,
+            margin: [margin, margin, margin, margin],
+            html2canvas: {
+              scale: 0.5, // Lower scale for better fit
+              useCORS: true,
+              logging: false,
+            },
+          });
 
-          // PDF is now downloaded to the user's device
-
-          // Clean up memory to avoid leaks
+          // Clean up - remove the temporary container
           if (this.pdfContainer && this.pdfContainer.parentNode) {
             this.pdfContainer.parentNode.removeChild(this.pdfContainer);
             this.pdfContainer = null;
-          }
-
-          // Force garbage collection if possible to free memory after large PDF generation
-          if (window.gc) {
-            window.gc();
-          } else if (window.requestIdleCallback) {
-            window.requestIdleCallback(() => {
-              // This gives the browser a hint to perform GC when idle
-              // Creating and discarding a large array can encourage garbage collection
-              new Array(100).fill("x").join("");
-            });
           }
         } catch (error) {
           console.error("Error generating PDF:", error);
