@@ -542,7 +542,7 @@ export default {
             metaContainer.appendChild(notesTitle);
 
             const notesText = document.createElement("p");
-            notesText.textContent = this.episode.notes;
+            notesText.innerHTML = this.episode.notes.replace(/\n/g, "<br>");
             notesText.style.fontSize = "7px";
             notesText.style.marginBottom = "8px";
             metaContainer.appendChild(notesText);
@@ -683,8 +683,10 @@ export default {
 
             doc.setFontSize(9);
             doc.setFont("DejaVuSans", "normal");
+            // Preserve newlines in description
+            const descText = this.episode.description.replace(/\r\n/g, "\n");
             const descLines = doc.splitTextToSize(
-              this.episode.description,
+              descText,
               pageWidth - 2 * margin - 5
             );
             doc.text(descLines, margin, y);
@@ -722,8 +724,11 @@ export default {
 
             doc.setFontSize(9);
             doc.setFont("DejaVuSans", "normal");
+
+            // Preserve newlines from original notes
+            const notesText = this.episode.notes.replace(/\r\n/g, "\n");
             const notesLines = doc.splitTextToSize(
-              this.episode.notes,
+              notesText,
               pageWidth - 2 * margin - 5
             );
             doc.text(notesLines, margin, y);
@@ -759,7 +764,7 @@ export default {
           for (let index = 0; index < this.posts.length; index++) {
             const post = this.posts[index];
 
-            // Always start a new page for each post
+            // Always start a new page for each post (first post after meta info already on a new page)
             doc.addPage();
             y = margin + 10;
 
@@ -769,11 +774,18 @@ export default {
             doc.text(`${post.name}:`, margin, y);
             y += 5;
 
-            // Post body - clean up HTML
+            // Post body - clean up HTML while preserving newlines
+            // Post body - clean up HTML while preserving newlines
             const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = post.body;
-            const cleanText =
-              tempDiv.textContent || tempDiv.innerText || post.body;
+            tempDiv.innerHTML = post.body
+              .replace(/<br\s*\/?>/gi, "\n")
+              .replace(/<p>/gi, "")
+              .replace(/<\/p>/gi, "\n\n");
+            const cleanText = (
+              tempDiv.textContent ||
+              tempDiv.innerText ||
+              post.body
+            ).replace(/\r\n/g, "\n"); // Normalize all newlines
 
             // Split long text into lines that fit the page width
             doc.setFontSize(9);
