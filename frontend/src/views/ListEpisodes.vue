@@ -55,6 +55,7 @@
         </div>
         <div class="col-md-3 text-right">
           <base-button
+            v-if="authState && authState.isAuthenticated"
             type="primary"
             @click="exportToPDF"
             :disabled="isExportingPDF || filteredEpisodes.length === 0"
