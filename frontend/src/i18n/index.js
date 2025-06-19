@@ -33,6 +33,7 @@ const i18n = createI18n({
 
   messages: {
     en: {
+      exportAllToPDF: "Export All to PDF",
       looking: "Find a partner",
       looking_rules:
         "Use this page to find a partner to write with. Create a new topic and describe what kind of story you'd like to write or look through the existing open topics and respond to whatever you like to clarify details.<br>This allows to start writing with someone you don't know and don't yet have contact details of.<br>Good luck!",
@@ -107,6 +108,9 @@ const i18n = createI18n({
       post: "POST",
       cancel: "CANCEL",
       selectCharacter: "Select a character",
+      showing: "Showing",
+      of: "of",
+      page: "Page",
       totalCharacters: "Characters",
       totalStories: "Stories",
       totalPosts: "Posts",
@@ -126,6 +130,7 @@ const i18n = createI18n({
     },
 
     ru: {
+      exportAllToPDF: "Экспорт всех в PDF",
       looking: "Найти соигрока",
       looking_rules:
         "Используйте эту страницу чтоб найти соигрока. Создайте заявку с описанием того, какую историю вы хотите поиграть, или просмотрите имеющиеся открытые заявки, чтоб найтись.<br>Это позволяет начать играть с тем, кого вы ещё не знаете, и чьих контактов у вас нет. <br>Удачи!",
@@ -199,6 +204,9 @@ const i18n = createI18n({
       post: "Добавить",
       cancel: "ОТМЕНА",
       selectCharacter: "Выбери персонажа",
+      showing: "Показано",
+      of: "из",
+      page: "Страница",
       totalCharacters: "Персонажей",
       totalStories: "Эпизодов",
       totalPosts: "Постов",

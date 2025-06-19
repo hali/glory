@@ -30,7 +30,7 @@
             @select="selectStatus"
           />
         </div>
-        <div class="col-md-9">
+        <div class="col-md-6">
           <badge
             v-if="selectedBranches.length > 0"
             type="primary"
@@ -52,6 +52,21 @@
           >
             {{ $t("stopFilteringByMine") }}
           </badge>
+        </div>
+        <div class="col-md-3 text-right">
+          <base-button
+            type="primary"
+            @click="exportToPDF"
+            :disabled="isExportingPDF || filteredEpisodes.length === 0"
+          >
+            <span v-if="!isExportingPDF">{{
+              $t("exportAllToPDF") || "Export All to PDF"
+            }}</span>
+            <span v-else
+              >{{ $t("generating") || "Generating..." }}
+              {{ exportProgress }}</span
+            >
+          </base-button>
         </div>
       </div>
 
@@ -167,14 +182,24 @@
   </section>
 </template>
 <script>
-import { getEpisodes, getAllBranches } from "../services/EpisodeService";
+import {
+  getEpisodes,
+  getAllBranches,
+  viewEpisode,
+  getEpisodePosts,
+} from "../services/EpisodeService";
 import { getEpisodesByPlayerId, getPlayer } from "../services/PlayerService";
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.css";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
+import BaseButton from "@/components/BaseButton";
+import "../assets/fonts/DejaVuSans-ExtraLight-normal.js";
+const UniqueSet = require("@sepiariver/unique-set");
 
 export default {
   name: "EpisodesList",
-  components: { Multiselect },
+  components: { Multiselect, BaseButton },
   props: [],
   data() {
     return {
@@ -198,6 +223,11 @@ export default {
       // Pagination
       currentPage: 1,
       pageSize: 25,
+      // PDF Export
+      isExportingPDF: false,
+      pdfTitle: "",
+      exportProgress: "",
+      pdfContainer: null, // Reference to temporary PDF container
     };
   },
   // Computed properties for pagination
@@ -216,6 +246,13 @@ export default {
     paginationStart() {
       return (this.currentPage - 1) * this.pageSize;
     },
+  },
+  beforeUnmount() {
+    // Clean up PDF container if it exists
+    if (this.pdfContainer && this.pdfContainer.parentNode) {
+      this.pdfContainer.parentNode.removeChild(this.pdfContainer);
+      this.pdfContainer = null;
+    }
   },
   async created() {
     let uri = window.location.search.substring(1);
@@ -337,6 +374,336 @@ export default {
     clearBranchFilters() {
       this.selectedBranches = [];
       this.applyFilters();
+    },
+
+    // Export filtered episodes to PDF
+    async exportToPDF() {
+      // Ask user for PDF title
+      const title = prompt(
+        "Enter a title for the PDF export:",
+        `Glory - ${this.filteredEpisodes.length} Episodes`
+      );
+      if (!title) return; // User cancelled
+
+      this.pdfTitle = title;
+      this.isExportingPDF = true;
+
+      const generatePDF = async () => {
+        try {
+          // Create a new PDF document with compression
+          let doc = new jsPDF({
+            orientation: "portrait",
+            unit: "mm",
+            format: "a4",
+            compress: true,
+            putOnlyUsedFonts: true,
+          });
+
+          // Set Unicode-compatible fonts
+          doc.addFont(
+            "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf",
+            "DejaVuSans",
+            "normal"
+          );
+          doc.addFont(
+            "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans-Bold.ttf",
+            "DejaVuSans",
+            "bold"
+          );
+          doc.setFont("DejaVuSans", "normal");
+
+          // Get page dimensions
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const pageHeight = doc.internal.pageSize.getHeight();
+          const margin = 10; // 10mm margins
+
+          // Helper function to clean HTML text while preserving newlines
+          const cleanHtmlText = (htmlText) => {
+            if (!htmlText || typeof htmlText !== "string") return "";
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = htmlText
+              .replace(/<br\s*\/?>/gi, "\n")
+              .replace(/<p>/gi, "")
+              .replace(/<\/p>/gi, "\n\n")
+              .replace(/<(?!\/?br|\/?p)[^>]+>/gi, ""); // Remove all other HTML tags
+
+            const cleanText = (
+              tempDiv.textContent ||
+              tempDiv.innerText ||
+              htmlText
+            ).replace(/\r\n/g, "\n"); // Normalize all newlines
+
+            return cleanText;
+          };
+
+          // Collect all character data from episodes
+          let allCharacters = [];
+          let allEpisodeData = [];
+
+          // Process each episode to get data
+          const episodesToExport = this.filteredEpisodes;
+          for (let i = 0; i < episodesToExport.length; i++) {
+            const episode = episodesToExport[i];
+            // Update progress indicator
+            this.exportProgress = `(${i + 1}/${episodesToExport.length})`;
+
+            const episodeDetails = await viewEpisode(episode.id);
+            const episodePosts = await getEpisodePosts(episode.id);
+
+            // Extract characters and add to collection
+            const episodeCharacters = [
+              ...new UniqueSet(
+                episodePosts.map((post) => ({
+                  name: post.name,
+                  id: post.char_id,
+                  status: post.status,
+                }))
+              ),
+            ];
+
+            allCharacters = [...allCharacters, ...episodeCharacters];
+
+            // Store episode data for later processing
+            allEpisodeData.push({
+              details: episodeDetails[0],
+              posts: episodePosts,
+              characters: episodeCharacters,
+            });
+          }
+
+          // Remove duplicate characters using UniqueSet
+          const uniqueCharacters = [...new UniqueSet(allCharacters)];
+
+          // Direct PDF text rendering - start Y position
+          let y = margin;
+
+          // Title
+          doc.setFontSize(14);
+          doc.setFont("DejaVuSans", "bold");
+          doc.text(this.pdfTitle, pageWidth / 2, (y += 10), {
+            align: "center",
+            maxWidth: pageWidth - 2 * margin,
+          });
+          y += 8;
+
+          // Characters section
+          doc.setFontSize(10);
+          doc.setFont("DejaVuSans", "bold");
+          doc.text("Characters", margin, y);
+          y += 5;
+
+          // List all unique characters
+          doc.setFontSize(9);
+          doc.setFont("DejaVuSans", "normal");
+
+          uniqueCharacters.forEach((char) => {
+            doc.text(`${char.name}`, margin, y);
+            y += 4;
+
+            // Check for page overflow and create new page if needed
+            if (y > pageHeight - margin) {
+              doc.addPage();
+              y = margin + 10;
+            }
+          });
+
+          // Episodes list section
+          doc.setFontSize(10);
+          doc.setFont("DejaVuSans", "bold");
+          doc.text("Chapters/Episodes:", margin, y);
+          y += 5;
+
+          // List all the episode titles
+          doc.setFontSize(9);
+          doc.setFont("DejaVuSans", "normal");
+
+          allEpisodeData.forEach((episode) => {
+            doc.text(`${episode.details.name}`, margin, y);
+            y += 4;
+
+            // Check for page overflow and create new page if needed
+            if (y > pageHeight - margin) {
+              doc.addPage();
+              y = margin + 10;
+            }
+          });
+
+          // Process each episode
+          for (let i = 0; i < allEpisodeData.length; i++) {
+            const episodeData = allEpisodeData[i];
+            const episode = episodeData.details;
+            const posts = episodeData.posts;
+
+            // Always start a new page for each episode
+            doc.addPage();
+            y = margin + 10;
+
+            // Episode title
+            doc.setFontSize(12);
+            doc.setFont("DejaVuSans", "bold");
+            doc.text(episode.name, pageWidth / 2, y, {
+              align: "center",
+              maxWidth: pageWidth - 2 * margin,
+            });
+            y += 8;
+
+            // Episode time of action
+            doc.setFontSize(10);
+            doc.setFont("DejaVuSans", "bold");
+            doc.text("Time of action:", margin, y);
+            y += 5;
+
+            try {
+              doc.setFontSize(9);
+              doc.setFont("DejaVuSans", "normal");
+              doc.text(
+                new Date(episode.timeOfAction).toISOString().split("T")[0],
+                margin,
+                y
+              );
+              y += 8;
+            } catch (error) {
+              console.error(error);
+            }
+
+            // Episode description
+            doc.setFontSize(10);
+            doc.setFont("DejaVuSans", "bold");
+            doc.text("Description:", margin, y);
+            y += 5;
+
+            const cleanDescription = cleanHtmlText(episode.description);
+            doc.setFontSize(9);
+            doc.setFont("DejaVuSans", "normal");
+
+            // Split description text to fit page width
+            const descLines = doc.splitTextToSize(
+              cleanDescription,
+              pageWidth - 2 * margin - 10
+            );
+            doc.text(descLines, margin + 5, y);
+            y += descLines.length * 4.5 + 3;
+
+            // Process each post for this episode
+            for (let j = 0; j < posts.length; j++) {
+              const post = posts[j];
+
+              // Add page break before the first post in the episode
+              if (j === 0) {
+                doc.addPage();
+                y = margin + 10;
+              }
+
+              // Character name
+              doc.setFontSize(10);
+              doc.setFont("DejaVuSans", "bold");
+              doc.text(`${post.name} (${post.status}):`, margin, y);
+              y += 5;
+
+              // Character age
+              doc.setFontSize(9);
+              doc.setFont("DejaVuSans", "normal");
+              doc.text(`Age: ${post.age || "Unknown"}`, margin + 5, y);
+              y += 5;
+
+              // Post body - clean up HTML and preserve newlines
+              const cleanText = cleanHtmlText(post.body);
+
+              // Split long text into lines that fit the page width
+              doc.setFontSize(9);
+              doc.setFont("DejaVuSans", "normal");
+              const textLines = doc.splitTextToSize(
+                cleanText,
+                pageWidth - 2 * margin - 5
+              );
+
+              // Add lines with pagination
+              let lineIndex = 0;
+              while (lineIndex < textLines.length) {
+                // Calculate how many lines will fit on current page
+                const linesRemaining = Math.floor(
+                  (pageHeight - y - margin) / 4.5
+                );
+                const linesToRender = Math.min(
+                  linesRemaining,
+                  textLines.length - lineIndex
+                );
+
+                if (linesToRender <= 0) {
+                  // No space left, add a new page
+                  doc.addPage();
+                  y = margin + 10;
+                  continue;
+                }
+
+                // Add text for this page
+                const pageText = textLines.slice(
+                  lineIndex,
+                  lineIndex + linesToRender
+                );
+                doc.text(pageText, margin, y);
+
+                // Update position
+                lineIndex += linesToRender;
+                y += linesToRender * 4.5;
+
+                // Add a new page if more text remains
+                if (lineIndex < textLines.length) {
+                  doc.addPage();
+                  y = margin + 10;
+                }
+              }
+
+              // Add separator between posts
+              if (j < posts.length - 1) {
+                doc.setFontSize(9);
+                doc.text("***", pageWidth / 2, y, { align: "center" });
+                y += 8;
+
+                // Check for page overflow and create new page if needed
+                if (y > pageHeight - margin) {
+                  doc.addPage();
+                  y = margin + 10;
+                }
+              }
+            }
+          }
+
+          // Add page numbers to all pages
+          const totalPages = doc.internal.getNumberOfPages();
+          for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont("DejaVuSans", "normal");
+            doc.text(
+              `Page ${i} of ${totalPages}`,
+              pageWidth / 2,
+              pageHeight - 5,
+              { align: "center" }
+            );
+          }
+
+          // Generate sanitized filename
+          const sanitizedName = this.pdfTitle
+            .replace(/[^a-z0-9а-яА-Я]/gi, "_")
+            .replace(/_+/g, "_")
+            .toLowerCase();
+
+          // Save the PDF
+          doc.save(`${sanitizedName}.pdf`);
+        } catch (error) {
+          console.error("Error generating PDF:", error);
+          alert("There was an error generating the PDF. Please try again.");
+        } finally {
+          // Reset loading state
+          this.isExportingPDF = false;
+          this.exportProgress = "";
+        }
+      };
+
+      // Execute the PDF generation
+      generatePDF();
     },
 
     // Apply all current filters
