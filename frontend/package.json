@@ -1,6 +1,6 @@
 {
   "name": "glory",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -35,7 +35,9 @@
     "vue-router": "^4.3.0",
     "vue2-transitions": "^0.2.3",
     "vue3-lazyload": "^0.3.8",
-    "vue3-tabs-component": "^1.3.7"
+    "vue3-tabs-component": "^1.3.7",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.5.26"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.19.1",

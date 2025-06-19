@@ -507,6 +507,27 @@ export default {
             }
           });
 
+          // Episodes list section
+          doc.setFontSize(10);
+          doc.setFont("DejaVuSans", "bold");
+          doc.text("Chapters/Episodes:", margin, y);
+          y += 5;
+
+          // List all the episode titles
+          doc.setFontSize(9);
+          doc.setFont("DejaVuSans", "normal");
+
+          allEpisodeData.forEach((episode) => {
+            doc.text(`${episode.details.name}`, margin, y);
+            y += 4;
+
+            // Check for page overflow and create new page if needed
+            if (y > pageHeight - margin) {
+              doc.addPage();
+              y = margin + 10;
+            }
+          });
+
           // Process each episode
           for (let i = 0; i < allEpisodeData.length; i++) {
             const episodeData = allEpisodeData[i];
