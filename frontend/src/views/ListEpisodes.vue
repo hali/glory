@@ -55,6 +55,7 @@
         </div>
         <div class="col-md-3 text-right">
           <base-button
+            v-if="authState && authState.isAuthenticated"
             type="primary"
             @click="exportToPDF"
             :disabled="isExportingPDF || filteredEpisodes.length === 0"
@@ -203,7 +204,6 @@ export default {
   props: [],
   data() {
     return {
-      episodes: [],
       allEpisodes: [], // Store all episodes for client-side filtering
       filteredEpisodes: [], // Store filtered episodes for pagination
       allBranches: [],
@@ -274,10 +274,8 @@ export default {
               ?.description || "Unknown";
         }
       }
-
-      // Load episodes and apply filters
-      this.applyFilters();
     });
+    // For authenticated user, load that user's episodes
     if (
       this.authState &&
       this.authState.isAuthenticated &&
@@ -296,11 +294,12 @@ export default {
           this.player_id = response[0].id;
           getEpisodesByPlayerId(this.player_id, this.current_status.id).then(
             (response) => {
-              this.episodes = response;
+              this.allEpisodes = response;
+              this.filteredEpisodes = this.allEpisodes;
               getAllBranches().then((allBranches) => {
                 this.allBranches = allBranches;
                 this.filteredByPlayer = true;
-                this.episodes.forEach((ep, i) => {
+                this.allEpisodes.forEach((ep, i) => {
                   if (ep.branch_ids !== null) {
                     const branchIdsArray = ep.branch_ids
                       .split(",")
@@ -308,7 +307,7 @@ export default {
                     const branches = this.allBranches.filter((item) =>
                       branchIdsArray.includes(item.id)
                     );
-                    this.episodes[i].branches = branches;
+                    this.allEpisodes[i].branches = branches;
                   }
                 });
               });
@@ -317,15 +316,14 @@ export default {
         });
       }
     }
-    if (
-      !(this.authState && this.authState.isAuthenticated) &&
-      this.branch_id == 0
-    ) {
+    // For unauthenticated user, load all episodes
+    if (!(this.authState && this.authState.isAuthenticated)) {
       getEpisodes(this.current_status.id, this.branch_id).then((response) => {
-        this.episodes = response;
+        this.allEpisodes = response;
+        this.filteredEpisodes = response;
         getAllBranches().then((allBranches) => {
           this.allBranches = allBranches;
-          this.episodes.forEach((ep, i) => {
+          this.allEpisodes.forEach((ep, i) => {
             if (ep.branch_ids !== null) {
               const branchIdsArray = ep.branch_ids
                 .split(",")
@@ -333,7 +331,7 @@ export default {
               const branches = this.allBranches.filter((item) =>
                 branchIdsArray.includes(item.id)
               );
-              this.episodes[i].branches = branches;
+              this.allEpisodes[i].branches = branches;
             }
           });
         });
@@ -373,7 +371,11 @@ export default {
     // Clear all branch filters
     clearBranchFilters() {
       this.selectedBranches = [];
-      this.applyFilters();
+      if (this.filteredByPlayer) {
+        this.filterByPlayer();
+      } else {
+        this.applyFilters();
+      }
     },
 
     // Export filtered episodes to PDF
@@ -708,11 +710,6 @@ export default {
 
     // Apply all current filters
     applyFilters() {
-      if (this.filteredByPlayer) {
-        this.filterByPlayer();
-        return;
-      }
-
       // Get episodes based on status filter
       getEpisodes(this.current_status.id, 0).then((response) => {
         this.allEpisodes = response;
@@ -759,7 +756,7 @@ export default {
         (response) => {
           this.allEpisodes = response;
           this.filteredByPlayer = true;
-
+          console.log("filterByPlayer");
           // Process all episodes to add branches
           this.allEpisodes.forEach((ep, i) => {
             if (ep.branch_ids !== null) {
