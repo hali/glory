@@ -258,7 +258,7 @@ export default {
     let uri = window.location.search.substring(1);
     let params = new URLSearchParams(uri);
     document.title = "Glory - Эпизоды";
-    if (params.get("branch_id")) this.branch_id = params.get("branch_id");
+    if (params.get("branch_id")) this.branch_id = parseInt(params.get("branch_id"));
     // Always load all branches for the tag cloud
     getAllBranches().then((allBranches) => {
       this.allBranches = allBranches;
@@ -279,7 +279,7 @@ export default {
     if (
       this.authState &&
       this.authState.isAuthenticated &&
-      this.branch_id == 0
+      this.branch_id === 0
     ) {
       const idToken = await this.$auth.tokenManager.get("idToken");
       this.claims = await Object.entries(idToken.claims).map((entry) => ({
@@ -315,6 +315,31 @@ export default {
           );
         });
       }
+    }
+    // For authenticated user with branch filter, load episodes normally
+    else if (
+      this.authState &&
+      this.authState.isAuthenticated &&
+      this.branch_id !== 0
+    ) {
+      getEpisodes(this.current_status.id, this.branch_id).then((response) => {
+        this.allEpisodes = response;
+        this.filteredEpisodes = response;
+        getAllBranches().then((allBranches) => {
+          this.allBranches = allBranches;
+          this.allEpisodes.forEach((ep, i) => {
+            if (ep.branch_ids !== null) {
+              const branchIdsArray = ep.branch_ids
+                .split(',')
+                .map((id) => parseInt(id));
+              const branches = this.allBranches.filter((item) =>
+                branchIdsArray.includes(item.id)
+              );
+              this.allEpisodes[i].branches = branches;
+            }
+          });
+        });
+      });
     }
     // For unauthenticated user, load all episodes
     if (!(this.authState && this.authState.isAuthenticated)) {
