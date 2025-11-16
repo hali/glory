@@ -55,7 +55,7 @@
         </div>
         <div class="col-md-3 text-right">
           <base-button
-            v-if="authState && authState.isAuthenticated"
+            v-if="isAuthenticated"
             type="primary"
             @click="exportToPDF"
             :disabled="isExportingPDF || filteredEpisodes.length === 0"
@@ -197,11 +197,30 @@ import "jspdf-autotable";
 import BaseButton from "@/components/BaseButton";
 import "../assets/fonts/DejaVuSans-ExtraLight-normal.js";
 const UniqueSet = require("@sepiariver/unique-set");
+import { useAuth0 } from "@auth0/auth0-vue";
+import { computed } from "vue";
 
 export default {
   name: "EpisodesList",
   components: { Multiselect, BaseButton },
   props: [],
+  setup() {
+    const { isAuthenticated, user, loginWithRedirect, logout, isLoading } =
+      useAuth0();
+
+    // Computed: safely get email
+    const userEmail = computed(() => user.value?.email || "");
+
+    // Expose to template and methods
+    return {
+      isAuthenticated,
+      user,
+      loginWithRedirect,
+      logout,
+      isLoading,
+      userEmail,
+    };
+  },
   data() {
     return {
       allEpisodes: [], // Store all episodes for client-side filtering
@@ -276,21 +295,9 @@ export default {
       }
     });
     // For authenticated user, load that user's episodes
-    if (
-      this.authState &&
-      this.authState.isAuthenticated &&
-      this.branch_id == 0
-    ) {
-      const idToken = await this.$auth.tokenManager.get("idToken");
-      this.claims = await Object.entries(idToken.claims).map((entry) => ({
-        key: entry[0],
-        value: entry[1],
-      }));
-      this.claims.forEach((value) => {
-        if (value.key == "email") this.email = value.value;
-      });
-      if (this.email != "") {
-        getPlayer(this.email).then((response) => {
+    if (this.isAuthenticated) {
+      if (this.userEmail != "") {
+        getPlayer(this.userEmail).then((response) => {
           this.player_id = response[0].id;
           getEpisodesByPlayerId(this.player_id, this.current_status.id).then(
             (response) => {
@@ -317,7 +324,7 @@ export default {
       }
     }
     // For unauthenticated user, load all episodes
-    if (!(this.authState && this.authState.isAuthenticated)) {
+    if (!this.isAuthenticated) {
       getEpisodes(this.current_status.id, this.branch_id).then((response) => {
         this.allEpisodes = response;
         this.filteredEpisodes = response;

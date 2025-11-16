@@ -313,10 +313,29 @@ import "dotenv/config";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import "../assets/fonts/DejaVuSans-ExtraLight-normal.js";
+import { useAuth0 } from "@auth0/auth0-vue";
+import { computed } from "vue";
 
 export default {
   name: "ViewEpisode",
   components: { BaseButton, QuillEditor, Multiselect },
+  setup() {
+    const { isAuthenticated, user, loginWithRedirect, logout, isLoading } =
+      useAuth0();
+
+    // Computed: safely get email
+    const userEmail = computed(() => user.value?.email || "");
+
+    // Expose to template and methods
+    return {
+      isAuthenticated,
+      user,
+      loginWithRedirect,
+      logout,
+      isLoading,
+      userEmail,
+    };
+  },
   data() {
     return {
       subscription_status: false,
@@ -338,7 +357,6 @@ export default {
       episode_players: [],
       error: false,
       current_player_id: 0,
-      email: "",
       url: "",
       options: {
         debug: "warn",
@@ -356,16 +374,8 @@ export default {
     };
   },
   async created() {
-    const idToken = await this.$auth.tokenManager.get("idToken");
-    this.claims = await Object.entries(idToken.claims).map((entry) => ({
-      key: entry[0],
-      value: entry[1],
-    }));
-    this.claims.forEach((value) => {
-      if (value.key == "email") this.email = value.value;
-    });
     this.url = window.location.href;
-    getPlayer(this.email).then((response) => {
+    getPlayer(this.userEmail).then((response) => {
       if (response.length > 0) this.current_player_id = response[0].id;
       getCharacters(this.current_player_id).then((characters) => {
         this.characters = characters;

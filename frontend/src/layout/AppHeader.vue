@@ -1,9 +1,8 @@
 <template>
   <header class="header-global">
     <!-- Authentication Status Component (only visible in development) -->
-    <AuthStatus v-if="false" />
     <base-nav
-      v-if="authState && authState.isAuthenticated"
+      v-if="isAuthenticated"
       class="navbar-main"
       type="default"
       effect="dark"
@@ -45,7 +44,7 @@
           </router-link>
         </li>
         <li class="nav-item">
-          <div class="nav-link" @click="logout">
+          <div class="nav-link" @click="logout()">
             {{ $t("logout") }}
           </div>
         </li>
@@ -73,7 +72,7 @@
           </router-link>
         </li>
         <li class="nav-item">
-          <div class="nav-link" @click="login">
+          <div class="nav-link" @click="loginWithRedirect()">
             <i class="fa fa-sign-in" />{{ $t("login") }}
           </div>
         </li>
@@ -83,69 +82,39 @@
 </template>
 <script>
 import BaseNav from "@/components/BaseNav";
-import AuthStatus from "@/components/AuthStatus";
-import { oktaAuth, login, logout } from "../services/oktaHelper";
+import { useAuth0 } from "@auth0/auth0-vue";
 
 export default {
   name: "AppHeader",
   components: {
     BaseNav,
-    AuthStatus,
+  },
+  setup() {
+    const { isAuthenticated } = useAuth0();
+
+    // Expose to template and methods
+    return {
+      isAuthenticated,
+    };
   },
   data() {
     return {
-      authState: null,
       isDevelopment: process.env.NODE_ENV === "development",
-      authStateHandler: null,
     };
   },
   methods: {
-    updateAuthState() {
-      try {
-        this.authState = oktaAuth.authStateManager.getAuthState();
-      } catch (error) {
-        console.error("Error getting auth state:", error);
-        this.authState = null;
-      }
-    },
-    async logout() {
-      try {
-        await logout();
-      } catch (error) {
-        console.error("Error during logout:", error);
-        // Force page reload to clear state
-        window.location.href = "/";
-      }
-    },
-    async login() {
-      try {
-        await login("/");
-      } catch (error) {
-        console.error("Error during login:", error);
-        // Try alternative method
-        window.location.href = "/";
-      }
-    },
     closeMenu() {
       // No-op
     },
-  },
-  mounted() {
-    try {
-      this.updateAuthState();
-      this.authStateHandler = oktaAuth.authStateManager.subscribe(() =>
-        this.updateAuthState()
-      );
-    } catch (error) {
-      console.error("Error setting up auth in AppHeader:", error);
-      // Set null auth state to ensure login button is shown
-      this.authState = null;
-    }
-  },
-  beforeUnmount() {
-    if (this.authStateHandler) {
-      this.authStateHandler.unsubscribe();
-    }
+    loginWithRedirect() {
+      // get the function inside method to have proper context
+      const { loginWithRedirect } = useAuth0();
+      loginWithRedirect();
+    },
+    logout() {
+      const { logout } = useAuth0();
+      logout({ logoutParams: { returnTo: window.location.origin } });
+    },
   },
 };
 </script>

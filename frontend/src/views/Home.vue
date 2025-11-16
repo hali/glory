@@ -1,7 +1,7 @@
 <template>
   <div>
     <div
-      v-if="!(authState && authState.isAuthenticated)"
+      v-if="!isAuthenticated"
     >
       <!-- shape Hero -->
       <section class="section-shaped my-0  ">
@@ -128,7 +128,7 @@
       </section>
     </div>
 
-    <div v-if="authState && authState.isAuthenticated">
+    <div v-if="isAuthenticated">
       <section class="section-shaped my-0 ">
         <div class="shape shape-style-1 shape-dark shape-skew">
           <span />
@@ -166,13 +166,13 @@
                     <tr
                       v-for="item in episodes"
                       :key="item.id"
-                    > 
+                    >
                       <td>
                         <router-link
                           :to="{
-                            name: 'viewepisode', 
+                            name: 'viewepisode',
                             params: { id:item.id },
-                            hash: '#' + item.post_id                              
+                            hash: '#' + item.post_id
                           }"
                         >
                           {{ item.name }}
@@ -183,7 +183,7 @@
                     </tr>
                   </tbody>
                 </table>
-              </card>  
+              </card>
             </div>
           </div>
         </div>
@@ -195,35 +195,51 @@
 <script>
 import { getLatestEpisodes } from '../services/EpisodeService';
 import { getEpisodesCount, getCharactersCount, getPostsCount } from '../services/StatsService';
+import { useAuth0 } from '@auth0/auth0-vue';
+import { computed } from 'vue';
 
 export default ({
   name: 'Home',
+  setup() {
+      const { isAuthenticated, user, loginWithRedirect, logout, isLoading } = useAuth0();
+
+      // Computed: safely get email
+      const userEmail = computed(() => user.value?.email || '');
+
+      // Expose to template and methods
+      return {
+        isAuthenticated,
+        user,
+        loginWithRedirect,
+        logout,
+        isLoading,
+        userEmail,
+      };
+    },
   data() {
             return {
                 episodes: [],
                 episodes_n: '...',
                 characters_n: '...',
                 posts_n: '...',
-                authState: null,
-                email: ''
             }
         },
         created() {
             document.title = "Glory";
-            
+
             // Get public stats regardless of authentication
             getEpisodesCount().then(response => {
               if (response && response[0]) {
                 this.episodes_n = response[0].episodes_n;
               }
             }).catch(err => console.error("Error fetching episode count:", err));
-            
+
             getCharactersCount().then(response => {
               if (response && response[0]) {
                 this.characters_n = response[0].characters_n;
               }
             }).catch(err => console.error("Error fetching character count:", err));
-            
+
             getPostsCount().then(response => {
               if (response && response[0]) {
                 this.posts_n = response[0].posts_n;
@@ -232,53 +248,22 @@ export default ({
 
             // Try to get auth state
             try {
-              this.authState = this.$auth.authStateManager.getAuthState();
-              
               // Only fetch authenticated data if logged in
-              if (this.authState && this.authState.isAuthenticated) {
-                this.getUserInfo();
+              if (this.isAuthenticated) {
                 this.getLatestEpisodeData();
               }
-              
-              // Subscribe to auth state changes
-              this.$auth.authStateManager.subscribe(authState => {
-                this.authState = authState;
-                if (authState && authState.isAuthenticated) {
-                  this.getUserInfo();
-                  this.getLatestEpisodeData();
-                }
-              });
             } catch (error) {
               console.error("Auth state error in Home:", error);
-              this.authState = null;
             }
         },
   methods: {
     async login() {
       try {
-        await this.$auth.signInWithRedirect({ originalUri: '/' });
+        await this.loginWithRedirect();
       } catch (error) {
         console.error("Login error:", error);
         // Fallback for login failures
         window.location.href = '/';
-      }
-    },
-    async logout() {
-      try {
-        await this.$auth.signOut();
-      } catch (error) {
-        console.error("Logout error:", error);
-        window.location.href = '/';
-      }
-    },
-    getUserInfo() {
-      try {
-        if (this.authState && this.authState.isAuthenticated && this.authState.idToken) {
-          const claims = this.authState.idToken.claims;
-          this.email = claims.email || '';
-        }
-      } catch (error) {
-        console.error("Error getting user info:", error);
       }
     },
     getLatestEpisodeData() {
