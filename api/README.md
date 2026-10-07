@@ -2,7 +2,9 @@
 
 Node.js/Express JSON API backed by MySQL. Routes in `app/routes/appRoutes.js`
 call controllers, which use SQL models through the `mysql2` pool in
-`app/model/db.js`. Startup also uses the existing `mysql` connection.
+`app/model/db.js`. All models share one pool per backend process; the HTTP
+server does not open a separate database connection. Connections are opened
+when queries need them and returned to the pool after each query.
 
 ## Local development
 
@@ -18,9 +20,31 @@ proxies `/api` requests to it. App Engine deploys the API as the `api` service
 using the runtime in `api.yaml` / `app.yaml`.
 
 Database connection details come from the local, git-ignored `api/config.js`.
-It must export `connection` and `pool` objects containing the appropriate MySQL
-host or socket path, user, password, and database. The application does not
-currently read `DB_HOST`, `DB_USER`, or similar database environment variables.
+It must export a `pool` object containing the Cloud SQL `socketPath`, user,
+password, database, and pool limits. Leave `socketPath` configured permanently.
+An old `connection` block and any `pool.host` value are unused.
+
+Set `DB_HOST` to use TCP/IP instead of the socket. For local development, put
+the database IP in `api/.env.local`:
+
+```dotenv
+DB_HOST=your-database-ip
+```
+
+The pool loads this file regardless of the working directory. An environment
+variable already set in the process takes precedence. A non-empty `DB_HOST`
+selects TCP and removes the socket option; an unset or blank `DB_HOST` selects
+`pool.socketPath`. A missing socket in that case produces a configuration error.
+
+`api/.env.local` is excluded from Git and App Engine uploads. Production uses
+the configured socket by default, with no edits before deployment. Keep
+`DB_HOST` unset in the deployed environment to use that default. Restart the API
+after changing the local IP. Credentials and pool limits still come from
+`config.pool`; `DB_USER` and other credential environment variables are not read.
+
+mysql2 handles database authentication with its built-in plugins; no custom
+password handler is needed. Pool connections are created lazily, so starting
+the HTTP server alone does not verify database connectivity.
 
 ## Auth0 configuration
 
@@ -81,9 +105,12 @@ historical data; the application no longer reads or writes it.
 
 ```sh
 npm run test:auth
+npm run test:db
 ```
 
 Tests cover public-route exceptions, protected requests, and middleware ordering
-without starting the application server or connecting to MySQL/Auth0.
+without starting the application server or connecting to MySQL/Auth0. Database
+tests cover the shared pool's callback interface and error propagation with a
+mocked driver.
 
 Reference: [Auth0 Express API quickstart](https://auth0.com/docs/quickstart/backend/nodejs).

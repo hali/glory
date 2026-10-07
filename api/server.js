@@ -1,5 +1,4 @@
 const path = require("path");
-const config = require("./config");
 
 const express = require("express"),
   app = express(),
@@ -8,13 +7,6 @@ port = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, "./static")));
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
-
-const mysql = require("mysql");
-// connection configurations
-const mc = mysql.createConnection(config.connection);
-
-// connect to database
-mc.connect();
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "./static/index.html"));

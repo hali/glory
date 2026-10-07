@@ -90,9 +90,8 @@ test('server registers authentication before API route handlers', () => {
   express.static = () => () => {};
   load('server.js', name => {
     const modules = {
-      path, './config': { connection: {} }, express,
+      path, express,
       'body-parser': { json: () => () => {}, urlencoded: () => () => {} },
-      mysql: { createConnection: () => ({ connect() {} }) },
       nocache: () => () => {},
       './app/middleware/authMiddleware': auth,
       './app/routes/appRoutes': () => events.push(['routes']),
