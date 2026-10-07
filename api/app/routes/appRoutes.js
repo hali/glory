@@ -4,7 +4,6 @@ module.exports = function(app) {
   var episodesList = require('../controller/episodeController');
   var postsList = require('../controller/postController');
   var playersList = require('../controller/playerController');
-  var emails = require('../controller/emailController');
   var stats = require('../controller/siteController');
   var topics = require('../controller/topicController');
 
@@ -74,15 +73,6 @@ module.exports = function(app) {
   app.route('/api/players/:playerId/posts')
     .get(postsList.count_posts); 
     
-  app.route('/api/sendEmailPost')
-    .post(emails.send_post_notification);  
-  app.route('/api/setupSubscription')  
-    .post(emails.setup_subscription);
-  app.route('/api/checkSubscription')  
-    .post(emails.check_subscription);  
-  app.route('/api/deleteSubscription')  
-    .post(emails.delete_subscription);  
-    
   app.route('/api/stats/episodes')
   	.get(stats.get_episodes_count);  
   app.route('/api/stats/characters')
@@ -104,5 +94,4 @@ module.exports = function(app) {
     .get(topics.get_replies)   
     .post(topics.add_reply); 
   
-};  
-    
+};

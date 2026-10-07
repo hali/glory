@@ -216,24 +216,7 @@
         </div>
         <div class="row">
           <p />
-          <div class="col-md-6" align="left">
-            <base-button
-              v-if="!subscription_status"
-              type="info"
-              @click.prevent="subscribe()"
-            >
-              {{ $t("subscribe") }}
-            </base-button>
-            <base-button
-              v-if="subscription_status"
-              type="info"
-              @click.prevent="unsubscribe()"
-            >
-              {{ $t("unsubscribe") }}
-            </base-button>
-            <p />
-          </div>
-          <div class="col-md-6" align="right">
+          <div class="col-md-12" align="right">
             <base-button type="primary" @click.prevent="scrollToTop()">
               {{ $t("top") }}
             </base-button>
@@ -293,12 +276,6 @@ import {
   getEpisodeDraft,
   deleteEpisodeDraft,
 } from "../services/EpisodeService";
-import {
-  sendNotificationNewPost,
-  addSubscription,
-  checkSubscription,
-  deleteSubscription,
-} from "../services/EmailService";
 import { addPost, deletePost, addComment } from "../services/PostService";
 import { getCharacters } from "../services/CharacterService";
 import { getPlayer } from "../services/PlayerService";
@@ -308,18 +285,35 @@ import "@vueup/vue-quill/dist/vue-quill.snow.css";
 const UniqueSet = require("@sepiariver/unique-set");
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.css";
-import "dotenv/config";
 // Import jsPDF for PDF generation
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import "../assets/fonts/DejaVuSans-ExtraLight-normal.js";
+import { useAuth0 } from "@auth0/auth0-vue";
+import { computed } from "vue";
 
 export default {
   name: "ViewEpisode",
   components: { BaseButton, QuillEditor, Multiselect },
+  setup() {
+    const { isAuthenticated, user, loginWithRedirect, logout, isLoading } =
+      useAuth0();
+
+    // Computed: safely get email
+    const userEmail = computed(() => user.value?.email || "");
+
+    // Expose to template and methods
+    return {
+      isAuthenticated,
+      user,
+      loginWithRedirect,
+      logout,
+      isLoading,
+      userEmail,
+    };
+  },
   data() {
     return {
-      subscription_status: false,
       isExportingPDF: false,
       pdfContainer: null, // Reference to temporary PDF container
       episode: {
@@ -338,8 +332,6 @@ export default {
       episode_players: [],
       error: false,
       current_player_id: 0,
-      email: "",
-      url: "",
       options: {
         debug: "warn",
         modules: {
@@ -356,16 +348,7 @@ export default {
     };
   },
   async created() {
-    const idToken = await this.$auth.tokenManager.get("idToken");
-    this.claims = await Object.entries(idToken.claims).map((entry) => ({
-      key: entry[0],
-      value: entry[1],
-    }));
-    this.claims.forEach((value) => {
-      if (value.key == "email") this.email = value.value;
-    });
-    this.url = window.location.href;
-    getPlayer(this.email).then((response) => {
+    getPlayer(this.userEmail).then((response) => {
       if (response.length > 0) this.current_player_id = response[0].id;
       getCharacters(this.current_player_id).then((characters) => {
         this.characters = characters;
@@ -403,13 +386,6 @@ export default {
           if (response.length > 0) this.new_post = response[0].text;
         }
       );
-      const subscription_payload = {
-        episode_id: this.episode.id,
-        player_id: this.current_player_id,
-      };
-      checkSubscription(subscription_payload).then((response) => {
-        if (response[0].c == 1) this.subscription_status = true;
-      });
     });
   },
   mounted() {
@@ -927,16 +903,6 @@ export default {
           this.$refs.myEditor.setHTML("");
           getEpisodePosts(this.episode.id).then((response) => {
             this.posts = response;
-            const notificationPayload = {
-              thread_name: this.episode.name,
-              episode_id: this.episode.id,
-              character_name: this.current_character.name,
-              thread_url: this.url,
-              post_text: processed_text,
-              player_id: this.current_player_id,
-            };
-
-            sendNotificationNewPost(notificationPayload);
           });
         }
       });
@@ -970,22 +936,6 @@ export default {
           });
         });
       }
-    },
-    subscribe() {
-      const payload = {
-        episode_id: this.episode.id,
-        player_id: this.current_player_id,
-      };
-      addSubscription(payload).then(() => (this.subscription_status = true));
-    },
-    unsubscribe() {
-      const payload = {
-        episode_id: this.episode.id,
-        player_id: this.current_player_id,
-      };
-      deleteSubscription(payload).then(
-        () => (this.subscription_status = false)
-      );
     },
     addComment(postId) {
       let comment = prompt("Введите текст комментария");

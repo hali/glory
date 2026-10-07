@@ -7,14 +7,14 @@ import ViewEpisode from "./views/ViewEpisode.vue";
 import EditEpisode from "./views/EditEpisode.vue";
 import EditPost from "./views/EditPost.vue";
 import ListEpisodes from "./views/ListEpisodes.vue";
-import { LoginCallback, navigationGuard } from '@okta/okta-vue';
-import PlayerHub from './views/PlayerHub';
-import OtherPlayer from './views/OtherPlayer';
-import Profile from './views/Profile';
-import CharacterView from './views/CharacterView';
-import ListCharacters from './views/ListCharacters';
-import FAQPage from './views/FAQ';
-import LookingForYou from './views/LookingForYou';
+import PlayerHub from "./views/PlayerHub";
+import OtherPlayer from "./views/OtherPlayer";
+import Profile from "./views/Profile";
+import CharacterView from "./views/CharacterView";
+import ListCharacters from "./views/ListCharacters";
+import FAQPage from "./views/FAQ";
+import LookingForYou from "./views/LookingForYou";
+import { authGuard } from "@auth0/auth0-vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -25,8 +25,8 @@ const router = createRouter({
       components: {
         default: Home,
         footer: AppFooter,
-        header: AppHeader
-      }
+        header: AppHeader,
+      },
     },
     {
       path: "/faq",
@@ -34,8 +34,8 @@ const router = createRouter({
       components: {
         default: FAQPage,
         footer: AppFooter,
-        header: AppHeader
-      }
+        header: AppHeader,
+      },
     },
     {
       path: "/newepisode",
@@ -43,11 +43,9 @@ const router = createRouter({
       components: {
         header: AppHeader,
         default: NewEpisode,
-        footer: AppFooter
+        footer: AppFooter,
       },
-      meta: {
-        requiresAuth: true
-      }
+      beforeEnter: authGuard,
     },
     {
       path: "/episode/:id",
@@ -55,16 +53,14 @@ const router = createRouter({
       components: {
         header: AppHeader,
         default: ViewEpisode,
-        footer: AppFooter
+        footer: AppFooter,
       },
+      beforeEnter: authGuard,
       props: {
         header: false,
         default: true,
-        footer: false
+        footer: false,
       },
-      meta: {
-        requiresAuth: true
-      }
     },
     {
       path: "/editepisode/:id",
@@ -72,16 +68,14 @@ const router = createRouter({
       components: {
         header: AppHeader,
         default: EditEpisode,
-        footer: AppFooter
+        footer: AppFooter,
       },
+      beforeEnter: authGuard,
       props: {
         header: false,
         default: true,
-        footer: false
+        footer: false,
       },
-      meta: {
-        requiresAuth: true
-      }
     },
     {
       path: "/post/:id",
@@ -89,16 +83,14 @@ const router = createRouter({
       components: {
         header: AppHeader,
         default: EditPost,
-        footer: AppFooter
+        footer: AppFooter,
       },
+      beforeEnter: authGuard,
       props: {
         header: false,
         default: true,
-        footer: false
+        footer: false,
       },
-      meta: {
-        requiresAuth: true
-      }
     },
     {
       path: "/episodes",
@@ -106,8 +98,8 @@ const router = createRouter({
       components: {
         header: AppHeader,
         default: ListEpisodes,
-        footer: AppFooter
-      }
+        footer: AppFooter,
+      },
     },
     {
       path: "/characters",
@@ -115,8 +107,8 @@ const router = createRouter({
       components: {
         header: AppHeader,
         default: ListCharacters,
-        footer: AppFooter
-      }
+        footer: AppFooter,
+      },
     },
     {
       path: "/character/:id",
@@ -124,37 +116,27 @@ const router = createRouter({
       components: {
         header: AppHeader,
         default: CharacterView,
-        footer: AppFooter
+        footer: AppFooter,
       },
-      meta: {
-        requiresAuth: true
-      }
+      beforeEnter: authGuard,
     },
     {
-      path: '/login/callback',
-      component: LoginCallback
-    },
-    {
-      path: '/player',
+      path: "/player",
       components: {
         header: AppHeader,
         default: PlayerHub,
-        footer: AppFooter
+        footer: AppFooter,
       },
-      meta: {
-        requiresAuth: true
-      }
+      beforeEnter: authGuard,
     },
     {
-      path: '/profile',
+      path: "/profile",
       components: {
         header: AppHeader,
         default: Profile,
-        footer: AppFooter
+        footer: AppFooter,
       },
-      meta: {
-        requiresAuth: true
-      }
+      beforeEnter: authGuard,
     },
     {
       path: "/viewotherplayer/:id",
@@ -162,13 +144,14 @@ const router = createRouter({
       components: {
         header: AppHeader,
         default: OtherPlayer,
-        footer: AppFooter
+        footer: AppFooter,
       },
+      beforeEnter: authGuard,
       props: {
         header: false,
         default: true,
-        footer: false
-      }
+        footer: false,
+      },
     },
     {
       path: "/looking",
@@ -176,15 +159,11 @@ const router = createRouter({
       components: {
         header: AppHeader,
         default: LookingForYou,
-        footer: AppFooter
+        footer: AppFooter,
       },
-      meta: {
-        requiresAuth: true
-      }
-    }
-  ]
-})
-
-router.beforeEach(navigationGuard);
+      beforeEnter: authGuard,
+    },
+  ],
+});
 
 export default router;

@@ -1,7 +1,17 @@
 <template>
   <div>
+    <section
+      v-if="isLoading"
+      class="section"
+      role="status"
+      aria-live="polite"
+    >
+      <div class="container">
+        {{ $t('checkingSession') }}
+      </div>
+    </section>
     <div
-      v-if="!(authState && authState.isAuthenticated)"
+      v-else-if="!isAuthenticated"
     >
       <!-- shape Hero -->
       <section class="section-shaped my-0  ">
@@ -128,7 +138,7 @@
       </section>
     </div>
 
-    <div v-if="authState && authState.isAuthenticated">
+    <div v-else>
       <section class="section-shaped my-0 ">
         <div class="shape shape-style-1 shape-dark shape-skew">
           <span />
@@ -156,23 +166,49 @@
                 <h6 class="text-primary text-uppercase">
                   {{ $t('newPosts') }}
                 </h6>
-                <table class="table table-bordered">
+                <p
+                  v-if="episodesLoading"
+                  role="status"
+                >
+                  {{ $t('loadingUpdates') }}
+                </p>
+                <div
+                  v-else-if="episodesError"
+                  role="alert"
+                >
+                  <p>{{ $t('updatesLoadError') }}</p>
+                  <base-button
+                    type="primary"
+                    @click="getLatestEpisodeData"
+                  >
+                    {{ $t('retry') }}
+                  </base-button>
+                </div>
+                <p v-else-if="episodes.length === 0">
+                  {{ $t('noUpdates') }}
+                </p>
+                <table
+                  v-else
+                  class="table table-bordered"
+                >
                   <thead>
-                    <th>{{ $t('story') }}</th>
-                    <th>{{ $t('messageAuthor') }}</th>
-                    <th>{{ $t('messageTime') }}</th>
+                    <tr>
+                      <th>{{ $t('story') }}</th>
+                      <th>{{ $t('messageAuthor') }}</th>
+                      <th>{{ $t('messageTime') }}</th>
+                    </tr>
                   </thead>
                   <tbody>
                     <tr
                       v-for="item in episodes"
-                      :key="item.id"
-                    > 
+                      :key="item.post_id"
+                    >
                       <td>
                         <router-link
                           :to="{
-                            name: 'viewepisode', 
+                            name: 'viewepisode',
                             params: { id:item.id },
-                            hash: '#' + item.post_id                              
+                            hash: '#' + item.post_id
                           }"
                         >
                           {{ item.name }}
@@ -183,7 +219,7 @@
                     </tr>
                   </tbody>
                 </table>
-              </card>  
+              </card>
             </div>
           </div>
         </div>
@@ -195,107 +231,95 @@
 <script>
 import { getLatestEpisodes } from '../services/EpisodeService';
 import { getEpisodesCount, getCharactersCount, getPostsCount } from '../services/StatsService';
+import { useAuth0 } from '@auth0/auth0-vue';
 
-export default ({
+export default {
   name: 'Home',
+  setup() {
+    const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
+    return { isAuthenticated, isLoading, loginWithRedirect };
+  },
   data() {
-            return {
-                episodes: [],
-                episodes_n: '...',
-                characters_n: '...',
-                posts_n: '...',
-                authState: null,
-                email: ''
-            }
-        },
-        created() {
-            document.title = "Glory";
-            
-            // Get public stats regardless of authentication
-            getEpisodesCount().then(response => {
-              if (response && response[0]) {
-                this.episodes_n = response[0].episodes_n;
-              }
-            }).catch(err => console.error("Error fetching episode count:", err));
-            
-            getCharactersCount().then(response => {
-              if (response && response[0]) {
-                this.characters_n = response[0].characters_n;
-              }
-            }).catch(err => console.error("Error fetching character count:", err));
-            
-            getPostsCount().then(response => {
-              if (response && response[0]) {
-                this.posts_n = response[0].posts_n;
-              }
-            }).catch(err => console.error("Error fetching post count:", err));
-
-            // Try to get auth state
-            try {
-              this.authState = this.$auth.authStateManager.getAuthState();
-              
-              // Only fetch authenticated data if logged in
-              if (this.authState && this.authState.isAuthenticated) {
-                this.getUserInfo();
-                this.getLatestEpisodeData();
-              }
-              
-              // Subscribe to auth state changes
-              this.$auth.authStateManager.subscribe(authState => {
-                this.authState = authState;
-                if (authState && authState.isAuthenticated) {
-                  this.getUserInfo();
-                  this.getLatestEpisodeData();
-                }
-              });
-            } catch (error) {
-              console.error("Auth state error in Home:", error);
-              this.authState = null;
-            }
-        },
+    return {
+      episodes: [],
+      episodesLoading: false,
+      episodesError: false,
+      episodesRequestId: 0,
+      episodes_n: '...',
+      characters_n: '...',
+      posts_n: '...',
+    };
+  },
+  computed: {
+    homeState() {
+      if (this.isLoading) return 'loading';
+      return this.isAuthenticated ? 'authenticated' : 'guest';
+    },
+  },
+  watch: {
+    homeState: {
+      immediate: true,
+      handler(state) {
+        // Invalidate responses from an earlier session before loading new data.
+        this.episodesRequestId += 1;
+        this.episodes = [];
+        this.episodesLoading = false;
+        this.episodesError = false;
+        if (state === 'authenticated') {
+          this.getLatestEpisodeData();
+        } else if (state === 'guest') {
+          this.getPublicStats();
+        }
+      },
+    },
+  },
+  created() {
+    document.title = 'Glory';
+  },
+  beforeUnmount() {
+    this.episodesRequestId += 1;
+  },
   methods: {
+    getPublicStats() {
+      getEpisodesCount().then(response => {
+        if (response && response[0]) this.episodes_n = response[0].episodes_n;
+      }).catch(err => console.error('Error fetching episode count:', err));
+      getCharactersCount().then(response => {
+        if (response && response[0]) this.characters_n = response[0].characters_n;
+      }).catch(err => console.error('Error fetching character count:', err));
+      getPostsCount().then(response => {
+        if (response && response[0]) this.posts_n = response[0].posts_n;
+      }).catch(err => console.error('Error fetching post count:', err));
+    },
     async login() {
       try {
-        await this.$auth.signInWithRedirect({ originalUri: '/' });
+        // Auth0 owns authentication state; the watcher loads data after redirect.
+        await this.loginWithRedirect();
       } catch (error) {
-        console.error("Login error:", error);
-        // Fallback for login failures
-        window.location.href = '/';
+        console.error('Login error:', error);
       }
     },
-    async logout() {
+    async getLatestEpisodeData() {
+      if (this.homeState !== 'authenticated' || this.episodesLoading) return;
+      const requestId = ++this.episodesRequestId;
+      this.episodesLoading = true;
+      this.episodesError = false;
       try {
-        await this.$auth.signOut();
-      } catch (error) {
-        console.error("Logout error:", error);
-        window.location.href = '/';
-      }
-    },
-    getUserInfo() {
-      try {
-        if (this.authState && this.authState.isAuthenticated && this.authState.idToken) {
-          const claims = this.authState.idToken.claims;
-          this.email = claims.email || '';
+        const response = await getLatestEpisodes();
+        if (requestId !== this.episodesRequestId) return;
+        if (!Array.isArray(response)) {
+          throw new Error('Unexpected response format for latest updates');
         }
+        this.episodes = response;
       } catch (error) {
-        console.error("Error getting user info:", error);
+        if (requestId !== this.episodesRequestId) return;
+        console.error('Error fetching latest updates:', error);
+        this.episodes = [];
+        this.episodesError = true;
+      } finally {
+        if (requestId === this.episodesRequestId) this.episodesLoading = false;
       }
     },
-    getLatestEpisodeData() {
-      getLatestEpisodes()
-        .then(response => {
-          if (Array.isArray(response)) {
-            this.episodes = response;
-          } else {
-            console.warn("Unexpected response format for episodes:", response);
-            this.episodes = [];
-          }
-        })
-        .catch(err => {
-          console.error("Error fetching latest episodes:", err);
-          this.episodes = [];
-        });
-    }
-  }
-})
+  },
+};
 </script>

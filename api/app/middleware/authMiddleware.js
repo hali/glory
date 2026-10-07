@@ -1,82 +1,25 @@
-"use strict";
+require("dotenv").config();
+const { auth } = require("express-oauth2-jwt-bearer");
 
-const OktaJwtVerifier = require("@okta/jwt-verifier");
-const config = require("../../config");
-
-// Check if Okta config is available
-if (!config.okta || !config.okta.issuer || !config.okta.clientId) {
-  console.error(
-    "Okta configuration is missing or incomplete. Authentication will not work properly.",
-  );
-}
-
-// Create a JWT verifier with Okta configuration
-const oktaJwtVerifier = new OktaJwtVerifier({
-  issuer: config.okta?.issuer || "https://missing-issuer-url",
-  clientId: config.okta?.clientId || "missing-client-id",
+const jwtCheck = auth({
+  audience: process.env.AUTH0_AUDIENCE || "urn:glory:api",
+  issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL || "https://dev-ivs748afc2zkvi1p.eu.auth0.com/",
 });
 
-// Public routes that don't need authentication
-const publicRoutes = [
-  { path: "/api/characters", method: "GET" },
-  { path: "/api/episodes", method: "GET" },
-  { path: "/api/stats/", method: "GET" }, // Will match all routes that start with /api/stats/
-  { path: "/api/branches", method: "GET" },
-];
+// Paths are relative to the /api mount. Only these read-only endpoints are public.
+const publicPaths = new Set([
+  "/characters",
+  "/episodes",
+  "/branches",
+  "/stats/episodes",
+  "/stats/characters",
+  "/stats/posts",
+]);
 
-// Check if a route is public
-function isPublicRoute(path, method) {
-  for (const route of publicRoutes) {
-    if (
-      method === route.method &&
-      (path === route.path ||
-        (route.path.endsWith("/") && path.startsWith(route.path)))
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Authentication middleware
-const authMiddleware = async (req, res, next) => {
-  // Skip authentication for public routes
-  if (isPublicRoute(req.path, req.method)) {
+module.exports = function requireApiAuth(req, res, next) {
+  const path = req.path.replace(/\/$/, "");
+  if ((req.method === "GET" || req.method === "HEAD") && publicPaths.has(path)) {
     return next();
   }
-
-  // Skip authentication if Okta is not configured
-  if (!config.okta || !config.okta.issuer || !config.okta.clientId) {
-    console.warn("Skipping authentication due to missing Okta configuration");
-    return next();
-  }
-
-  try {
-    // Get the access token from the Authorization header
-    const authHeader = req.headers.authorization || "";
-    const match = authHeader.match(/Bearer (.+)/);
-
-    if (!match) {
-      return res.status(401).json({ error: "Unauthorized: No token provided" });
-    }
-
-    const accessToken = match[1];
-
-    // Verify the token with Okta
-    const jwt = await oktaJwtVerifier.verifyAccessToken(
-      accessToken,
-      config.okta.audience || "api://default",
-    );
-
-    // Add the JWT claims to the request object for later use
-    req.jwt = jwt.claims;
-
-    // Continue to the next middleware or route handler
-    next();
-  } catch (error) {
-    console.error("Authentication error:", error);
-    return res.status(401).json({ error: "Unauthorized: Invalid token" });
-  }
+  return jwtCheck(req, res, next);
 };
-
-module.exports = authMiddleware;

@@ -1,30 +1,41 @@
-'user strict';
+'use strict';
 
-var mysql = require('mysql2');
-var config = require('../../config');
+const mysql2 = require('mysql2');
+const config = require('../../config');
+const path = require('path');
 
-// Add specific connection options for mysql2
-const poolConfig = {
-    ...config.pool,
-    // Enable proper authentication method negotiation
-    authPlugins: {
-        mysql_native_password: () => () => {
-            return Buffer.from(config.pool.password);
-        }
-    }
-};
+// Local overrides are excluded from deployment. Existing environment variables
+// take precedence; this absolute path also works when started outside api/.
+require('dotenv').config({ path: path.join(__dirname, '../../.env.local') });
 
-var pool = mysql.createPool(poolConfig);
-
-exports.query=function(query, params, callback){
-	pool.query(query, params, function(err,rows){
-        	//console.log("QUERY: " + query);
-		if(!err) {
-			callback(null, rows);
-		} else {
-			callback(err, null);
-			console.log(err);
-
-			}          
-	});
+const poolConfig = { ...config.pool };
+const host = process.env.DB_HOST?.trim();
+if (host) {
+  poolConfig.host = host;
+  delete poolConfig.socketPath;
+} else {
+  delete poolConfig.host;
+  if (!poolConfig.socketPath) {
+    throw new Error('Configure pool.socketPath or set DB_HOST for TCP database access.');
+  }
 }
+
+// Shared by every model. mysql2 opens connections as needed and releases them
+// after pool.query(), using its built-in database authentication handlers.
+const pool = mysql2.createPool(poolConfig);
+
+exports.query = function(query, params, callback) {
+  if (typeof params === 'function') {
+    callback = params;
+    params = undefined;
+  }
+
+  return pool.query(query, params, function(err, rows) {
+    if (err) {
+      console.log(err);
+      callback(err, null);
+      return;
+    }
+    callback(null, rows);
+  });
+};

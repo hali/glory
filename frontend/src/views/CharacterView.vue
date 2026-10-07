@@ -11,105 +11,72 @@
       <span />
       <span />
     </div>
-    <div
-      class="container text-white"
-      align="center"
-    >
+    <div class="container text-white" align="center">
       <div class="row text-white">
-        <h1 class="display-3  text-white">
+        <h1 class="display-3 text-white">
           {{ name }}
         </h1>
       </div>
     </div>
     <div class="container">
-    <div class=" col-md-2 card-profile-image" align="left">
-      <img
-        :src="`${img}`"
-        class="rounded-circle img-fluid"
-      >
-    </div>  
+      <div class="col-md-2 card-profile-image" align="left">
+        <img :src="`${img}`" class="rounded-circle img-fluid" />
+      </div>
     </div>
     <div class="container">
-      <div
-        v-if="player_id == character_player_id"
-        class="row text-white"
-      >
-        <p class="col-md-12">
-          {{ $t('characterName') }}:
-        </p>
+      <div v-if="player_id == character_player_id" class="row text-white">
+        <p class="col-md-12">{{ $t("characterName") }}:</p>
       </div>
-      <div
-        v-if="player_id == character_player_id"
-        class="row"
-      >  
+      <div v-if="player_id == character_player_id" class="row">
         <div class="col-md-12">
-          <input
-            v-model="name" 
-            class="form-control col-md-12"
-            name="name"
-          >
+          <input v-model="name" class="form-control col-md-12" name="name" />
         </div>
       </div>
-      <div
-        v-if="player_id == character_player_id"
-        class="row text-white"
-      >
-        <p class="col-md-12">
-          URL аватарки:
-        </p>
+      <div v-if="player_id == character_player_id" class="row text-white">
+        <p class="col-md-12">URL аватарки:</p>
       </div>
-      <div
-        v-if="player_id == character_player_id"
-        class="row"
-      >  
+      <div v-if="player_id == character_player_id" class="row">
         <div class="col-md-12">
-          <input
-            v-model="img" 
-            class="form-control col-md-12"
-            name="img"
-          >
+          <input v-model="img" class="form-control col-md-12" name="img" />
         </div>
       </div>
       <div class="row text-white">
         <div class="col-md-6">
-          <p>{{ $t('status') }}:</p>
+          <p>{{ $t("status") }}:</p>
           <input
             v-model="status"
-            class="form-control col-md-12" 
+            class="form-control col-md-12"
             name="status"
             :disabled="player_id !== character_player_id"
-          >
-        </div> 
+          />
+        </div>
         <div class="col-md-6">
-          <p>
-            {{ $t('characterDOB') }}:
-          </p>
+          <p>{{ $t("characterDOB") }}:</p>
           <base-input addon-left-icon="ni ni-calendar-grid-58">
             <flat-picker
               v-model="dob"
-              slot-scope="{focus, blur}"
-              :config="{allowInput: true, dateFormat: 'Y-m-d', disableMobile: true}"
+              slot-scope="{ focus, blur }"
+              :config="{
+                allowInput: true,
+                dateFormat: 'Y-m-d',
+                disableMobile: true,
+              }"
               class="form-control datepicker"
               :disabled="player_id !== character_player_id"
               @on-open="focus"
               @on-close="blur"
             />
-          </base-input>  
+          </base-input>
         </div>
-      </div>  
-      <div class="row text-white">
-        <p class="col-md-12">
-          {{ $t('characterInfo') }}:
-        </p>
       </div>
-      <div
-        v-if="player_id == character_player_id"
-        class="row"
-      >  
+      <div class="row text-white">
+        <p class="col-md-12">{{ $t("characterInfo") }}:</p>
+      </div>
+      <div v-if="player_id == character_player_id" class="row">
         <div class="col-md-12">
           <quill-editor
-            v-model:content="info" 
-            content-type="html" 
+            v-model:content="info"
+            content-type="html"
             :options="options"
             class="form-control rounded-0"
             style="height: 250px"
@@ -117,42 +84,29 @@
         </div>
       </div>
       <card v-if="player_id != character_player_id">
-        <div
-          style="white-space:pre-wrap; text-justify: auto;"
-          v-html="info"
-        />
+        <div style="white-space: pre-wrap; text-justify: auto" v-html="info" />
       </card>
       <div class="row">
         <p />
       </div>
-      <div
-        v-if="player_id == character_player_id"
-        class="row"
-      >
-        <div
-          class="col-md-12"
-          align="right"
-        >  
-          <span @click="save()"> <base-button type="success">
-            {{ $t('save') }}
-          </base-button></span>
+      <div v-if="player_id == character_player_id" class="row">
+        <div class="col-md-12" align="right">
+          <span @click="save()">
+            <base-button type="success">
+              {{ $t("save") }}
+            </base-button></span
+          >
         </div>
       </div>
-      <div
-        v-if="player_id != character_player_id"
-        class="row"
-      >
-        <div
-          class="col-md-12"
-          align="right"
-        >  
+      <div v-if="player_id != character_player_id" class="row">
+        <div class="col-md-12" align="right">
           <router-link
             :to="{
-              name: 'viewotherplayer', 
-              params: { id: character_player_id }                              
+              name: 'viewotherplayer',
+              params: { id: character_player_id },
             }"
           >
-            {{ $t('player') }}
+            {{ $t("player") }}
           </router-link>
         </div>
       </div>
@@ -163,30 +117,23 @@
         <div class="col-md-12">
           <card>
             <h6 class="text-primary text-uppercase">
-              {{ $t('stories') }} ({{ episodes.length }})
+              {{ $t("stories") }} ({{ episodes.length }})
             </h6>
             <div v-if="episodes.length == 0">
-              {{ $t('noStories') }}
+              {{ $t("noStories") }}
             </div>
-            <div
-              v-for="item in episodes"
-              :key="item.id"
-              class="row"
-            >
+            <div v-for="item in episodes" :key="item.id" class="row">
               <div class="col-md-8">
                 <router-link
                   :to="{
-                    name: 'viewepisode', 
-                    params: { id:item.id }                              
+                    name: 'viewepisode',
+                    params: { id: item.id },
                   }"
                 >
                   {{ item.name }}
                 </router-link>
               </div>
-              <div
-                class="col-md-4"
-                align="right"
-              >
+              <div class="col-md-4" align="right">
                 <badge
                   v-if="item.status == 'Заброшен'"
                   type="danger"
@@ -226,19 +173,42 @@
 </template>
 
 <script>
-import { getPlayer, getPlayerById } from '../services/PlayerService';
-import { getCharacter, saveCharacter, getEpisodesByCharacterId } from '../services/CharacterService';
+import { getPlayer, getPlayerById } from "../services/PlayerService";
+import {
+  getCharacter,
+  saveCharacter,
+  getEpisodesByCharacterId,
+} from "../services/CharacterService";
 import flatPicker from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
-import BaseButton from '@/components/BaseButton';
-import BaseInput from '@/components/BaseInput';
-import { QuillEditor } from '@vueup/vue-quill';
-import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import BaseButton from "@/components/BaseButton";
+import BaseInput from "@/components/BaseInput";
+import { QuillEditor } from "@vueup/vue-quill";
+import "@vueup/vue-quill/dist/vue-quill.snow.css";
+import { useAuth0 } from "@auth0/auth0-vue";
+import { computed } from "vue";
 
 export default {
-  name: 'CharacterView',
+  name: "CharacterView",
   components: { flatPicker, BaseButton, BaseInput, QuillEditor },
-  data () {
+  setup() {
+    const { isAuthenticated, user, loginWithRedirect, logout, isLoading } =
+      useAuth0();
+
+    // Computed: safely get email
+    const userEmail = computed(() => user.value?.email || "");
+
+    // Expose to template and methods
+    return {
+      isAuthenticated,
+      user,
+      loginWithRedirect,
+      logout,
+      isLoading,
+      userEmail,
+    };
+  },
+  data() {
     return {
       claims: [],
       player_id: "",
@@ -252,50 +222,49 @@ export default {
       character_player_name: "",
       episodes: [],
       options: {
-        debug: 'warn',
+        debug: "warn",
         modules: {
-          toolbar: [['bold', 'italic', 'underline', 'strike'],[{ 'color': [] }, { 'background': [] }]]
+          toolbar: [
+            ["bold", "italic", "underline", "strike"],
+            [{ color: [] }, { background: [] }],
+          ],
         },
         readOnly: false,
-        theme: 'snow'
-      }
-    }
+        theme: "snow",
+      },
+    };
   },
-  async created () {
-    const idToken = await this.$auth.tokenManager.get('idToken');
-    this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
-    this.claims.forEach((value) => {
-      if (value.key == 'email') this.email = value.value;
+  async created() {
+    getPlayer(this.userEmail).then((response) => {
+      this.player_id = response[0].id;
     });
-    getPlayer(this.email).then(response => {
-        this.player_id = response[0].id;
+    getCharacter(this.id).then((response) => {
+      this.name = response[0].name;
+      this.dob = new Date(response[0].dob).toISOString().split("T")[0];
+      this.info = response[0].info;
+      this.status = response[0].status;
+      this.img = response[0].img;
+      this.character_player_id = response[0].player_id;
+      getPlayerById(this.character_player_id).then((response) => {
+        this.character_player_name = response[0].email;
+      });
+      document.title = "Glory - " + response[0].name;
     });
-    getCharacter(this.id).then(response => {
-        this.name = response[0].name;
-        this.dob = (new Date(response[0].dob)).toISOString().split('T')[0];
-        this.info = response[0].info;
-        this.status = response[0].status;
-        this.img = response[0].img;
-        this.character_player_id = response[0].player_id;
-        getPlayerById(this.character_player_id).then(response => {
-          this.character_player_name = response[0].email;
-        });
-        document.title = "Glory - " + response[0].name;
-        }
+    getEpisodesByCharacterId(this.id).then(
+      (response) => (this.episodes = response)
     );
-    getEpisodesByCharacterId(this.id).then(response => this.episodes = response);
   },
   methods: {
     save() {
       const payload = {
-          name: this.name,
-          dob: (new Date(this.dob)).toISOString().split('T')[0],
-          info: this.info,
-          img: this.img,
-          status: this.status
-        }
-        saveCharacter(this.id, payload);
-    }
-  }
-}
+        name: this.name,
+        dob: new Date(this.dob).toISOString().split("T")[0],
+        info: this.info,
+        img: this.img,
+        status: this.status,
+      };
+      saveCharacter(this.id, payload);
+    },
+  },
+};
 </script>
