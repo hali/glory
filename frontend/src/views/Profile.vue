@@ -13,7 +13,7 @@
           :key="index"
         >
           <td>{{ claim.key }}</td>
-          <td :id="'claim-' + claim.claim">
+          <td :id="'claim-' + claim.key">
             {{ claim.value }}
           </td>
         </tr>
@@ -23,16 +23,17 @@
 </template>
 
 <script>
+import { computed } from 'vue';
+import { useAuth0 } from '@auth0/auth0-vue';
+
 export default {
   name: 'Profile',
-  data () {
-    return {
-      claims: []
-    }
-  },
-  async created () {
-    const idToken = await this.$auth.tokenManager.get('idToken');
-    this.claims = await Object.entries(idToken.claims).map(entry => ({ key: entry[0], value: entry[1] }));
+  setup() {
+    const { user } = useAuth0();
+    const claims = computed(() => Object.entries(user.value || {}).map(
+      ([key, value]) => ({ key, value })
+    ));
+    return { claims };
   }
 }
 </script>

@@ -1,6 +1,6 @@
 // src/services/ApiService.js
 import router from "../router";
-import { auth0 } from "../plugins/auth0"; // Step 1: We'll create this plugin below!
+import { auth0 } from "../plugins/auth0";
 
 /**
  * Fetch API with authentication
@@ -28,7 +28,6 @@ export async function apiFetch(url, options = {}, requiresAuth = true) {
     if (requiresAuth) {
       let token;
       try {
-        // Get Auth0 instance from the global plugin (see below)
         token = await auth0.getAccessTokenSilently();
       } catch (e) {
         // Not logged in
@@ -76,7 +75,7 @@ export async function apiFetch(url, options = {}, requiresAuth = true) {
   }
 }
 
-// Shortcut methods unchanged
+// HTTP helpers use authenticated requests unless explicitly marked public.
 export function get(url, requiresAuth = true) {
   return apiFetch(url, { method: "GET" }, requiresAuth);
 }

@@ -3,13 +3,11 @@ const config = require("./config");
 
 const express = require("express"),
   app = express(),
-  bodyParser = require("body-parser"),
-  bearerToken = require("express-bearer-token");
+  bodyParser = require("body-parser");
 port = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, "./static")));
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
-app.use(bearerToken());
 
 const mysql = require("mysql");
 // connection configurations
@@ -36,9 +34,9 @@ app.post("/post-test", (req, res) => {
   res.sendStatus(200);
 });
 
-// register your /api routes
+// Authenticate API requests before any route handler can access the database.
+const requireApiAuth = require("./app/middleware/authMiddleware");
+app.use("/api", requireApiAuth);
+
 const registerRoutes = require("./app/routes/appRoutes");
 registerRoutes(app);
-
-const jwtCheck = require("./app/middleware/authMiddleware");
-app.use("/api", jwtCheck); // before registerRoutes(app)

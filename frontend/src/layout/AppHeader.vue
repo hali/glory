@@ -1,6 +1,8 @@
 <template>
-  <header class="header-global">
-    <!-- Authentication Status Component (only visible in development) -->
+  <header
+    v-if="!isLoading"
+    class="header-global"
+  >
     <base-nav
       v-if="isAuthenticated"
       class="navbar-main"
@@ -90,11 +92,12 @@ export default {
     BaseNav,
   },
   setup() {
-    const { isAuthenticated, loginWithRedirect, logout } = useAuth0();
+    const { isAuthenticated, isLoading, loginWithRedirect, logout } = useAuth0();
 
     // Expose to template and methods
     return {
       isAuthenticated,
+      isLoading,
       login: () => {
         loginWithRedirect();
       },
@@ -105,11 +108,6 @@ export default {
           },
         });
       },
-    };
-  },
-  data() {
-    return {
-      isDevelopment: process.env.NODE_ENV === "development",
     };
   },
   methods: {

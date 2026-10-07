@@ -1,88 +1,88 @@
 # Glory API
 
-This is the backend API for the Glory application. It provides endpoints for managing characters, episodes, posts, players, and more.
+Node.js/Express JSON API backed by MySQL. Routes in `app/routes/appRoutes.js`
+call controllers, which use SQL models through the `mysql2` pool in
+`app/model/db.js`. Startup also uses the existing `mysql` connection.
 
-## Authentication
+## Local development
 
-The API now uses Okta authentication to protect routes. Only authenticated users can access most endpoints, with the following exceptions:
+Run commands from `api/`:
 
-- `GET /api/characters` - Public access
-- `GET /api/episodes` - Public access
-- `GET /api/stats/*` - Public access for all stats endpoints
-
-### How to Authenticate Requests
-
-To access protected endpoints, you need to include an Okta access token in your requests:
-
-```js
-// Example with fetch
-fetch('/api/episodes/123', {
-  headers: {
-    'Authorization': 'Bearer ' + accessToken
-  }
-})
+```sh
+npm ci
+npm start
 ```
 
-### Getting the Access Token
+The API listens on `PORT`, defaulting to `3000`. The frontend development server
+proxies `/api` requests to it. App Engine deploys the API as the `api` service
+using the runtime in `api.yaml` / `app.yaml`.
 
-In your frontend Vue application, you can get the current access token using the Okta Vue SDK:
+Database connection details come from the local, git-ignored `api/config.js`.
+It must export `connection` and `pool` objects containing the appropriate MySQL
+host or socket path, user, password, and database. The application does not
+currently read `DB_HOST`, `DB_USER`, or similar database environment variables.
 
-```js
-// Using the Composition API
-import { useOktaAuth } from '@okta/okta-vue';
+## Auth0 configuration
 
-export default {
-  setup() {
-    const { oktaAuth } = useOktaAuth();
-    
-    async function makeAuthenticatedRequest() {
-      const accessToken = oktaAuth.getAccessToken();
-      // Make your API request with the token
-    }
-    
-    return { makeAuthenticatedRequest };
-  }
-}
+The backend validates SPA access tokens with `express-oauth2-jwt-bearer`.
+It does not run a separate browser login or require an Auth0 client secret.
 
-// Using the Options API
-export default {
-  async created() {
-    const accessToken = this.$auth.getAccessToken();
-    // Make your API request with the token
-  }
-}
+Optional overrides in `api/.env` (or the deployment environment):
+
+```dotenv
+AUTH0_ISSUER_BASE_URL=https://your-tenant.eu.auth0.com/
+AUTH0_AUDIENCE=urn:glory:api
 ```
 
-## Running the API Locally
+When omitted, the current defaults are
+`https://dev-ivs748afc2zkvi1p.eu.auth0.com/` and `urn:glory:api`.
+The frontend's Auth0 domain and audience must match. Restart the API after
+changing configuration. Legacy identity-provider settings in a local
+`config.js` are unused.
 
-1. Install dependencies:
-   ```
-   npm install
-   ```
+## Access rules
 
-2. Start the server:
-   ```
-   npm start
-   ```
+`server.js` mounts `app/middleware/authMiddleware.js` at `/api` **before** the
+route handlers. Only GET and HEAD requests to these paths are public:
 
-3. The API will be available at http://localhost:3000
+- `/api/characters`
+- `/api/episodes`
+- `/api/branches`
+- `/api/stats/episodes`
+- `/api/stats/characters`
+- `/api/stats/posts`
 
-## Deployment
+Query parameters and a trailing slash are supported. A detail route such as
+`/api/episodes/123`, `/api/latest`, player data, and all writes require a valid
+access token:
 
-The API is configured to run on Google Cloud Platform using Node.js 22.
-
-## Environment Variables
-
-Create a `.env` file in the root directory with the following variables:
-
+```http
+Authorization: Bearer <Auth0 access token>
 ```
-# Database Configuration
-DB_HOST=your_db_host
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-DB_NAME=your_db_name
 
-# Okta Configuration
-OKTA_ISSUER=https://your-okta-domain.okta.com/oauth2/default
-OKTA_CLIENT_ID=your_client_id
+The JWT middleware checks signature, issuer, audience, and token validity.
+Missing or invalid tokens are rejected before controllers access the database.
+Client-side route guards are only navigation controls; API authentication is
+independent of them.
+
+Authentication does not yet provide complete ownership authorisation. Several
+controllers accept player/author IDs from the request rather than deriving them
+from the verified identity. Per-record ownership checks and the email-based
+Auth0-to-player mapping need a separate review.
+
+## Other integrations
+
+The existing email controller still uses Mailjet and its `MJ_APIKEY_PUBLIC` /
+`MJ_APIKEY_PRIVATE` environment variables. Email removal is a separate pending
+task; this authentication cleanup does not change notification behaviour.
+
+## Tests
+
+```sh
+npm run test:auth
 ```
+
+Tests cover public-route exceptions, protected requests, and middleware ordering
+without starting the application server or connecting to MySQL/Auth0.
+
+Reference: [Auth0 Express API quickstart](https://auth0.com/docs/quickstart/backend/nodejs).

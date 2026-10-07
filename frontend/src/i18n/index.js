@@ -33,6 +33,11 @@ const i18n = createI18n({
 
   messages: {
     en: {
+      checkingSession: "Checking your session…",
+      loadingUpdates: "Loading latest updates…",
+      updatesLoadError: "Couldn't load the latest updates. Please try again.",
+      noUpdates: "No updates yet.",
+      retry: "Try again",
       exportAllToPDF: "Export All to PDF",
       looking: "Find a partner",
       looking_rules:
@@ -130,6 +135,11 @@ const i18n = createI18n({
     },
 
     ru: {
+      checkingSession: "Проверяем, выполнен ли вход…",
+      loadingUpdates: "Загружаем последние обновления…",
+      updatesLoadError: "Не удалось загрузить обновления. Попробуйте ещё раз.",
+      noUpdates: "Обновлений пока нет.",
+      retry: "Попробовать снова",
       exportAllToPDF: "Экспорт всех в PDF",
       looking: "Найти соигрока",
       looking_rules:

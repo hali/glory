@@ -1,131 +1,96 @@
-# Glory Frontend
+# Glory frontend
 
-This is the frontend application for the Glory project, built with Vue.js and the Okta authentication system.
+Vue 3 single-page application using the Vue 2 compatibility build, Vue Router,
+Vue CLI, and Auth0. Google App Engine serves the production build and routes
+`/api/*` to the backend service.
 
-## Authentication
+## Local development
 
-The application uses Okta for authentication and secures API requests automatically. The authentication flow works as follows:
+Run commands from `frontend/`:
 
-1. Users log in through Okta using the standard Okta login flow
-2. API calls automatically include the Okta access token in the Authorization header
-3. The backend API validates the token for protected routes
-4. Public routes (GET /api/characters, GET /api/episodes, GET /api/stats/*) remain accessible without authentication
-
-### Debugging Authentication
-
-When in development mode, an `AuthStatus` component is available that shows:
-- Current authentication status
-- User information
-- Token expiration time
-- Option to view the raw token
-
-## API Service Usage
-
-All API calls should use the ApiService utilities for consistent authentication handling:
-
-```js
-// Import the appropriate methods from ApiService
-import { get, post, put, del } from './services/ApiService';
-
-// GET request with authentication
-const data = await get('/api/protected-endpoint');
-
-// GET request without authentication (for public endpoints)
-const publicData = await get('/api/public-endpoint', false);
-
-// POST request with authentication
-const result = await post('/api/resource', payload);
+```sh
+npm ci
+npm run serve
 ```
 
-### Error Handling
+Create `frontend/.env` with the Auth0 Single Page Application settings:
 
-The ApiService includes built-in error handling for authentication issues:
-
-- Automatically refreshes tokens when they're about to expire
-- Redirects to login page if authentication fails
-- Retries requests with refreshed tokens when appropriate
-- Properly handles different API response types
-
-## Development Setup
-
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-2. Create a `.env` file with your Okta configuration:
-   ```
-   VUE_APP_OKTA_CLIENT_ID=your_client_id
-   VUE_APP_OKTA_ISSUER=https://your-okta-domain.okta.com/oauth2/default
-   VUE_APP_OKTA_REDIRECT_URI=http://localhost:8080/login/callback
-   ```
-
-3. Start the development server:
-   ```bash
-   npm run serve
-   ```
-
-## Authentication Configuration
-
-The Okta configuration is stored in `src/config.js`. The default settings are:
-
-```js
-export default {
-  oidc: {
-    clientId: '0oa8dzbw44Xx2rqaK5d7',
-    issuer: 'https://dev-99882869.okta.com/oauth2/default',
-    redirectUri: window.location.origin + '/login/callback',
-    scopes: ['openid', 'profile', 'email']
-  }
-}
+```dotenv
+VUE_APP_AUTH0_DOMAIN=your-tenant.eu.auth0.com
+VUE_APP_AUTH0_CLIENT_ID=your-spa-client-id
+VUE_APP_AUTH0_AUDIENCE=urn:glory:api
 ```
 
-The application uses a centralized Okta authentication management approach:
+These settings are embedded at build time. Restart the development server after
+changing them; rebuild before deploying configuration changes. No client secret
+belongs in the frontend.
 
-- `oktaHelper.js` provides a singleton Okta instance across the application
-- Automatically manages token refresh and authentication state
-- Exposes helper methods for authentication-related operations
+The development server proxies `/api` to `http://localhost:3000` through
+`vue.config.js`. Start the API separately in `api/`.
 
-## Protected Routes
+## Auth0 dashboard configuration
 
-Routes that require authentication are marked with `meta: { requiresAuth: true }` in the router configuration.
+Use the **Single Page Application** whose client ID matches
+`VUE_APP_AUTH0_CLIENT_ID`. In its settings, register each origin you actually use
+in **Allowed Callback URLs**, **Allowed Logout URLs**, and **Allowed Web Origins**.
+For example, local development typically uses `http://localhost:8080`; production
+uses `https://ageofglory.org` and `https://www.ageofglory.org` if both are served.
+The callback and logout destination are the current `window.location.origin`.
+There is no separate `/login/callback` route.
 
-## Handling Authentication Errors
+The audience is the Auth0 API identifier, not the SPA client ID. It must match
+the backend's configured audience and tenant.
 
-The system automatically handles most authentication errors, including:
+## Authentication flow
 
-1. Detecting when a user is not logged in and redirecting to login
-2. Refreshing expired tokens automatically
-3. Retrying failed requests with refreshed tokens
-4. Showing appropriate error messages
+- `src/plugins/auth0.js` creates the shared Auth0 Vue SDK instance.
+- `src/main.js` installs the router before Auth0 so login callbacks can restore
+  the requested route, including its query and hash.
+- Components use `useAuth0()` for reactive `isLoading`, `isAuthenticated`, and
+  `user` values, plus `loginWithRedirect()` and `logout()`.
+- Private routes use the SDK's `authGuard` as `beforeEnter`. It waits for session
+  initialisation before allowing the page to mount or redirecting to login.
+- The home page and navigation wait for initialisation before displaying a
+  signed-in or signed-out state. Home loads updates when authentication is ready.
+- `/profile` displays Auth0 user claims. Application player records remain in
+  MySQL and are looked up by email; they are separate from Auth0 identities.
 
-### Manual Authentication Helpers
+## API requests
 
-For custom authentication handling, you can use the helper methods from `oktaHelper.js`:
+Domain services call the helpers in `src/services/ApiService.js`:
 
 ```js
-import { isAuthenticated, login, logout, getUserInfo } from './services/oktaHelper';
+import { get, post } from './services/ApiService';
 
-// Check if user is authenticated
-if (!isAuthenticated()) {
-  // Handle unauthenticated state
-}
-
-// Get user information
-const userInfo = getUserInfo();
-if (userInfo) {
-  console.log(`Logged in as: ${userInfo.name}`);
-}
-
-// Manual login/logout
-login('/redirect-after-login');
-logout();
+const episode = await get('/api/episodes/123');
+const publicEpisodes = await get('/api/episodes?status=0&branch=0', false);
+await post('/api/episodes/123/close', {});
 ```
 
-## Building for Production
+Authenticated requests obtain an access token with `getAccessTokenSilently()`
+and send `Authorization: Bearer <token>`. Public requests explicitly pass `false`.
+The SDK manages token acquisition; the application does not implement its own
+refresh/retry loop.
 
-```bash
+Token acquisition failures and HTTP 401 responses navigate to `/`. Some failures
+are returned as error objects, especially on the homepage; callers must not treat
+these as successful data. Home displays an error with a retry button.
+
+Public API reads are characters, episodes, branches, and the three statistics
+endpoints. Detailed records and writes require authentication on the backend.
+
+## Validation and production build
+
+```sh
+npm run test:auth
 npm run build
 ```
 
-This will create a production-ready build in the `dist` directory.
+Authentication tests use Node's test runner (Node 22), the installed Vue runtime,
+and mocked services; they do not contact Auth0 or the database. The build is
+written to `dist/`. Production registers a service worker, so verify that the
+browser has received the current build when testing a deployment.
+
+`npm run lint` applies fixes; use the ESLint CLI without `--fix` for a read-only check.
+
+Reference: [Auth0 Vue quickstart](https://auth0.com/docs/quickstart/spa/vuejs).

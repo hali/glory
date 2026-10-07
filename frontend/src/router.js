@@ -14,7 +14,7 @@ import CharacterView from "./views/CharacterView";
 import ListCharacters from "./views/ListCharacters";
 import FAQPage from "./views/FAQ";
 import LookingForYou from "./views/LookingForYou";
-import AuthGuard from "./components/AuthGuard.vue";
+import { authGuard } from "@auth0/auth0-vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -44,8 +44,8 @@ const router = createRouter({
         header: AppHeader,
         default: NewEpisode,
         footer: AppFooter,
-        guard: AuthGuard,
       },
+      beforeEnter: authGuard,
     },
     {
       path: "/episode/:id",
@@ -54,8 +54,8 @@ const router = createRouter({
         header: AppHeader,
         default: ViewEpisode,
         footer: AppFooter,
-        guard: AuthGuard,
       },
+      beforeEnter: authGuard,
       props: {
         header: false,
         default: true,
@@ -69,8 +69,8 @@ const router = createRouter({
         header: AppHeader,
         default: EditEpisode,
         footer: AppFooter,
-        guard: AuthGuard,
       },
+      beforeEnter: authGuard,
       props: {
         header: false,
         default: true,
@@ -84,8 +84,8 @@ const router = createRouter({
         header: AppHeader,
         default: EditPost,
         footer: AppFooter,
-        guard: AuthGuard,
       },
+      beforeEnter: authGuard,
       props: {
         header: false,
         default: true,
@@ -117,8 +117,8 @@ const router = createRouter({
         header: AppHeader,
         default: CharacterView,
         footer: AppFooter,
-        guard: AuthGuard,
       },
+      beforeEnter: authGuard,
     },
     {
       path: "/player",
@@ -126,8 +126,8 @@ const router = createRouter({
         header: AppHeader,
         default: PlayerHub,
         footer: AppFooter,
-        guard: AuthGuard,
       },
+      beforeEnter: authGuard,
     },
     {
       path: "/profile",
@@ -135,8 +135,8 @@ const router = createRouter({
         header: AppHeader,
         default: Profile,
         footer: AppFooter,
-        guard: AuthGuard,
       },
+      beforeEnter: authGuard,
     },
     {
       path: "/viewotherplayer/:id",
@@ -145,8 +145,8 @@ const router = createRouter({
         header: AppHeader,
         default: OtherPlayer,
         footer: AppFooter,
-        guard: AuthGuard,
       },
+      beforeEnter: authGuard,
       props: {
         header: false,
         default: true,
@@ -160,8 +160,8 @@ const router = createRouter({
         header: AppHeader,
         default: LookingForYou,
         footer: AppFooter,
-        guard: AuthGuard,
       },
+      beforeEnter: authGuard,
     },
   ],
 });

@@ -26,27 +26,15 @@ import { Tabs, Tab } from "vue3-tabs-component";
 import i18n from "./i18n";
 
 const app = createApp(App);
-// Create auth0
-app.config.globalProperties.$auth0 = auth0;
-
 // Add global error handler
 app.config.errorHandler = (err, vm, info) => {
   console.error("Vue Error:", err);
   console.info("Error Info:", info);
-
-  // Prevent authentication errors from crashing the app
-  if (
-    err.toString().includes("authentication") ||
-    err.toString().includes("okta")
-  ) {
-    console.warn("Authentication related error handled gracefully");
-    return;
-  }
 };
 
 app
-  .use(auth0)
   .use(router)
+  .use(auth0)
   .use(i18n)
   .use(VueLazyLoad)
   .use(Argon)
