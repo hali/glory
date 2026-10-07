@@ -79,6 +79,10 @@ these as successful data. Home displays an error with a retry button.
 Public API reads are characters, episodes, branches, and the three statistics
 endpoints. Detailed records and writes require authentication on the backend.
 
+Episode email notifications and subscription controls have been removed.
+Publishing a post saves it, clears the draft, and refreshes the post list without
+contacting an email provider.
+
 ## Validation and production build
 
 ```sh

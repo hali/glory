@@ -70,11 +70,12 @@ controllers accept player/author IDs from the request rather than deriving them
 from the verified identity. Per-record ownership checks and the email-based
 Auth0-to-player mapping need a separate review.
 
-## Other integrations
+## Email notifications
 
-The existing email controller still uses Mailjet and its `MJ_APIKEY_PUBLIC` /
-`MJ_APIKEY_PRIVATE` environment variables. Email removal is a separate pending
-task; this authentication cleanup does not change notification behaviour.
+Email notifications and episode subscription endpoints have been removed.
+Publishing posts does not call an email provider, and no email-provider
+credentials are required. The legacy `subscriptions` table is retained for
+historical data; the application no longer reads or writes it.
 
 ## Tests
 
