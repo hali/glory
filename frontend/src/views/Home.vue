@@ -260,10 +260,14 @@ export default ({
     async login() {
       try {
         await this.loginWithRedirect();
+        this.isAuthenticated = true;
       } catch (error) {
         console.error("Login error:", error);
         // Fallback for login failures
         window.location.href = '/';
+      }
+      if (this.isAuthenticated) {
+        this.getLatestEpisodeData();
       }
     },
     getLatestEpisodeData() {

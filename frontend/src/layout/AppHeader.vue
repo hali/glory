@@ -44,7 +44,7 @@
           </router-link>
         </li>
         <li class="nav-item">
-          <div class="nav-link" @click="logout()">
+          <div class="nav-link" @click="logout">
             {{ $t("logout") }}
           </div>
         </li>
@@ -72,7 +72,7 @@
           </router-link>
         </li>
         <li class="nav-item">
-          <div class="nav-link" @click="loginWithRedirect()">
+          <div class="nav-link" @click="login">
             <i class="fa fa-sign-in" />{{ $t("login") }}
           </div>
         </li>
@@ -90,11 +90,21 @@ export default {
     BaseNav,
   },
   setup() {
-    const { isAuthenticated } = useAuth0();
+    const { isAuthenticated, loginWithRedirect, logout } = useAuth0();
 
     // Expose to template and methods
     return {
       isAuthenticated,
+      login: () => {
+        loginWithRedirect();
+      },
+      logout: () => {
+        logout({
+          logoutParams: {
+            returnTo: window.location.origin,
+          },
+        });
+      },
     };
   },
   data() {
@@ -105,15 +115,6 @@ export default {
   methods: {
     closeMenu() {
       // No-op
-    },
-    loginWithRedirect() {
-      // get the function inside method to have proper context
-      const { loginWithRedirect } = useAuth0();
-      loginWithRedirect();
-    },
-    logout() {
-      const { logout } = useAuth0();
-      logout({ logoutParams: { returnTo: window.location.origin } });
     },
   },
 };
